@@ -1,55 +1,5 @@
-# 个人历史项目文档知识库：SDD Spec 开发规范与 Cursor 项目目录说明
+# Documents covert to markdownfile
 
-> 版本：V1.1-SDD  
-> 基线：个人历史项目文档知识库系统详细设计 V1.1  
-> 生成时间：2026-06-13 16:43:31  
-> 适用工具：Cursor / Codex / Hermes  
-> 数据库：MySQL  
-> 文档解析：MinerU + MarkItDown  
-> 范围：历史项目文档知识库，不包含源代码资产分析
-
----
-
-## 1. 为什么需要 SDD Spec 开发规范
-
-这个项目不是一个简单脚本，而是一个长期演进的个人知识资产治理系统，涉及：
-
-- 原始文件盘点；
-- 重复文件治理；
-- 唯一原文仓库 `raw_vault`；
-- MinerU / MarkItDown 文档解析；
-- MySQL 元数据管理；
-- 解析质量检查；
-- 人工复核；
-- 证据链；
-- 项目级 `curated` 资产；
-- 后续检索与蒸馏。
-
-如果直接让 AI 工具自由写代码，很容易出现：
-
-- 文件治理逻辑散乱；
-- 数据库表和代码模型不一致；
-- 原始文件被误移动、误覆盖；
-- 重复文件被错误删除；
-- 解析产物目录不可追踪；
-- Cursor / Codex 每次修改都扩大范围；
-- 后续无法验收和维护。
-
-因此本项目采用 **SDD：Spec-Driven Development**。
-
-核心原则是：
-
-```text
-先写 Spec，再写 Plan，再拆 Tasks，再写代码，再验收。
-```
-
-每个功能必须能追溯到：
-
-```text
-Spec → Plan → Tasks → Code → Tests → Acceptance
-```
-
----
 
 ## 2. 项目总边界
 
