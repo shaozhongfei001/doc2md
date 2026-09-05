@@ -1,0 +1,43 @@
+schema_version: "1.0"
+spec: "902-test-dataset"
+files:
+  - rel_path: "中文路径/银行项目/方案.txt"
+    sha256: "f70c9fd72023780761d7203b1257ca1141d30a02549d10c5bfae39225af3bc9c"
+    purpose: "Chinese path; exact-duplicate pair A"
+    duplicate_group: "dup-plan-a"
+    intended_route: "text"
+  - rel_path: "中文路径/银行项目/方案副本.txt"
+    sha256: "f70c9fd72023780761d7203b1257ca1141d30a02549d10c5bfae39225af3bc9c"
+    purpose: "Exact sha256 duplicate of 方案.txt"
+    duplicate_group: "dup-plan-a"
+    intended_route: "text"
+  - rel_path: "中文路径/银行项目/会议纪要.md"
+    sha256: "5b20428aee53e47483d644632f55154c5a038e19cbcaf63459398f14fd62e49e"
+    purpose: "Markdown sample for MarkItDown / text route"
+    duplicate_group: null
+    intended_route: "markitdown"
+  - rel_path: "中文路径/银行项目/指标口径.csv"
+    sha256: "a073424c2edff9d8bb4c48e90c5a054d5998ad5d54658aceef796be5f0a5a287"
+    purpose: "CSV sample"
+    duplicate_group: null
+    intended_route: "text"
+  - rel_path: "中文路径/银行项目/说明.html"
+    sha256: "ce1bd539613e9ccc0a02b1ef580bab0bdd8b7464e0f18b82e2f7f961aebdff2d"
+    purpose: "HTML sample for MarkItDown route"
+    duplicate_group: null
+    intended_route: "markitdown"
+  - rel_path: "中文路径/银行项目/元数据.json"
+    sha256: "8990fe005a7d3191dfe95b6abb69c6ccec639879b53742614fa9c930ab562f13"
+    purpose: "JSON sample for MarkItDown route"
+    duplicate_group: null
+    intended_route: "markitdown"
+  - rel_path: "office_like/最小文档.docx"
+    sha256: "b4fbe3cf92797699e508b655e25b48d0b1c8bd2acb39b57790a16ef68f612921"
+    purpose: "Minimal OOXML for parser_rules office_to_markitdown"
+    duplicate_group: null
+    intended_route: "markitdown"
+  - rel_path: "pdf/hello.pdf"
+    sha256: "6e1d00daac00131253bd3185d02c5a0d0905a883470df14181b64194a23d633d"
+    purpose: "Minimal PDF for parser_rules pdf_to_mineru (file only; no magic-pdf)"
+    duplicate_group: null
+    intended_route: "mineru"

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
+# 902 sample dataset: generate fixtures and sync data/sample_dataset/.
+# Does not write backend/tests/fixtures/中文路径/. Does not use MySQL or parsers.
 set -euo pipefail
-mkdir -p backend/tests/fixtures/中文路径/银行项目
-echo "示例方案内容" > backend/tests/fixtures/中文路径/银行项目/方案.txt
-cp backend/tests/fixtures/中文路径/银行项目/方案.txt backend/tests/fixtures/中文路径/银行项目/方案副本.txt
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+exec python3 "$ROOT/scripts/create_sample_dataset.py" "$@"
