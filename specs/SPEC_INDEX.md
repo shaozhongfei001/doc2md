@@ -43,8 +43,7 @@ These directories are early roadmap or stub specs. They are preserved for histor
 | Directory | Status | Notes |
 |---|---|---|
 | `specs/008-review-workflow/` | FUTURE STUB / NOT CURRENT | Human review workflow. This is **not** the completed 008 parse quality checker. Do not start unless this index explicitly sets it ACTIVE. |
-| `specs/901-docker-compose-deployment/` | SUPPORT / FUTURE | Deployment support |
-| `specs/902-test-dataset/` | SUPPORT / FUTURE | Test dataset support |
+| `specs/901-docker-compose-deployment/` | SUPPORT / FUTURE | Deployment support. Do not start while host MySQL already listens on 3306 unless this index sets it ACTIVE. |
 
 ### 3.1 Future Spec Renumber Note (2026-06)
 
@@ -75,20 +74,51 @@ Agents must follow this order when selecting a spec:
 
 ### 4.2 Current Active Phase
 
-**Active spec:** **None** — requires explicit **Active Spec Selection Review** before any new implementation.
+**Active spec:** `902-test-dataset` — `specs/902-test-dataset/` — **ACTIVE / NOT IMPLEMENTED**
 
-The most recently **completed** phase is:
+Selection record: `docs/tl-review-2026-09-05-env-and-active-spec.md` (2026-09-05).
+
+The most recently **completed** product phase is:
 
 `013 Streamlit Admin` — `specs/013-streamlit-admin/` — **DONE**
 
-Before starting the next spec:
+Specs **001–013** remain **DONE**. Do not re-open them unless a defect spec is explicitly approved.
 
-1. Read this file (`specs/SPEC_INDEX.md`) in full.
-2. Run **Active Spec Selection Review** with Tech Lead — do not infer the next spec from directory numbering.
-3. Do not start `008-review-workflow` unless this index explicitly sets it ACTIVE.
-4. Do not start `014` or any unlisted future spec without index update.
+Do **not** start:
 
-Specs **001–013** are **DONE**. Do not re-open a completed spec unless a defect spec is explicitly approved.
+1. `008-review-workflow` — still FUTURE STUB
+2. `901-docker-compose-deployment` — still SUPPORT / FUTURE
+3. `014` or any unlisted spec
+
+P4 implementation of 902 is blocked until P2 DB Review and P3 Implementation Gate PASS, and the user confirms P1.
+
+### 4.2.1 Active 902 Boundary
+
+`902-test-dataset` provides a non-sensitive sample tree and an idempotent generator script.
+
+It may:
+
+- add files under `backend/tests/fixtures/sample_dataset/`
+- sync a runtime copy to `data/sample_dataset/`
+- extend `scripts/create_sample_dataset.sh` (optional helper `.py` next to it)
+- add `backend/tests/test_sample_dataset.py` and `docs/sample_dataset.md`
+- append `data/sample_dataset/` to `.gitignore`
+
+It must not:
+
+- connect to MySQL or change schema / ORM
+- call MarkItDown, MinerU, `magic-pdf`, or any 001–013 CLI
+- modify `backend/app/**`
+- modify existing `backend/tests/fixtures/中文路径/**`
+- write `raw_vault` / `parsed` / `curated` / `reports` / `quarantine`
+- ingest real private documents or source-code repositories
+- implement review workflow, Docker Compose, search, or Streamlit changes
+
+Script:
+
+```bash
+bash scripts/create_sample_dataset.sh
+```
 
 ### 4.3 Completed 012 Boundary (Reference)
 
