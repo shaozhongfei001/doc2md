@@ -615,9 +615,20 @@ curated/projects/{project_code}/
 
 实现本地 Docker Compose 部署。
 
-### 9.7 902-test-dataset
+### 9.7 902-test-dataset（DONE）
 
-构造不含敏感资料的小样本测试集。
+构造不含敏感资料的小样本集 + 幂等生成脚本 + pytest，已于 2026-09-05 完成。
+
+- 权威合同：`specs/902-test-dataset/`
+- 选型记录：`docs/tl-review-2026-09-05-env-and-active-spec.md`
+- 交接文档：`docs/handoff-902-test-dataset.md`
+- 样本说明：`docs/sample_dataset.md`
+- **不做：** 调用 parser / 写 MySQL / review workflow / Docker / 真实私有文档
+
+门禁链：P2 PASS WITH CONSTRAINTS → P3 GATE PASS → P4 DEV DONE → P5 QA PASS → P6 E2E PASS → P7 PASS。
+
+**当前无 Active Spec。** 开始下一个 Spec 前必须由 TL 重新执行 Active Spec Selection Review，
+不得按目录编号顺延去做 `008-review-workflow` 或 `901`。
 
 ---
 

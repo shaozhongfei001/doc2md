@@ -24,6 +24,7 @@
 | 011 | `specs/011-curated-project-assets/` | DONE | Curated project assets (rule/template MVP) |
 | 012 | `specs/012-search-service/` | DONE | Read-only MySQL FULLTEXT search service |
 | 013 | `specs/013-streamlit-admin/` | DONE | Read-only Streamlit admin UI |
+| 902 | `specs/902-test-dataset/` | DONE | Non-sensitive sample dataset + idempotent generator |
 
 ---
 
@@ -43,8 +44,7 @@ These directories are early roadmap or stub specs. They are preserved for histor
 | Directory | Status | Notes |
 |---|---|---|
 | `specs/008-review-workflow/` | FUTURE STUB / NOT CURRENT | Human review workflow. This is **not** the completed 008 parse quality checker. Do not start unless this index explicitly sets it ACTIVE. |
-| `specs/901-docker-compose-deployment/` | SUPPORT / FUTURE | Deployment support |
-| `specs/902-test-dataset/` | SUPPORT / FUTURE | Test dataset support |
+| `specs/901-docker-compose-deployment/` | SUPPORT / FUTURE | Deployment support. Do not start while host MySQL already listens on 3306 unless this index sets it ACTIVE. |
 
 ### 3.1 Future Spec Renumber Note (2026-06)
 
@@ -75,20 +75,58 @@ Agents must follow this order when selecting a spec:
 
 ### 4.2 Current Active Phase
 
-**Active spec:** **None** — requires explicit **Active Spec Selection Review** before any new implementation.
+**Active spec:** `902-test-dataset` — `specs/902-test-dataset/` — **DONE / IMPLEMENTED**
 
-The most recently **completed** phase is:
+Selection record: `docs/tl-review-2026-09-05-env-and-active-spec.md` (2026-09-05).
+
+The most recently **completed** product phase is:
 
 `013 Streamlit Admin` — `specs/013-streamlit-admin/` — **DONE**
 
-Before starting the next spec:
+Specs **001–013** remain **DONE**. Do not re-open them unless a defect spec is explicitly approved.
 
-1. Read this file (`specs/SPEC_INDEX.md`) in full.
-2. Run **Active Spec Selection Review** with Tech Lead — do not infer the next spec from directory numbering.
-3. Do not start `008-review-workflow` unless this index explicitly sets it ACTIVE.
-4. Do not start `014` or any unlisted future spec without index update.
+`902-test-dataset` is now **DONE** (2026-09-05). Gate chain: P2 PASS WITH CONSTRAINTS →
+P3 GATE PASS → P4 DEV DONE → P5 QA PASS → P6 E2E PASS → P7 TL Final Review PASS.
+Reports: `specs/902-test-dataset/p2_db_review.md`, `p3_implementation_gate.md`,
+`p4_kickoff.md`, `p5_qa_report.md`, `p6_e2e_report.md`, `p7_final_review.md`.
+Handoff: `docs/handoff-902-test-dataset.md`.
 
-Specs **001–013** are **DONE**. Do not re-open a completed spec unless a defect spec is explicitly approved.
+**Active spec: None.** The next implementation requires a new **Active Spec Selection Review**
+with Tech Lead before any new spec is started.
+
+Do **not** start:
+
+1. `008-review-workflow` — still FUTURE STUB
+2. `901-docker-compose-deployment` — still SUPPORT / FUTURE
+3. `014` or any unlisted spec
+
+### 4.2.1 Active 902 Boundary
+
+`902-test-dataset` provides a non-sensitive sample tree and an idempotent generator script.
+
+It may:
+
+- add files under `backend/tests/fixtures/sample_dataset/`
+- sync a runtime copy to `data/sample_dataset/`
+- extend `scripts/create_sample_dataset.sh` (optional helper `.py` next to it)
+- add `backend/tests/test_sample_dataset.py` and `docs/sample_dataset.md`
+- append `data/sample_dataset/` to `.gitignore`
+
+It must not:
+
+- connect to MySQL or change schema / ORM
+- call MarkItDown, MinerU, `magic-pdf`, or any 001–013 CLI
+- modify `backend/app/**`
+- modify existing `backend/tests/fixtures/中文路径/**`
+- write `raw_vault` / `parsed` / `curated` / `reports` / `quarantine`
+- ingest real private documents or source-code repositories
+- implement review workflow, Docker Compose, search, or Streamlit changes
+
+Script:
+
+```bash
+bash scripts/create_sample_dataset.sh
+```
 
 ### 4.3 Completed 012 Boundary (Reference)
 

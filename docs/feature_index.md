@@ -20,7 +20,7 @@
 | 013 | Streamlit 管理台 | Phase 2 | DONE |
 | — | 人工复核闭环 | Phase 2 | FUTURE STUB (`specs/008-review-workflow/`，≠ 008 checker) |
 | 901 | Docker Compose 部署 | Ops | SUPPORT / FUTURE |
-| 902 | 测试样本集 | Test | SUPPORT / FUTURE |
+| 902 | 测试样本集 | Test | **DONE** |
 
 ### 编号说明（2026-06 重排）
 
@@ -32,4 +32,5 @@
 011-curated-project-assets  = 已完成项目梳理资产（DONE）
 012-search-service          = 已完成检索服务（DONE）
 013-streamlit-admin         = 已完成只读管理台（DONE）
+902-test-dataset            = 已完成测试样本集（DONE；不含敏感资料的小样本集 + 幂等生成脚本）
 ```

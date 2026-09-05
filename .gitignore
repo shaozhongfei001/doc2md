@@ -26,6 +26,7 @@ curated/
 quarantine/
 reports/
 data/personal-kb/
+data/sample_dataset/
 
 # OS / editor
 .DS_Store
