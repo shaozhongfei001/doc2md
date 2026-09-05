@@ -24,6 +24,7 @@
 | 011 | `specs/011-curated-project-assets/` | DONE | Curated project assets (rule/template MVP) |
 | 012 | `specs/012-search-service/` | DONE | Read-only MySQL FULLTEXT search service |
 | 013 | `specs/013-streamlit-admin/` | DONE | Read-only Streamlit admin UI |
+| 902 | `specs/902-test-dataset/` | DONE | Non-sensitive sample dataset + idempotent generator |
 
 ---
 
@@ -74,7 +75,7 @@ Agents must follow this order when selecting a spec:
 
 ### 4.2 Current Active Phase
 
-**Active spec:** `902-test-dataset` — `specs/902-test-dataset/` — **ACTIVE / NOT IMPLEMENTED**
+**Active spec:** `902-test-dataset` — `specs/902-test-dataset/` — **DONE / IMPLEMENTED**
 
 Selection record: `docs/tl-review-2026-09-05-env-and-active-spec.md` (2026-09-05).
 
@@ -84,13 +85,20 @@ The most recently **completed** product phase is:
 
 Specs **001–013** remain **DONE**. Do not re-open them unless a defect spec is explicitly approved.
 
+`902-test-dataset` is now **DONE** (2026-09-05). Gate chain: P2 PASS WITH CONSTRAINTS →
+P3 GATE PASS → P4 DEV DONE → P5 QA PASS → P6 E2E PASS → P7 TL Final Review PASS.
+Reports: `specs/902-test-dataset/p2_db_review.md`, `p3_implementation_gate.md`,
+`p4_kickoff.md`, `p5_qa_report.md`, `p6_e2e_report.md`, `p7_final_review.md`.
+Handoff: `docs/handoff-902-test-dataset.md`.
+
+**Active spec: None.** The next implementation requires a new **Active Spec Selection Review**
+with Tech Lead before any new spec is started.
+
 Do **not** start:
 
 1. `008-review-workflow` — still FUTURE STUB
 2. `901-docker-compose-deployment` — still SUPPORT / FUTURE
 3. `014` or any unlisted spec
-
-P4 implementation of 902 is blocked until P2 DB Review and P3 Implementation Gate PASS, and the user confirms P1.
 
 ### 4.2.1 Active 902 Boundary
 
