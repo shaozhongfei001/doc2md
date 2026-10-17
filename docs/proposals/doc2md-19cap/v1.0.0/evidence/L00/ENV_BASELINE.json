@@ -1,0 +1,253 @@
+{
+  "schema_version": "doc2md-19cap-l00-env-baseline/1.0",
+  "workflow": "DOC2MD-19CAP",
+  "contract_version": "DOC2MD-19CAP-V1.0",
+  "loop": "L00",
+  "task": "T002",
+  "artifact": "ENV_BASELINE.json",
+  "executed_at_local": "2026-10-18 (Asia/Shanghai)",
+  "execution_identity": {
+    "declared_role_in_contract": "DEV",
+    "actual_executor": "Same local AI session that also acts as TL (no separate DEV process/person available)",
+    "independent_dev_performed": false,
+    "independent_qa_performed": false,
+    "note": "Role label follows loop_contract.json; execution identity is recorded honestly. T002 does not change product code, so its result is a measurement, not an implementation claim."
+  },
+  "entry_commit": {
+    "l00_entry_commit": "ab8f6822ced463c4602e5e32664de74169a05964",
+    "l00_entry_commit_subject": "docs(19cap): 文档导入批次 —— 原包归档、契约落位、采用登记与 SPEC_INDEX 追加",
+    "doc_import_base_commit": "a20389ffd3f61baacc51502c10f8a503cac4ca3f",
+    "business_code_parent": "52a63ecf6ba852f65f848edfb1f835e7d360febd",
+    "branch": "main"
+  },
+  "interpreters": [
+    {
+      "id": "ENV_A_PROJECT_DEFAULT",
+      "path": "/home/szf/anaconda3/bin/python",
+      "version": "3.11.7",
+      "role": "Project default interpreter used by repository docs (handoff 00-READ-ME-FIRST §3).",
+      "usable": true,
+      "notable_packages": {
+        "typer": "0.15.1",
+        "click": "8.4.1",
+        "pydantic": "2.10.6",
+        "pydantic-settings": "2.14.1",
+        "pytest": "9.0.3",
+        "SQLAlchemy": "2.0.25",
+        "PyMySQL": "1.1.1",
+        "python-docx": "1.2.0",
+        "lxml": "4.9.3",
+        "jsonpatch": "1.32",
+        "magic-pdf": "1.3.12",
+        "paddleocr": "2.7.3",
+        "paddlepaddle": "2.6.2",
+        "pillow": "10.2.0"
+      },
+      "requirements_drift": [
+        {
+          "package": "click",
+          "required": ">=8.1,<8.2",
+          "installed": "8.4.1",
+          "effect": "4 CLI --help tests fail; this is environment drift, not a product defect (see comparisons.baseline_A)"
+        },
+        {
+          "package": "pydantic",
+          "required": "2.10.4",
+          "installed": "2.10.6",
+          "effect": "patch-level drift, no observed test effect"
+        },
+        {
+          "package": "pytest",
+          "required": "8.3.4",
+          "installed": "9.0.3",
+          "effect": "no observed collection/behavior effect"
+        },
+        {
+          "package": "SQLAlchemy",
+          "required": "2.0.36",
+          "installed": "2.0.25",
+          "effect": "not exercised because DB tests skip without MySQL credentials"
+        }
+      ]
+    },
+    {
+      "id": "ENV_B_ISOLATED_CLICK_PINNED",
+      "path": "/tmp/doc2md-l00-venv/bin/python",
+      "version": "3.11.7",
+      "role": "Isolated verification environment created for L00 only: venv with --system-site-packages plus click==8.1.8 pinned to the value required by backend/requirements.txt. No system Python package was modified and no package was installed into the repository.",
+      "creation_commands": [
+        "/home/szf/anaconda3/bin/python -m venv --system-site-packages /tmp/doc2md-l00-venv",
+        "/tmp/doc2md-l00-venv/bin/python -m pip install -q click==8.1.8"
+      ],
+      "usable": true,
+      "outside_repository": true,
+      "note": "Because the venv lives in /tmp it produces no untracked files inside the repository and therefore cannot pollute check_loop_diff scope."
+    },
+    {
+      "id": "SYSTEM_PYTHON3",
+      "path": "/usr/bin/python3",
+      "version": "3.10.12",
+      "usable": false,
+      "reason": "Typer/Click version mismatch documented in handoff; project requires 3.11.7 interpreter."
+    }
+  ],
+  "units_probed": {
+    "click": {
+      "installed": "8.4.1 (ENV_A) / 8.1.8 (ENV_B)",
+      "required": ">=8.1,<8.2",
+      "verdict": "ENV_A_DRIFTED"
+    },
+    "typer": {
+      "installed": "0.15.1",
+      "required": "0.15.1",
+      "verdict": "MATCH"
+    },
+    "mysql": {
+      "client_binary": "/usr/bin/mysql (Ver 8.0.41-0ubuntu0.22.04.1)",
+      "server_reachable": true,
+      "credentials_available": false,
+      "probe_results": [
+        {
+          "command": "mysql -h 127.0.0.1 -u personal_kb -p*** -e 'SELECT 1'",
+          "exit_code": 1,
+          "error": "ERROR 1045 (28000): Access denied for user 'personal_kb'@'localhost' (using password: YES)"
+        },
+        {
+          "command": "mysql -h 127.0.0.1 -u root -e 'SELECT 1'",
+          "exit_code": 1,
+          "error": "ERROR 1045 (28000): Access denied for user 'root'@'localhost' (using password: NO)"
+        }
+      ],
+      "env_vars_present": {
+        "PKB_MYSQL_HOST": false,
+        "PKB_MYSQL_PORT": false,
+        "PKB_MYSQL_DATABASE": false,
+        "PKB_MYSQL_USER": false,
+        "PKB_MYSQL_PASSWORD": false
+      },
+      "defaults_used_by_tests": {
+        "host": "127.0.0.1",
+        "port": 3306,
+        "database": "personal_kb",
+        "user": "personal_kb",
+        "password_source": "backend/tests/_db_env.py fallback (not disclosed here)"
+      },
+      "verdict": "NOT_AVAILABLE_BLOCKED_BY_CREDENTIALS",
+      "consequence": "131 DB-dependent cases are reported as NOT_EXECUTED, never as PASS. Creating a test database/user was deliberately not performed: it is a shared-service side effect outside this batch's authorised scope."
+    },
+    "optional_engine_dependencies": {
+      "paddleocr": {
+        "installed_version": "2.7.3",
+        "effect": "2 cases that assert the dependency-missing branch are skipped because the branch is unreachable when paddleocr is installed; these are branch-state skips, not pass."
+      },
+      "cv2": {
+        "status": "not probed in this batch",
+        "note": "015 image pipeline degrades to Pillow when cv2 is missing; not exercised by this incremental layer."
+      }
+    }
+  },
+  "test_commands": [
+    {
+      "id": "RUN_A_PROJECT_DEFAULT",
+      "cwd": "/home/szf/dev/doc2md/backend",
+      "command": "PYTHONPATH=. /home/szf/anaconda3/bin/python -m pytest -q",
+      "exit_code": 1,
+      "result": "4 failed, 482 passed, 133 skipped in 10.81s",
+      "log": "/tmp/baseline_pytest_1792255429.log"
+    },
+    {
+      "id": "RUN_B_CLICK_PINNED",
+      "cwd": "/home/szf/dev/doc2md/backend",
+      "command": "PYTHONPATH=. /tmp/doc2md-l00-venv/bin/python -m pytest -q",
+      "exit_code": 0,
+      "result": "486 passed, 133 skipped in 10.73s",
+      "log": "/tmp/baseline_pytest_click818.log"
+    },
+    {
+      "id": "RUN_B_SKIP_IDENTITY",
+      "cwd": "/home/szf/dev/doc2md/backend",
+      "command": "PYTHONPATH=. /tmp/doc2md-l00-venv/bin/python -m pytest -q -rs --tb=no",
+      "exit_code": 0,
+      "result": "skip identity captured: 133 total",
+      "log": "/tmp/skips.txt"
+    }
+  ],
+  "comparisons": {
+    "baseline_A": {
+      "passed": 482,
+      "failed": 4,
+      "skipped": 133,
+      "failed_test_ids": [
+        "tests/test_evidence_chain.py::test_cli_help_documents_contract",
+        "tests/test_markitdown_parser.py::test_cli_parse_markitdown_help",
+        "tests/test_parser_router.py::test_cli_route_parsers_help",
+        "tests/test_search_service.py::test_cli_help_documents_contract"
+      ],
+      "root_cause": "click 8.4.1 installed while backend/requirements.txt requires click>=8.1,<8.2; all four failures are Typer/Click --help assertions (assert 1 == 0 on CliRunner exit code).",
+      "matches_historical_handoff_baseline": "PARTIAL: handoff recorded 613 passed / 4 failed / 2 skipped; this run has the same 4 failed test IDs but a different pass count (482) and skip count (133), because the handoff numbers were taken in a different environment/dataset state."
+    },
+    "baseline_B": {
+      "passed": 486,
+      "failed": 0,
+      "skipped": 133,
+      "failed_test_ids": [],
+      "delta_vs_A": "Exactly the 4 click-dependent --help cases turn green (+4 passed, -4 failed). No other test changed state, so the 4 failures are proven to be environment-state, not product regression.",
+      "conclusion": "In the requirements-conformant environment the legacy suite is FULLY GREEN (0 failed). The historical '4 known failures are tolerated' rule is therefore retired as an exemption: it is an environment repair item, not a permanent allowance."
+    },
+    "skip_identity": {
+      "total": 133,
+      "by_reason": {
+        "MYSQL_UNAVAILABLE": 131,
+        "PADDLEOCR_INSTALLED_BRANCH_UNREACHABLE": 2
+      },
+      "by_file": {
+        "tests/test_markitdown_parser.py": 34,
+        "tests/test_mineru_pdf_parser.py": 32,
+        "tests/test_parse_job_registry.py": 31,
+        "tests/test_parser_router.py": 10,
+        "tests/test_duplicate_governance.py": 9,
+        "tests/test_file_content_vault.py": 7,
+        "tests/test_inventory_scanner.py": 7,
+        "tests/test_image_parser.py": 3
+      },
+      "status": "NOT_EXECUTED",
+      "not_a_pass": true,
+      "skip_reason_is_environment_or_branch_state": true
+    }
+  },
+  "conclusion": {
+    "requirement_conformant_baseline_reference": "486 passed / 0 failed / 133 skipped (131 MySQL NOT_EXECUTED + 2 branch-state)",
+    "usable_as_G1_reference": true,
+    "caveats": [
+      "The 133 skips are NOT passes; G1 must keep listing them per test ID with reason.",
+      "To close the MySQL gap, either provide PKB_MYSQL_* credentials for an isolated test database or explicitly authorise creating one.",
+      "ENV_B lives in /tmp and must be recreated for later loops; a persistent isolated worker environment is required from L04 onward (requirements-ocr-worker.in/.lock)."
+    ]
+  },
+  "known_gaps": [
+    {
+      "gap_id": "L00-GAP-01",
+      "description": "No usable MySQL credentials for the legacy DB-dependent test matrix.",
+      "affects": "131 legacy cases and any future DB-boundary regression (G1/G4).",
+      "owner": "Owner / environment provider",
+      "closure_condition": "PKB_MYSQL_* provided for an isolated test schema, or explicit authorisation to create one; then re-run RUN_B and record per-ID results.",
+      "blocks_this_batch": false
+    },
+    {
+      "gap_id": "L00-GAP-02",
+      "description": "Project default interpreter violates backend/requirements.txt on click/pydantic/pytest.",
+      "affects": "Any reviewer re-running tests with the default interpreter will see 4 spurious --help failures.",
+      "owner": "TL",
+      "closure_condition": "Use ENV_B-style pinned isolated environment for verification, or repair the default interpreter with Owner approval. backend/requirements.txt is protected and was NOT modified.",
+      "blocks_this_batch": false
+    },
+    {
+      "gap_id": "L00-GAP-03",
+      "description": "No real OCR/VLM/engine weights or bank source interfaces available in this environment.",
+      "affects": "L04 T405, L06 T606, L08 T803 real-engine and bank-joint acceptance.",
+      "owner": "Owner / bank (OI02, OI03, OI04)",
+      "closure_condition": "See 07_OPEN_INPUTS.md OI02/OI03/OI04.",
+      "blocks_this_batch": false
+    }
+  ]
+}
