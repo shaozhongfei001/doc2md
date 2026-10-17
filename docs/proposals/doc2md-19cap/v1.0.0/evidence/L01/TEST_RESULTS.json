@@ -1,0 +1,89 @@
+{
+  "schema_version": "doc2md-19cap-l01-test-results/1.0",
+  "workflow": "DOC2MD-19CAP",
+  "loop": "L01",
+  "recorded_at_local": "2026-10-18 (Asia/Shanghai)",
+  "entry_commit": {
+    "l01_entry_commit": "39922a7069bde1de8a80f7eeed01ab14928de8ec",
+    "l01_code_commit": "dfd59fd673eb0b3e162dff87b4ecaee0b7e1d88e",
+    "l00_entry_commit": "ab8f6822ced463c4602e5e32664de74169a05964",
+    "doc_import_commit": "ab8f6822ced463c4602e5e32664de74169a05964",
+    "baseline_commit": "a20389ffd3f61baacc51502c10f8a503cac4ca3f"
+  },
+  "environment": {
+    "interpreter": "/tmp/doc2md-l00-venv/bin/python",
+    "python_version": "3.11.7",
+    "note": "Isolated venv with --system-site-packages plus click==8.1.8 pinned to backend/requirements.txt. Lives in /tmp so it adds no untracked file inside the repository. The project default interpreter (/home/szf/anaconda3/bin/python, click 8.4.1) reproduces the L00 environment drift; see L00/ENV_BASELINE.json.",
+    "mysql": "NOT_AVAILABLE (no credentials); 131 DB cases remain NOT_EXECUTED, never counted as pass"
+  },
+  "commands": [
+    {
+      "id": "L01-FULL",
+      "cwd": "backend",
+      "command": "PYTHONPATH=. /tmp/doc2md-l00-venv/bin/python -m pytest -q",
+      "exit_code": 0,
+      "result": "641 passed, 133 skipped in 11.91s"
+    },
+    {
+      "id": "L01-EXT",
+      "cwd": "backend",
+      "command": "PYTHONPATH=. /tmp/doc2md-l00-venv/bin/python -m pytest -q tests/extensions",
+      "exit_code": 0,
+      "result": "155 passed"
+    },
+    {
+      "id": "L01-BASELINE",
+      "cwd": "repository root",
+      "command": "python <PACK>/tools/check_baseline.py --repo <repo> --allow-index-append",
+      "exit_code": 0,
+      "result": "passed=true, checked_file_count=322, errors=[], append_exceptions=[SPEC_INDEX APPEND_ONLY_NEW_SELECTION]"
+    },
+    {
+      "id": "L01-SCOPE",
+      "cwd": "repository root",
+      "command": "python <PACK>/tools/check_loop_diff.py --repo <repo> --loop L01 --base-commit 39922a7069bde1de8a80f7eeed01ab14928de8ec",
+      "exit_code": 0,
+      "result": "passed=true, allowed_changed_paths=18, errors=[]"
+    }
+  ],
+  "comparison_with_baseline": {
+    "baseline_env_b_passed": 486,
+    "baseline_env_b_failed": 0,
+    "baseline_env_b_skipped": 133,
+    "after_l01_passed": 641,
+    "after_l01_failed": 0,
+    "after_l01_skipped": 133,
+    "delta_passed": 155,
+    "delta_failed": 0,
+    "delta_skipped": 0,
+    "conclusion": "No legacy test changed state. All 155 new cases are additive and green; the 133 skips are the same pre-existing MySQL/branch-state skips."
+  },
+  "new_test_files": {
+    "backend/tests/extensions/conftest.py": "fixtures (synthetic triple artifacts, extension config, legacy app.yaml)",
+    "backend/tests/extensions/test_contracts.py": 62,
+    "backend/tests/extensions/test_read_bridge.py": 38,
+    "backend/tests/extensions/test_artifact_store.py": 28,
+    "backend/tests/extensions/test_extension_cli.py": 27
+  },
+  "coverage_of_l01_tasks": {
+    "T101": "identity vectors, cross-process stability, legacy UID vector, 12 closed contracts, 20+ negative cases",
+    "T102": "extension_root forbidden roots, traversal, symlink (escape and internal), relative path forms, config fail-closed",
+    "T103": "lock exclusion, staging invisibility, atomic publish, idempotency, conflict, 5 fault points, recovery, pointer CAS",
+    "T104": "exit codes 0/2/3/5, dry-run zero side effects, unimplemented => 3, JSON stdout separability, module entrypoint",
+    "T105": "NEEDS_BASE_PARSE, digest mismatch (text/asset/manifest), mid-read change, read-set determinism, snapshot",
+    "T106": "the four files above plus DB-01…DB-06 and no-network-client guards"
+  },
+  "status": {
+    "dev_self_test": "DONE (this record)",
+    "db_review": "PENDING",
+    "independent_qa": "PENDING",
+    "e2e": "NOT_RUN",
+    "ho_handoff": "PENDING"
+  },
+  "not_run": [
+    "Real OCR / VLM / chart engine: no engine, weights or approved endpoint (OI03)",
+    "Bank source connectors: no interface or account (OI02)",
+    "MySQL-bound legacy cases: no credentials (DB-GAP-01)",
+    "E2E across L02+ flows: dependent loops not started"
+  ]
+}
