@@ -24,6 +24,10 @@
 | 011 | `specs/011-curated-project-assets/` | DONE | Curated project assets (rule/template MVP) |
 | 012 | `specs/012-search-service/` | DONE | Read-only MySQL FULLTEXT search service |
 | 013 | `specs/013-streamlit-admin/` | DONE | Read-only Streamlit admin UI |
+| 014 | `specs/014-pdf-content-sniffing/` | QA_PASS (Loop S1, 2026-10-16) | PDF 内容嗅探路由修复（PDF_SCANNED_OR_IMAGE 死枚举激活）；独立 QA verdict=PASS（ir-architect，A014-01~12 全 PASS，M1/M2 变异已恢复原 md5） |
+| 015 | `specs/015-image-parse-pipeline/` | IN_PROGRESS (Loop S1, 2026-10-16 起) | 独立图片解析管线（预处理→质量评分→PaddleOCR/VLM 路由）；实现 = pilot-014，规格收口 + 白名单校验 = spec-lead |
+| 016 | `specs/016-semantic-quality-metrics/` | ACTIVE (Loop S1) | 008 质检第五类语义检查（乱码率/置信度/表格/空正文） |
+| 017 | `specs/017-unified-document-ir/` | DESIGN REVIEWED (SPECS READY) | 统一文档中间表示（document_ir.json）；设计稿已评审，规格五件套齐备（spec/plan/tasks/test_cases/acceptance，OQ-1~7 全 DECIDED 2026-10-16），**实现排期在 S1 之后** |
 | 902 | `specs/902-test-dataset/` | DONE | Non-sensitive sample dataset + idempotent generator |
 
 ---
@@ -91,14 +95,22 @@ Reports: `specs/902-test-dataset/p2_db_review.md`, `p3_implementation_gate.md`,
 `p4_kickoff.md`, `p5_qa_report.md`, `p6_e2e_report.md`, `p7_final_review.md`.
 Handoff: `docs/handoff-902-test-dataset.md`.
 
-**Active spec: None.** The next implementation requires a new **Active Spec Selection Review**
-with Tech Lead before any new spec is started.
+**Active specs (Loop S1, Owner-approved 2026-10-16):** `014-pdf-content-sniffing` →
+`015-image-parse-pipeline` → `016-semantic-quality-metrics`，按此顺序推进。
+
+Owner 裁定要点：
+
+1. 014 配套全部批准：`pypdf` 进 `backend/requirements.txt`；嗅探只读打开 `original.bin` 的红线修订（仅限 `.pdf`、只读、文本层探测）；新增 `sniff_cache/` 派生缓存目录。
+2. 015 按 TL 建议执行：可选依赖不进默认 requirements（`DEPENDENCY_MISSING` 优雅降级）；VLM 仅 Protocol + Mock（Mock 结果拒绝落盘，真实 VLM 接入另开 Spec）。
+3. 016 阈值冻结进 `config/quality_semantics.yaml`；报告 `schema_version` 升 `1.1`。
+4. `017-unified-document-ir` 设计稿已评审（`docs/architecture/DOCUMENT_IR_DESIGN_V1.md`），规格五件套已齐备（`specs/017-unified-document-ir/` 下 spec/plan/tasks/test_cases/acceptance，OQ-1~7 全 DECIDED 2026-10-16），**实现排期在 S1 之后**；S1 期间不得开工 017 实现。
 
 Do **not** start:
 
 1. `008-review-workflow` — still FUTURE STUB
 2. `901-docker-compose-deployment` — still SUPPORT / FUTURE
-3. `014` or any unlisted spec
+3. `017` 实现（设计稿已评审，规格已齐备，待 S1 合并后开工，排期在 S1 之后）
+4. Any unlisted spec
 
 ### 4.2.1 Active 902 Boundary
 
