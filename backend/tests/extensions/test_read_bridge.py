@@ -324,3 +324,59 @@ def test_extension_root_accepts_a_plain_directory(tmp_path: Path):
     base.mkdir()
     resolved = resolve_extension_root("./extension_data", base_dir=base)
     assert resolved == (base / "extension_data").resolve()
+
+
+# ------------------------------------------- repo-anchored guard (FAIL-2026-10-18-01)
+# Independent DB review found that anchoring forbidden roots only on ``base_dir`` let an
+# out-of-repo --extension-config plus an absolute extension_root point back into
+# <repo>/sql. These tests pin the fix: the repository root is an anchor too.
+REPO_ROOT = Path(__file__).resolve().parents[3]
+
+
+@pytest.mark.parametrize("forbidden", ["sql", "raw_vault", "parsed", "curated"])
+def test_repo_forbidden_root_is_refused_even_with_an_outside_base_dir(
+    tmp_path: Path, forbidden: str
+):
+    with pytest.raises(ExtensionError) as excinfo:
+        resolve_extension_root(
+            str(REPO_ROOT / forbidden), base_dir=tmp_path, project_root=REPO_ROOT
+        )
+    assert excinfo.value.code == "E_CONFIG_ROOT_FORBIDDEN"
+
+
+def test_repo_root_is_refused_even_with_an_outside_base_dir(tmp_path: Path):
+    with pytest.raises(ExtensionError) as excinfo:
+        resolve_extension_root(str(REPO_ROOT), base_dir=tmp_path, project_root=REPO_ROOT)
+    assert excinfo.value.code == "E_CONFIG_ROOT_FORBIDDEN"
+
+
+def test_repo_anchoring_still_allows_a_legitimate_sibling(tmp_path: Path):
+    resolved = resolve_extension_root(
+        str(tmp_path / "extension_data"), base_dir=tmp_path, project_root=REPO_ROOT
+    )
+    assert resolved == (tmp_path / "extension_data").resolve()
+
+
+def test_runner_passes_the_repo_anchor_so_the_outside_config_cannot_escape(tmp_path: Path):
+    """End-to-end: an out-of-repo config cannot select <repo>/sql as extension_root."""
+    from app.extensions.io.config import load_extension_config
+
+    config_dir = tmp_path / "outside" / "config"
+    config_dir.mkdir(parents=True)
+    config_path = config_dir / "ext.yaml"
+    config_path.write_text(
+        "schema_version: doc2md-extensions-config/1.0\n"
+        "enabled: true\n"
+        f"extension_root: {REPO_ROOT / 'sql'}\n"
+        "identity_mode: local_os_subject\n"
+        "allow_external_network: false\n"
+        "policy:\n"
+        "  numeric_chart_estimates_enabled: false\n"
+        "  allow_bank_approved_label_with_local_identity: false\n"
+        "release:\n"
+        "  real_bank_cutover_enabled: false\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ExtensionError) as excinfo:
+        load_extension_config(config_path, project_root=REPO_ROOT)
+    assert excinfo.value.code == "E_CONFIG_ROOT_FORBIDDEN"

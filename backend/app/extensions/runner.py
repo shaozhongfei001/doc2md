@@ -40,7 +40,7 @@ from typing import Any, Mapping
 from . import ExtensionError
 from . import identity
 from .contracts import ContractError, validate_root
-from .io.config import ExtensionConfig, load_extension_config
+from .io.config import ExtensionConfig, load_extension_config, load_storage_roots
 from .io.paths import Roots
 from .io.read_bridge import ReadBridge, sha256_file
 
@@ -101,6 +101,12 @@ class PlanResult:
 class ExtensionRunner:
     """Resolves config/roots and executes the L01-safe part of each command."""
 
+    #: Repository root derived from this file's location (backend/app/extensions/runner.py),
+    #: never from the current working directory. Used to anchor the forbidden write roots,
+    #: so an out-of-repo ``--extension-config`` cannot point ``extension_root`` back into
+    #: ``<repo>/sql`` (defect FAIL-2026-10-18-01).
+    PROJECT_ROOT = Path(__file__).resolve().parents[3]
+
     def __init__(
         self,
         *,
@@ -108,14 +114,19 @@ class ExtensionRunner:
         base_config_path: str | os.PathLike[str] | None = None,
         dry_run: bool = True,
         config_base_dir: Path | None = None,
-        legacy_config_loader=None,
     ) -> None:
         self.dry_run = dry_run
         self.guard = WriteGuard(dry_run=dry_run)
         self.config: ExtensionConfig = load_extension_config(
-            extension_config_path, base_dir=config_base_dir
+            extension_config_path,
+            base_dir=config_base_dir,
+            project_root=self.PROJECT_ROOT,
         )
-        self.legacy_config = self._load_legacy_config(base_config_path, legacy_config_loader)
+        # Narrow read: only the ``storage`` section, so no MySQL credential is ever
+        # parsed into this process and legacy code is not imported at all.
+        self.storage = (
+            load_storage_roots(Path(base_config_path)) if base_config_path is not None else None
+        )
         self.roots = Roots(
             extension=self.config.extension_root,
             raw_vault=self._legacy_path("raw_vault_root"),
@@ -125,21 +136,10 @@ class ExtensionRunner:
         self.bridge = ReadBridge(self.roots)
 
     # ------------------------------------------------------------------ config
-    @staticmethod
-    def _load_legacy_config(path, loader):
-        if path is None:
-            return None
-        if loader is None:  # pragma: no cover - import guard, exercised indirectly
-            from app.core.config import load_config as loader  # noqa: PLC0415
-        return loader(Path(path))
-
     def _legacy_path(self, attribute: str) -> Path | None:
-        if self.legacy_config is None:
+        if self.storage is None:
             return None
-        storage = getattr(self.legacy_config, "storage", None)
-        if storage is None:
-            return None
-        value = getattr(storage, attribute, None)
+        value = getattr(self.storage, attribute, None)
         return Path(value) if value is not None else None
 
     def store(self, *, injected_fault: str | None = None):

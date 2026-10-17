@@ -375,3 +375,85 @@ def test_module_entrypoint_runs_a_dry_run(
     payload = json.loads(completed.stdout)
     assert payload["command"] == "enhance"
     assert completed.stderr == "", "stdout/stderr must stay separable for piping"
+
+
+# ------------------------------------- narrow storage loader (DB review finding 3)
+def _app_yaml(tmp_path: Path, *, with_mysql: bool, secret: str = "s3cr3t-marker") -> Path:
+    workspace = tmp_path / "ws"
+    config_dir = workspace / "config"
+    config_dir.mkdir(parents=True, exist_ok=True)
+    for name in ("raw_vault", "parsed", "curated", "registry", "quarantine", "reports"):
+        (workspace / name).mkdir(parents=True, exist_ok=True)
+    body = (
+        "app:\n  pipeline_version: fixture\n"
+        "storage:\n"
+        "  source_registry_root: ./registry\n"
+        "  raw_vault_root: ./raw_vault\n"
+        "  parsed_root: ./parsed\n"
+        "  curated_root: ./curated\n"
+        "  quarantine_root: ./quarantine\n"
+        "  reports_root: ./reports\n"
+    )
+    if with_mysql:
+        body += (
+            "mysql:\n"
+            "  host: 127.0.0.1\n  port: 3306\n  database: fixture\n"
+            "  username: fixture\n"
+            f"  password: {secret}\n  charset: utf8mb4\n"
+        )
+    path = config_dir / "app.yaml"
+    path.write_text(body, encoding="utf-8")
+    return path
+
+
+def test_storage_loader_reads_paths_from_the_legacy_config(tmp_path: Path):
+    from app.extensions.io.config import load_storage_roots
+
+    path = _app_yaml(tmp_path, with_mysql=True)
+    roots = load_storage_roots(path)
+    assert roots.parsed_root == (path.parent.parent / "parsed").resolve()
+    assert roots.raw_vault_root == (path.parent.parent / "raw_vault").resolve()
+
+
+def test_storage_loader_never_parses_the_mysql_section(tmp_path: Path):
+    """A plaintext password must not enter this process at all."""
+    from app.extensions.io.config import load_storage_roots
+
+    path = _app_yaml(tmp_path, with_mysql=True, secret="UNIQUE-PASSWORD-MARKER-42")
+    roots = load_storage_roots(path)
+    rendered = repr(roots)
+    assert "UNIQUE-PASSWORD-MARKER-42" not in rendered
+    assert not hasattr(roots, "password")
+    assert not hasattr(roots, "mysql")
+
+
+def test_storage_loader_works_without_a_mysql_section(tmp_path: Path):
+    """The legacy loader raises KeyError here; the extension layer must not need MySQL."""
+    from app.extensions.io.config import load_storage_roots
+
+    roots = load_storage_roots(_app_yaml(tmp_path, with_mysql=False))
+    assert roots.parsed_root is not None
+
+
+def test_storage_loader_rejects_a_config_without_storage(tmp_path: Path):
+    from app.extensions.io.config import load_storage_roots
+
+    path = tmp_path / "config" / "app.yaml"
+    path.parent.mkdir(parents=True)
+    path.write_text("app:\n  pipeline_version: x\n", encoding="utf-8")
+    with pytest.raises(ExtensionError) as excinfo:
+        load_storage_roots(path)
+    assert excinfo.value.code == "E_CONFIG_INVALID"
+    assert "storage" in excinfo.value.message
+
+
+def test_extension_layer_no_longer_imports_legacy_config():
+    """The narrow loader removed the last legacy import from this namespace."""
+    import app.extensions.runner as runner_module
+
+    source = Path(runner_module.__file__).read_text(encoding="utf-8")
+    import_lines = [
+        line for line in source.splitlines() if line.strip().startswith(("import ", "from "))
+    ]
+    assert not any("app.core.config" in line for line in import_lines)
+    assert not any("app.core" in line for line in import_lines)

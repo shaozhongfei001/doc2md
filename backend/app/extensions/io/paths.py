@@ -134,12 +134,25 @@ def resolve_extension_root(
     base_dir: Path,
     forbidden_roots: tuple[str, ...] = FORBIDDEN_WRITE_ROOTS,
     extra_forbidden: tuple[Path, ...] = (),
+    project_root: Path | None = None,
 ) -> Path:
     """Resolve and validate ``extension_root`` from configuration.
 
-    ``value`` is resolved relative to ``base_dir`` (the repository root for the
-    shipped example config). Relative escapes, forbidden roots and symlinked
-    configurations are rejected.
+    ``value`` is resolved relative to ``base_dir`` (the directory holding the
+    configuration, e.g. ``<repo>/config``). Forbidden roots are anchored on **two**
+    bases on purpose:
+
+    * ``base_dir`` — catches a config that names a sibling of the forbidden root;
+    * ``project_root`` — catches the case that defeated the first version of this
+      guard: an ``--extension-config`` living outside the repository plus an
+      *absolute* ``extension_root`` pointing at ``<repo>/sql`` or
+      ``<repo>/raw_vault``. With only ``base_dir`` anchoring, nothing in that path
+      mentions a forbidden name, so the overlap was never detected
+      (defect FAIL-2026-10-18-01, found by independent DB review).
+
+    ``project_root`` should be the repository root, derived by the caller from its
+    own location rather than from the current working directory, so the answer does
+    not depend on where the CLI was started.
     """
     if isinstance(value, os.PathLike):
         value = os.fspath(value)
@@ -161,14 +174,21 @@ def resolve_extension_root(
             f"extension_root must not contain symlinked components: {symlinks}",
         )
 
-    base_resolved = Path(base_dir).resolve(strict=False)
-    for name in forbidden_roots:
-        forbidden = (base_resolved / name).resolve(strict=False)
-        if is_within(resolved, forbidden) or is_within(forbidden, resolved):
-            raise ExtensionError(
-                "E_CONFIG_ROOT_FORBIDDEN",
-                f"extension_root {resolved} overlaps forbidden write root {name!r}",
-            )
+    anchors: list[Path] = [Path(base_dir).resolve(strict=False)]
+    if project_root is not None:
+        project_resolved = Path(project_root).resolve(strict=False)
+        if project_resolved not in anchors:
+            anchors.append(project_resolved)
+
+    for anchor in anchors:
+        for name in forbidden_roots:
+            forbidden = (anchor / name).resolve(strict=False)
+            if is_within(resolved, forbidden) or is_within(forbidden, resolved):
+                raise ExtensionError(
+                    "E_CONFIG_ROOT_FORBIDDEN",
+                    f"extension_root {resolved} overlaps forbidden write root {name!r} "
+                    f"(anchored at {anchor})",
+                )
 
     for extra in extra_forbidden:
         if is_within(resolved, extra) or is_within(extra, resolved):
@@ -177,10 +197,12 @@ def resolve_extension_root(
                 f"extension_root {resolved} overlaps protected input root {extra}",
             )
 
-    if resolved == base_resolved:
-        raise ExtensionError(
-            "E_CONFIG_ROOT_FORBIDDEN", "extension_root must not be the repository root itself"
-        )
+    for anchor in anchors:
+        if resolved == anchor:
+            raise ExtensionError(
+                "E_CONFIG_ROOT_FORBIDDEN",
+                f"extension_root must not be the project/configuration root itself ({anchor})",
+            )
 
     return resolved
 
