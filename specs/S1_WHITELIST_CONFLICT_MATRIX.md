@@ -177,3 +177,41 @@
 - 017 若需追加 IR 清理，仍须遵守 §1 该行备注：**additive 追加、既有行逐行不动、先进白名单、先 STOP 报 TL**。
 
 **本次未触碰（可据以核对）**：`core/pdf_sniffing.py` `f6799625…`、`core/parser_routing.py` `f41c6441…`、`services/parser_router.py` `e25a20b2…`、`tests/test_pdf_sniffing.py` `cdd0bc72…`、`tests/test_parser_router_v2.py` `7db8dcb4…`、`config/pdf_sniffing.yaml` `8a790c35…` —— 全部与 014 acceptance §1 基线逐字一致。
+
+---
+
+## 7. 016 白名单例外登记（TL 裁定，2026-10-17）
+
+016 实现期报出**规格内部硬冲突**，TL 核实后授权一处白名单外改动，特此登记。
+
+### 7.1 冲突事实（实测，非推演）
+
+`backend/tests/test_parse_quality_report_summarizer.py` 两条既有断言在同一输出字段上互斥：
+
+| 位置 | 断言 | 隐含要求 |
+|---|---|---|
+| `:111` | `set(data["issue_counts"]) == set(ISSUE_CODES)` | 输出须为**扩展后 23 键** |
+| `:516` | `data["issue_counts"] == payload["issue_counts"]`（fixture 18 键） | 输出须**恰好 18 键** |
+
+而 `test_issue_codes_match_008_checker`（`ISSUE_CODES == CHECKER_ISSUE_CODES`）又要求 016 扩了 checker 就必须扩 summarizer → 上述两条必然对撞。
+
+### 7.2 裁定
+
+- **取方案 A**：对 `:516` 做单行等价化，期望改为 `{code: payload["issue_counts"].get(code, 0) for code in ISSUE_CODES}`。
+- 理由：`:111` 本身就是 009 对扩展后 `ISSUE_CODES` 的期望；改 `:516` 只把「硬编码 18 键」改为「按 `ISSUE_CODES` 归一化」，**保留其原意**（过滤 severity 不改变计数）。反向选择（输出镜像 18 键）只会把失败转移到更强的集合相等断言上。
+- 约束：只改该一处；不得硬编码 23；不得放松该文件其他断言。
+
+### 7.3 白名单例外清单
+
+| 文件 | 例外内容 | 归属 |
+|---|---|---|
+| `backend/tests/test_parse_quality_report_summarizer.py` | **仅 `:516` 一处**等价化改动（009 测试文件，016 白名单外） | TL 授权，需在 016 `tasks.md` 与交付回执留痕（改前/改后 md5 + diff 行数） |
+
+### 7.4 另一处规格偏离（同一裁定）
+
+plan §3.2 写「summarizer **仅** `ISSUE_CODES` / `ALLOWED_PARSER_NAMES` 两常量追加」，但只改两常量会使 **016 自己产的 1.1 报告 009 读不了**（`validate_input_report` 对 `schema_version != "1.0"` 直接 raise），真实链路断裂。TL 批准输入侧最小兼容，附 4 条硬约束：
+
+1. `INPUT_SCHEMA_VERSIONS={"1.0","1.1"}`，**未知版本仍须 raise**；
+2. 18 个 legacy 键**仍必填**，缺失仍 raise（校验强度不得降低）；5 个语义键仅 1.1 可选；
+3. `SCHEMA_VERSION` **输出常量不动**（009 仍输出 1.0）；
+4. `_classify_noise` / 分桶路径 / `:120-121` 硬编码一行不动。
