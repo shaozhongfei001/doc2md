@@ -1,0 +1,1555 @@
+{
+  "$defs": {
+    "Axis": {
+      "additionalProperties": false,
+      "properties": {
+        "axis_id": {
+          "minLength": 1,
+          "title": "Axis Id",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Label"
+        },
+        "unit_raw": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Unit Raw"
+        },
+        "scale_type": {
+          "enum": [
+            "LINEAR",
+            "LOG",
+            "CATEGORY",
+            "UNKNOWN"
+          ],
+          "title": "Scale Type",
+          "type": "string"
+        },
+        "tick_labels": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tick Labels",
+          "type": "array"
+        },
+        "evidence_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "axis_id",
+        "label",
+        "unit_raw",
+        "scale_type",
+        "tick_labels",
+        "evidence_ids"
+      ],
+      "title": "Axis",
+      "type": "object"
+    },
+    "CandidateEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_evidence_id": {
+          "minLength": 1,
+          "title": "Candidate Evidence Id",
+          "type": "string"
+        },
+        "source_version_id": {
+          "minLength": 1,
+          "title": "Source Version Id",
+          "type": "string"
+        },
+        "locator": {
+          "discriminator": {
+            "mapping": {
+              "DOCX_XML": "#/$defs/DocxLocator",
+              "PAGE_REGION": "#/$defs/PageLocator",
+              "TEXT_SPAN": "#/$defs/TextLocator"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/DocxLocator"
+            },
+            {
+              "$ref": "#/$defs/PageLocator"
+            },
+            {
+              "$ref": "#/$defs/TextLocator"
+            }
+          ],
+          "title": "Locator"
+        },
+        "raw_engine_ref": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FileRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "quote": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Quote"
+        },
+        "crop_ref": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FileRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "observation_class": {
+          "enum": [
+            "SOURCE_CONTENT",
+            "MODEL_INTERPRETATION",
+            "HUMAN_TRANSCRIPTION"
+          ],
+          "title": "Observation Class",
+          "type": "string"
+        },
+        "review_state": {
+          "enum": [
+            "UNREVIEWED",
+            "ACCEPTED",
+            "REJECTED",
+            "STALE"
+          ],
+          "title": "Review State",
+          "type": "string"
+        },
+        "review_decision_ref": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Review Decision Ref"
+        }
+      },
+      "required": [
+        "candidate_evidence_id",
+        "source_version_id",
+        "locator",
+        "raw_engine_ref",
+        "quote",
+        "crop_ref",
+        "observation_class",
+        "review_state",
+        "review_decision_ref"
+      ],
+      "title": "CandidateEvidence",
+      "type": "object"
+    },
+    "Cell": {
+      "additionalProperties": false,
+      "properties": {
+        "cell_id": {
+          "minLength": 1,
+          "title": "Cell Id",
+          "type": "string"
+        },
+        "row": {
+          "minimum": 0,
+          "title": "Row",
+          "type": "integer"
+        },
+        "col": {
+          "minimum": 0,
+          "title": "Col",
+          "type": "integer"
+        },
+        "rowspan": {
+          "exclusiveMinimum": 0,
+          "title": "Rowspan",
+          "type": "integer"
+        },
+        "colspan": {
+          "exclusiveMinimum": 0,
+          "title": "Colspan",
+          "type": "integer"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Text"
+        },
+        "text_origin": {
+          "enum": [
+            "SOURCE_XML",
+            "ENGINE_OCR",
+            "HUMAN_PATCH"
+          ],
+          "title": "Text Origin",
+          "type": "string"
+        },
+        "text_alignment": {
+          "enum": [
+            "NATIVE",
+            "ENGINE_CELL_TEXT",
+            "GEOMETRIC_CANDIDATE",
+            "HUMAN_CONFIRMED",
+            "UNKNOWN"
+          ],
+          "title": "Text Alignment",
+          "type": "string"
+        },
+        "engine_confidence": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Engine Confidence"
+        },
+        "token_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Token Ids",
+          "type": "array"
+        },
+        "evidence_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "nested_table_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Nested Table Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "cell_id",
+        "row",
+        "col",
+        "rowspan",
+        "colspan",
+        "text",
+        "text_origin",
+        "text_alignment",
+        "engine_confidence",
+        "token_ids",
+        "evidence_ids",
+        "nested_table_ids"
+      ],
+      "title": "Cell",
+      "type": "object"
+    },
+    "CellSemantics": {
+      "additionalProperties": false,
+      "properties": {
+        "data_cell_id": {
+          "minLength": 1,
+          "title": "Data Cell Id",
+          "type": "string"
+        },
+        "column_header_cell_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Column Header Cell Ids",
+          "type": "array"
+        },
+        "row_header_cell_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Row Header Cell Ids",
+          "type": "array"
+        },
+        "note_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Note Ids",
+          "type": "array"
+        },
+        "unit_raw": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Unit Raw"
+        },
+        "state": {
+          "enum": [
+            "CANDIDATE",
+            "CONFIRMED",
+            "NEEDS_REVIEW"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "review_decision_ref": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Review Decision Ref"
+        }
+      },
+      "required": [
+        "data_cell_id",
+        "column_header_cell_ids",
+        "row_header_cell_ids",
+        "note_ids",
+        "unit_raw",
+        "state"
+      ],
+      "title": "CellSemantics",
+      "type": "object"
+    },
+    "Chart": {
+      "additionalProperties": false,
+      "properties": {
+        "axes": {
+          "items": {
+            "$ref": "#/$defs/Axis"
+          },
+          "title": "Axes",
+          "type": "array"
+        },
+        "points": {
+          "items": {
+            "$ref": "#/$defs/ChartPoint"
+          },
+          "title": "Points",
+          "type": "array"
+        },
+        "original_data_ref": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Original Data Ref"
+        }
+      },
+      "required": [
+        "axes",
+        "points",
+        "original_data_ref"
+      ],
+      "title": "Chart",
+      "type": "object"
+    },
+    "ChartPoint": {
+      "additionalProperties": false,
+      "properties": {
+        "point_id": {
+          "minLength": 1,
+          "title": "Point Id",
+          "type": "string"
+        },
+        "series": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Series"
+        },
+        "period": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Period"
+        },
+        "axis_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Axis Id"
+        },
+        "unit_raw": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Unit Raw"
+        },
+        "value_type": {
+          "enum": [
+            "PRINTED_LABEL",
+            "SOURCE_TABLE",
+            "ESTIMATED",
+            "TREND_ONLY",
+            "UNKNOWN"
+          ],
+          "title": "Value Type",
+          "type": "string"
+        },
+        "exact_value": {
+          "anyOf": [
+            {
+              "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Exact Value"
+        },
+        "estimated_value": {
+          "anyOf": [
+            {
+              "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Estimated Value"
+        },
+        "evidence_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "source_table_cell_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Source Table Cell Id"
+        }
+      },
+      "required": [
+        "point_id",
+        "series",
+        "period",
+        "axis_id",
+        "unit_raw",
+        "value_type",
+        "exact_value",
+        "estimated_value",
+        "evidence_ids",
+        "source_table_cell_id"
+      ],
+      "title": "ChartPoint",
+      "type": "object"
+    },
+    "Continuation": {
+      "additionalProperties": false,
+      "properties": {
+        "relation_id": {
+          "minLength": 1,
+          "title": "Relation Id",
+          "type": "string"
+        },
+        "previous_table_id": {
+          "minLength": 1,
+          "title": "Previous Table Id",
+          "type": "string"
+        },
+        "next_table_id": {
+          "minLength": 1,
+          "title": "Next Table Id",
+          "type": "string"
+        },
+        "decision": {
+          "enum": [
+            "JOIN_CANDIDATE",
+            "SEPARATE",
+            "NEEDS_REVIEW",
+            "CONFIRMED_JOIN"
+          ],
+          "title": "Decision",
+          "type": "string"
+        },
+        "compared_dimensions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Compared Dimensions",
+          "type": "array"
+        },
+        "evidence_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "review_decision_ref": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Review Decision Ref"
+        }
+      },
+      "required": [
+        "relation_id",
+        "previous_table_id",
+        "next_table_id",
+        "decision",
+        "compared_dimensions",
+        "evidence_ids",
+        "review_decision_ref"
+      ],
+      "title": "Continuation",
+      "type": "object"
+    },
+    "DocxLocator": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "DOCX_XML",
+          "title": "Kind",
+          "type": "string"
+        },
+        "source_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Source Sha256",
+          "type": "string"
+        },
+        "part_name": {
+          "enum": [
+            "word/document.xml",
+            "word/footnotes.xml",
+            "word/endnotes.xml",
+            "word/comments.xml"
+          ],
+          "title": "Part Name",
+          "type": "string"
+        },
+        "part_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Part Sha256",
+          "type": "string"
+        },
+        "element_path": {
+          "minLength": 1,
+          "title": "Element Path",
+          "type": "string"
+        },
+        "view": {
+          "enum": [
+            "FINAL",
+            "REVIEW_CONTEXT"
+          ],
+          "title": "View",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "source_sha256",
+        "part_name",
+        "part_sha256",
+        "element_path",
+        "view"
+      ],
+      "title": "DocxLocator",
+      "type": "object"
+    },
+    "FileRef": {
+      "additionalProperties": false,
+      "properties": {
+        "root": {
+          "enum": [
+            "EXTENSION",
+            "RAW_VAULT",
+            "PARSED"
+          ],
+          "title": "Root",
+          "type": "string"
+        },
+        "relative_path": {
+          "minLength": 1,
+          "title": "Relative Path",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "root",
+        "relative_path",
+        "sha256"
+      ],
+      "title": "FileRef",
+      "type": "object"
+    },
+    "FlowEdge": {
+      "additionalProperties": false,
+      "properties": {
+        "edge_id": {
+          "minLength": 1,
+          "title": "Edge Id",
+          "type": "string"
+        },
+        "source_node_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Source Node Id"
+        },
+        "target_node_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Target Node Id"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Label"
+        },
+        "direction_state": {
+          "enum": [
+            "CANDIDATE",
+            "CONFIRMED",
+            "UNRESOLVED"
+          ],
+          "title": "Direction State",
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "review_decision_ref": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Review Decision Ref"
+        }
+      },
+      "required": [
+        "edge_id",
+        "source_node_id",
+        "target_node_id",
+        "label",
+        "direction_state",
+        "evidence_ids"
+      ],
+      "title": "FlowEdge",
+      "type": "object"
+    },
+    "FlowGraph": {
+      "additionalProperties": false,
+      "properties": {
+        "nodes": {
+          "items": {
+            "$ref": "#/$defs/FlowNode"
+          },
+          "title": "Nodes",
+          "type": "array"
+        },
+        "edges": {
+          "items": {
+            "$ref": "#/$defs/FlowEdge"
+          },
+          "title": "Edges",
+          "type": "array"
+        }
+      },
+      "required": [
+        "nodes",
+        "edges"
+      ],
+      "title": "FlowGraph",
+      "type": "object"
+    },
+    "FlowNode": {
+      "additionalProperties": false,
+      "properties": {
+        "node_id": {
+          "minLength": 1,
+          "title": "Node Id",
+          "type": "string"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Text"
+        },
+        "role": {
+          "enum": [
+            "START",
+            "END",
+            "ACTION",
+            "DECISION",
+            "UNKNOWN"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "swimlane": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Swimlane"
+        },
+        "evidence_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "node_id",
+        "text",
+        "role",
+        "swimlane",
+        "evidence_ids"
+      ],
+      "title": "FlowNode",
+      "type": "object"
+    },
+    "Issue": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "BLOCKER",
+            "MAJOR",
+            "MINOR",
+            "NOTE"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "object_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Object Ids",
+          "type": "array"
+        },
+        "message": {
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "raw_ref": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FileRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "code",
+        "severity",
+        "object_ids",
+        "message",
+        "raw_ref"
+      ],
+      "title": "Issue",
+      "type": "object"
+    },
+    "Note": {
+      "additionalProperties": false,
+      "properties": {
+        "note_id": {
+          "minLength": 1,
+          "title": "Note Id",
+          "type": "string"
+        },
+        "text": {
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "scope": {
+          "enum": [
+            "TABLE",
+            "COLUMN",
+            "ROW",
+            "CELL",
+            "UNRESOLVED"
+          ],
+          "title": "Scope",
+          "type": "string"
+        },
+        "target_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Target Ids",
+          "type": "array"
+        },
+        "evidence_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "state": {
+          "enum": [
+            "CANDIDATE",
+            "CONFIRMED",
+            "NEEDS_REVIEW"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "review_decision_ref": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Review Decision Ref"
+        }
+      },
+      "required": [
+        "note_id",
+        "text",
+        "scope",
+        "target_ids",
+        "evidence_ids",
+        "state"
+      ],
+      "title": "Note",
+      "type": "object"
+    },
+    "PageGeometry": {
+      "additionalProperties": false,
+      "properties": {
+        "geometry_id": {
+          "minLength": 1,
+          "title": "Geometry Id",
+          "type": "string"
+        },
+        "page_no": {
+          "minimum": 1,
+          "title": "Page No",
+          "type": "integer"
+        },
+        "original_asset": {
+          "$ref": "#/$defs/FileRef"
+        },
+        "original_width_px": {
+          "exclusiveMinimum": 0,
+          "title": "Original Width Px",
+          "type": "integer"
+        },
+        "original_height_px": {
+          "exclusiveMinimum": 0,
+          "title": "Original Height Px",
+          "type": "integer"
+        },
+        "processed_width_px": {
+          "exclusiveMinimum": 0,
+          "title": "Processed Width Px",
+          "type": "integer"
+        },
+        "processed_height_px": {
+          "exclusiveMinimum": 0,
+          "title": "Processed Height Px",
+          "type": "integer"
+        },
+        "crop_origin_px": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Crop Origin Px",
+          "type": "array"
+        },
+        "transform_original_to_processed": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Transform Original To Processed"
+        },
+        "unit_verified": {
+          "title": "Unit Verified",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "geometry_id",
+        "page_no",
+        "original_asset",
+        "original_width_px",
+        "original_height_px",
+        "processed_width_px",
+        "processed_height_px",
+        "crop_origin_px",
+        "transform_original_to_processed",
+        "unit_verified"
+      ],
+      "title": "PageGeometry",
+      "type": "object"
+    },
+    "PageLocator": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "PAGE_REGION",
+          "title": "Kind",
+          "type": "string"
+        },
+        "source_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Source Sha256",
+          "type": "string"
+        },
+        "geometry_id": {
+          "minLength": 1,
+          "title": "Geometry Id",
+          "type": "string"
+        },
+        "page_no": {
+          "minimum": 1,
+          "title": "Page No",
+          "type": "integer"
+        },
+        "level": {
+          "enum": [
+            "REGION_VERIFIED",
+            "PAGE_ONLY"
+          ],
+          "title": "Level",
+          "type": "string"
+        },
+        "normalized_polygon": {
+          "anyOf": [
+            {
+              "items": {
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Normalized Polygon"
+        }
+      },
+      "required": [
+        "kind",
+        "source_sha256",
+        "geometry_id",
+        "page_no",
+        "level",
+        "normalized_polygon"
+      ],
+      "title": "PageLocator",
+      "type": "object"
+    },
+    "Table": {
+      "additionalProperties": false,
+      "properties": {
+        "table_id": {
+          "minLength": 1,
+          "title": "Table Id",
+          "type": "string"
+        },
+        "ir_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Ir Ref"
+        },
+        "parent_cell_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Parent Cell Id"
+        },
+        "n_rows": {
+          "minimum": 0,
+          "title": "N Rows",
+          "type": "integer"
+        },
+        "n_cols": {
+          "minimum": 0,
+          "title": "N Cols",
+          "type": "integer"
+        },
+        "cells": {
+          "items": {
+            "$ref": "#/$defs/Cell"
+          },
+          "title": "Cells",
+          "type": "array"
+        },
+        "slots": {
+          "items": {
+            "items": {
+              "anyOf": [
+                {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "array"
+          },
+          "title": "Slots",
+          "type": "array"
+        },
+        "omitted_slots": {
+          "items": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "type": "array"
+          },
+          "title": "Omitted Slots",
+          "type": "array"
+        },
+        "omission_evidence_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Omission Evidence Ids",
+          "type": "array"
+        },
+        "cell_semantics": {
+          "items": {
+            "$ref": "#/$defs/CellSemantics"
+          },
+          "title": "Cell Semantics",
+          "type": "array"
+        },
+        "notes": {
+          "items": {
+            "$ref": "#/$defs/Note"
+          },
+          "title": "Notes",
+          "type": "array"
+        },
+        "source_html_ref": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FileRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "structure_state": {
+          "enum": [
+            "VALID_CANDIDATE",
+            "CONFIRMED"
+          ],
+          "title": "Structure State",
+          "type": "string"
+        },
+        "review_decision_ref": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Review Decision Ref"
+        }
+      },
+      "required": [
+        "table_id",
+        "ir_ref",
+        "parent_cell_id",
+        "n_rows",
+        "n_cols",
+        "cells",
+        "slots",
+        "omitted_slots",
+        "omission_evidence_ids",
+        "cell_semantics",
+        "notes",
+        "source_html_ref",
+        "structure_state"
+      ],
+      "title": "Table",
+      "type": "object"
+    },
+    "TextLocator": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "TEXT_SPAN",
+          "title": "Kind",
+          "type": "string"
+        },
+        "source_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Source Sha256",
+          "type": "string"
+        },
+        "text_file": {
+          "$ref": "#/$defs/FileRef"
+        },
+        "start_offset": {
+          "minimum": 0,
+          "title": "Start Offset",
+          "type": "integer"
+        },
+        "end_offset": {
+          "minimum": 0,
+          "title": "End Offset",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind",
+        "source_sha256",
+        "text_file",
+        "start_offset",
+        "end_offset"
+      ],
+      "title": "TextLocator",
+      "type": "object"
+    },
+    "Visual": {
+      "additionalProperties": false,
+      "properties": {
+        "visual_id": {
+          "minLength": 1,
+          "title": "Visual Id",
+          "type": "string"
+        },
+        "region_evidence_id": {
+          "minLength": 1,
+          "title": "Region Evidence Id",
+          "type": "string"
+        },
+        "classification": {
+          "enum": [
+            "TABLE",
+            "FLOW",
+            "CHART",
+            "DECORATIVE",
+            "UNKNOWN"
+          ],
+          "title": "Classification",
+          "type": "string"
+        },
+        "classification_state": {
+          "enum": [
+            "CANDIDATE",
+            "CONFIRMED",
+            "NEEDS_REVIEW"
+          ],
+          "title": "Classification State",
+          "type": "string"
+        },
+        "engine_confidence": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Engine Confidence"
+        },
+        "flow": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FlowGraph"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "chart": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Chart"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "review_decision_ref": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Review Decision Ref"
+        }
+      },
+      "required": [
+        "visual_id",
+        "region_evidence_id",
+        "classification",
+        "classification_state",
+        "engine_confidence",
+        "flow",
+        "chart"
+      ],
+      "title": "Visual",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "document-enhancement/1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "generation_id": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Generation Id",
+      "type": "string"
+    },
+    "job_key": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Job Key",
+      "type": "string"
+    },
+    "content_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Content Sha256",
+      "type": "string"
+    },
+    "source_version_ids": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Source Version Ids",
+      "type": "array"
+    },
+    "base_manifest_sha256": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Base Manifest Sha256"
+    },
+    "base_ir_sha256": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Base Ir Sha256"
+    },
+    "raw_output_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Raw Output Sha256",
+      "type": "string"
+    },
+    "normalizer_version": {
+      "minLength": 1,
+      "title": "Normalizer Version",
+      "type": "string"
+    },
+    "profile_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Profile Sha256",
+      "type": "string"
+    },
+    "geometries": {
+      "items": {
+        "$ref": "#/$defs/PageGeometry"
+      },
+      "title": "Geometries",
+      "type": "array"
+    },
+    "tables": {
+      "items": {
+        "$ref": "#/$defs/Table"
+      },
+      "title": "Tables",
+      "type": "array"
+    },
+    "continuations": {
+      "items": {
+        "$ref": "#/$defs/Continuation"
+      },
+      "title": "Continuations",
+      "type": "array"
+    },
+    "visuals": {
+      "items": {
+        "$ref": "#/$defs/Visual"
+      },
+      "title": "Visuals",
+      "type": "array"
+    },
+    "evidence": {
+      "items": {
+        "$ref": "#/$defs/CandidateEvidence"
+      },
+      "title": "Evidence",
+      "type": "array"
+    },
+    "issues": {
+      "items": {
+        "$ref": "#/$defs/Issue"
+      },
+      "title": "Issues",
+      "type": "array"
+    },
+    "numeric_estimates_enabled": {
+      "title": "Numeric Estimates Enabled",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "schema_version",
+    "generation_id",
+    "job_key",
+    "content_sha256",
+    "source_version_ids",
+    "base_manifest_sha256",
+    "base_ir_sha256",
+    "raw_output_sha256",
+    "normalizer_version",
+    "profile_sha256",
+    "geometries",
+    "tables",
+    "continuations",
+    "visuals",
+    "evidence",
+    "issues",
+    "numeric_estimates_enabled"
+  ],
+  "title": "Enhancement",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:doc2md:19cap:document-enhancement:1.0",
+  "x-contract-state": "DESIGN_CANDIDATE"
+}

@@ -1,0 +1,45 @@
+{
+  "canonicalization": "Python json.dumps UTF-8 ensure_ascii=False sort_keys=True separators=(comma,colon) allow_nan=False; identity inputs have explicit null and sorted set lists. IDs opaque to non-Python consumers unless matching these vectors. No NFC normalization or float rounding.",
+  "source_version": {
+    "domain": "source-version/1",
+    "input": {
+      "source_id": "demo_bank_policy",
+      "external_object_id": "policy_demo_01",
+      "version_kind": "LOCAL_SNAPSHOT",
+      "source_revision": null,
+      "snapshot_id": "demo_snapshot_01",
+      "content_sha256": "953b60cf03a3b48258ecae1785963e5064535cb80c74efe9a7e992c28da44ef0",
+      "legacy_query_ref_hash": null
+    },
+    "expected_id": "sv-bbeaf4cdd91bb8011f0c37a5a7d578ca803e77aa10aacd93d9c97238b2c69a26"
+  },
+  "job": {
+    "domain": "enhancement-job/1",
+    "input": {
+      "source_version_ids": [
+        "sv-bbeaf4cdd91bb8011f0c37a5a7d578ca803e77aa10aacd93d9c97238b2c69a26"
+      ],
+      "content_sha256": "953b60cf03a3b48258ecae1785963e5064535cb80c74efe9a7e992c28da44ef0",
+      "read_set": [],
+      "access_revisions": {
+        "access-0863d0a7db9e2dd431ab93aabdd2d76205cc3ab58c4c97e4a27073a6e2daf1e6": 1
+      },
+      "profile_sha256": "410fc72acc95d52d010350785fdeed7105710d2d3a1ba0f3ef1c0dd7fa3ce28b",
+      "engine_lock_sha256": "1371cbe2dfb32efdc296e9b067eb5fb6201ea85f6249a0bfe4a26024e30782e0",
+      "normalizer_version": "candidate-1.0",
+      "patchset_sha256": "1ab1d15aad7cf2770a3f58d9eed8b6232460174098b99d1ebc3c06a2eb59f634"
+    },
+    "expected_id": "8b650f0993401eaa8aaad5f332bc1b326585df75a42a1a6c3ee792b0bf3ea3a2"
+  },
+  "generation": {
+    "domain": "enhancement-generation/1",
+    "input": {
+      "job_key": "8b650f0993401eaa8aaad5f332bc1b326585df75a42a1a6c3ee792b0bf3ea3a2",
+      "raw_output_sha256": "e079bf29901fdbbdacc4d76ff3a382464d6cdf6bcda9ceb16d3f4a0c9d6e08b1",
+      "normalizer_version": "candidate-1.0",
+      "patchset_sha256": "1ab1d15aad7cf2770a3f58d9eed8b6232460174098b99d1ebc3c06a2eb59f634"
+    },
+    "expected_id": "80e5c24ef89b8c533e2b9d4729567509c8b575113047dd496762e4c4b9b08835"
+  },
+  "source_access_key": "access-0863d0a7db9e2dd431ab93aabdd2d76205cc3ab58c4c97e4a27073a6e2daf1e6"
+}

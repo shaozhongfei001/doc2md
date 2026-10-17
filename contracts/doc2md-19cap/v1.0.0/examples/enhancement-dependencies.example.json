@@ -1,0 +1,30 @@
+{
+  "schema_version": "enhancement-dependencies/1.0",
+  "generation_id": "80e5c24ef89b8c533e2b9d4729567509c8b575113047dd496762e4c4b9b08835",
+  "nodes": [
+    {
+      "object_id": "cell-2d7a18dfff68ed4b9ab2c53c37080665ff3777d80a9f6ac5f79e14897c974611",
+      "generation_id": "80e5c24ef89b8c533e2b9d4729567509c8b575113047dd496762e4c4b9b08835",
+      "object_type": "HEADER",
+      "consumer_id": "local_candidate_export",
+      "external": false
+    },
+    {
+      "object_id": "cell-7b9f1d9d96ccfffbabebcef82215320a5369bafd7200ca6f51685e4170a5077a",
+      "generation_id": "80e5c24ef89b8c533e2b9d4729567509c8b575113047dd496762e4c4b9b08835",
+      "object_type": "DATA_SEMANTICS",
+      "consumer_id": "local_candidate_export",
+      "external": false
+    }
+  ],
+  "edges": [
+    {
+      "parent_object_id": "cell-2d7a18dfff68ed4b9ab2c53c37080665ff3777d80a9f6ac5f79e14897c974611",
+      "child_object_id": "cell-7b9f1d9d96ccfffbabebcef82215320a5369bafd7200ca6f51685e4170a5077a",
+      "relation": "HEADER_CONTEXT"
+    }
+  ],
+  "required_consumer_ids": [
+    "local_candidate_export"
+  ]
+}

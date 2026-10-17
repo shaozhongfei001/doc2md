@@ -1,0 +1,16 @@
+{
+  "schema_version": "source-access/1.0",
+  "source_id": "demo_bank_policy",
+  "external_object_id": "policy_demo_01",
+  "access_epoch": 1,
+  "state": "ACTIVE",
+  "current_source_version_id": "sv-bbeaf4cdd91bb8011f0c37a5a7d578ca803e77aa10aacd93d9c97238b2c69a26",
+  "permission_ref": "local_operator_demo",
+  "purpose_scopes": [
+    "LOCAL_DESIGN_TEST"
+  ],
+  "authority_decision_ref": null,
+  "last_deny_event_id": null,
+  "lease_expires_at": null,
+  "observed_at": "2026-10-17T15:54:02Z"
+}

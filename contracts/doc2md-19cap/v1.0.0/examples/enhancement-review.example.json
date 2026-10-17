@@ -1,0 +1,23 @@
+{
+  "schema_version": "enhancement-review/1.0",
+  "review_id": "review-2af882fbe6080a1644dfa6aec838761dbf42e62e775912dc67baeb196cb807e6",
+  "object_type": "PATCH",
+  "object_id": "patch-0a9e1066f4ae986c6cd49c796df63ccd8c20f31f4dbb5353805cc2ece2cad667",
+  "object_hash": "47c04c69348cafaf07c4f33f3cba8a6165221e85e36b56208061538aeae388b5",
+  "base_generation_id": "80e5c24ef89b8c533e2b9d4729567509c8b575113047dd496762e4c4b9b08835",
+  "source_access_revisions": {
+    "access-0863d0a7db9e2dd431ab93aabdd2d76205cc3ab58c4c97e4a27073a6e2daf1e6": 1
+  },
+  "scope_paths": [
+    "/tables/0/cells/3/text"
+  ],
+  "decision": "RETURN",
+  "reason": "合成示例，尚无真实人工复核证据",
+  "evidence_ids": [
+    "ce-bc247ddc68e0584706bf2f2c51b6c45b390a3e8e26da991c54a22b1173403a38"
+  ],
+  "reviewer_subject": "demo_local_operator",
+  "identity_mode": "LOCAL_OS",
+  "authority_ref": "demo-only-not-bank-approval",
+  "decided_at": "2026-10-17T15:54:02Z"
+}

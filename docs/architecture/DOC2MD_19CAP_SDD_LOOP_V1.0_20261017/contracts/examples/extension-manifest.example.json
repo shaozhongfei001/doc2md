@@ -1,0 +1,32 @@
+{
+  "schema_version": "extension-manifest/1.0",
+  "job_key": "8b650f0993401eaa8aaad5f332bc1b326585df75a42a1a6c3ee792b0bf3ea3a2",
+  "generation_id": "80e5c24ef89b8c533e2b9d4729567509c8b575113047dd496762e4c4b9b08835",
+  "input_manifest": [
+    {
+      "root": "EXTENSION",
+      "relative_path": "raw/readset/demo.docx",
+      "sha256": "953b60cf03a3b48258ecae1785963e5064535cb80c74efe9a7e992c28da44ef0"
+    }
+  ],
+  "producer_locks": [
+    {
+      "root": "EXTENSION",
+      "relative_path": "locks/demo-lock.json",
+      "sha256": "1371cbe2dfb32efdc296e9b067eb5fb6201ea85f6249a0bfe4a26024e30782e0"
+    }
+  ],
+  "files": [
+    {
+      "file": {
+        "root": "EXTENSION",
+        "relative_path": "enhancement.json",
+        "sha256": "5724cbd0fa583addd9f1a891edc33b1b2cce3ea2ea63e5e1022339c5970e7773"
+      },
+      "artifact_type": "ENHANCEMENT"
+    }
+  ],
+  "dependency_manifest_sha256": "27e4fe3b0831c4066c0e46c024b119eedae4dd6456cc52522e150c52c4e343e7",
+  "execution_state": "VALIDATED",
+  "created_at": "2026-10-17T15:54:02Z"
+}

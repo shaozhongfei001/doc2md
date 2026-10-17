@@ -1,0 +1,26 @@
+{
+  "authority_order": [
+    "Explicit current conversation scope/instructions",
+    "original handoff 02/08 and recorded 017 TL rulings",
+    "provided ZIP actual source behavior",
+    "selected workbook version 2 rows",
+    "new design suggestions"
+  ],
+  "review_role": "SDD_AUTHOR_NOT_INDEPENDENT_QA",
+  "workflow": "DOC2MD-19CAP",
+  "source_zip": "doc2md.zip",
+  "zip_head": "a20389ffd3f61baacc51502c10f8a503cac4ca3f",
+  "business_code_head": "52a63ecf6ba852f65f848edfb1f835e7d360febd",
+  "handbook_directory": "handoff/external-refactor-2026-10-17",
+  "read_first": [
+    "00-READ-ME-FIRST.md",
+    "02-design-decisions.md",
+    "08-refactor-guide.md"
+  ],
+  "rulings": "specs/017-unified-document-ir/evidence/TL-RULINGS-P1.md",
+  "workbook": "杭州银行_四智能体端到端技术落地与攻关清单_V0.3.xlsx",
+  "workbook_library_version": "2",
+  "material_scope_note": "Only selected 19 workbook rows are used. Full bank A/B docs are not re-reviewed in this package. No GITS/KERT/DKWS product baseline inherited.",
+  "sample_note": "Repository demo is generated PDF, no merged cells; not bank acceptance corpus.",
+  "baseline_product_test_note": "Previous turn could not run pytest. Generation package self-check uses installed Pydantic, not project QA."
+}

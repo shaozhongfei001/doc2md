@@ -1,0 +1,83 @@
+{
+  "check": "SCOPE_GUARD_SELF_TEST_SYNTHETIC",
+  "passed": true,
+  "results": [
+    {
+      "name": "L01 permits new IO namespace",
+      "expected_allowed": true,
+      "passed": true,
+      "guard_result": {
+        "check": "LOOP_DIFF_SCOPE_ONLY",
+        "loop": "L01",
+        "base_commit": "abbcc67be9d398e9838d1fd0a982d5bcdae5ad16",
+        "passed": true,
+        "allowed_changed_paths": [
+          "backend/app/extensions/io/probe.py"
+        ],
+        "ignored_known_mode_only_changes": [],
+        "errors": [],
+        "limits": "No code correctness, tests, bank authorization, role identity or runtime side effects verified"
+      }
+    },
+    {
+      "name": "L01 rejects legacy application mutation",
+      "expected_allowed": false,
+      "passed": true,
+      "guard_result": {
+        "check": "LOOP_DIFF_SCOPE_ONLY",
+        "loop": "L01",
+        "base_commit": "abbcc67be9d398e9838d1fd0a982d5bcdae5ad16",
+        "passed": false,
+        "allowed_changed_paths": [
+          "backend/app/extensions/io/probe.py"
+        ],
+        "ignored_known_mode_only_changes": [],
+        "errors": [
+          {
+            "path": "backend/app/main.py",
+            "reason": "OUTSIDE_LOOP_WHITELIST"
+          }
+        ],
+        "limits": "No code correctness, tests, bank authorization, role identity or runtime side effects verified"
+      }
+    },
+    {
+      "name": "L00 permits scoped selection append",
+      "expected_allowed": true,
+      "passed": true,
+      "guard_result": {
+        "check": "LOOP_DIFF_SCOPE_ONLY",
+        "loop": "L00",
+        "base_commit": "abbcc67be9d398e9838d1fd0a982d5bcdae5ad16",
+        "passed": true,
+        "allowed_changed_paths": [
+          "specs/SPEC_INDEX.md"
+        ],
+        "ignored_known_mode_only_changes": [],
+        "errors": [],
+        "limits": "No code correctness, tests, bank authorization, role identity or runtime side effects verified"
+      }
+    },
+    {
+      "name": "L00 rejects replacement of previous index text",
+      "expected_allowed": false,
+      "passed": true,
+      "guard_result": {
+        "check": "LOOP_DIFF_SCOPE_ONLY",
+        "loop": "L00",
+        "base_commit": "abbcc67be9d398e9838d1fd0a982d5bcdae5ad16",
+        "passed": false,
+        "allowed_changed_paths": [],
+        "ignored_known_mode_only_changes": [],
+        "errors": [
+          {
+            "path": "specs/SPEC_INDEX.md",
+            "reason": "NOT_SCOPED_APPEND"
+          }
+        ],
+        "limits": "No code correctness, tests, bank authorization, role identity or runtime side effects verified"
+      }
+    }
+  ],
+  "product_tests_executed": false
+}

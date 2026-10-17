@@ -1,0 +1,226 @@
+{
+  "check_type": "AUTHOR_CONTRACT_PACKAGE_SELF_CHECK",
+  "product_tests_executed": false,
+  "independent_qa_executed": false,
+  "reference_model_engine": "Pydantic 2.14.0",
+  "schema_examples": 12,
+  "negative_examples": 21,
+  "requirements_designed": 19,
+  "product_test_cases_planned": 63,
+  "loops_planned": 9,
+  "results": [
+    {
+      "name": "example:source-version",
+      "result": "PASS"
+    },
+    {
+      "name": "schema:source-version",
+      "result": "PASS"
+    },
+    {
+      "name": "example:source-event",
+      "result": "PASS"
+    },
+    {
+      "name": "schema:source-event",
+      "result": "PASS"
+    },
+    {
+      "name": "example:source-checkpoint",
+      "result": "PASS"
+    },
+    {
+      "name": "schema:source-checkpoint",
+      "result": "PASS"
+    },
+    {
+      "name": "example:document-enhancement",
+      "result": "PASS"
+    },
+    {
+      "name": "schema:document-enhancement",
+      "result": "PASS"
+    },
+    {
+      "name": "example:correction-patch",
+      "result": "PASS"
+    },
+    {
+      "name": "schema:correction-patch",
+      "result": "PASS"
+    },
+    {
+      "name": "example:consumer-event",
+      "result": "PASS"
+    },
+    {
+      "name": "schema:consumer-event",
+      "result": "PASS"
+    },
+    {
+      "name": "example:enhancement-release",
+      "result": "PASS"
+    },
+    {
+      "name": "schema:enhancement-release",
+      "result": "PASS"
+    },
+    {
+      "name": "example:source-access",
+      "result": "PASS"
+    },
+    {
+      "name": "schema:source-access",
+      "result": "PASS"
+    },
+    {
+      "name": "example:enhancement-review",
+      "result": "PASS"
+    },
+    {
+      "name": "schema:enhancement-review",
+      "result": "PASS"
+    },
+    {
+      "name": "example:extension-manifest",
+      "result": "PASS"
+    },
+    {
+      "name": "schema:extension-manifest",
+      "result": "PASS"
+    },
+    {
+      "name": "example:enhancement-dependencies",
+      "result": "PASS"
+    },
+    {
+      "name": "schema:enhancement-dependencies",
+      "result": "PASS"
+    },
+    {
+      "name": "example:extension-run",
+      "result": "PASS"
+    },
+    {
+      "name": "schema:extension-run",
+      "result": "PASS"
+    },
+    {
+      "name": "negative:native-revision-missing",
+      "result": "PASS"
+    },
+    {
+      "name": "negative:external-license-missing",
+      "result": "PASS"
+    },
+    {
+      "name": "negative:upsert-without-version",
+      "result": "PASS"
+    },
+    {
+      "name": "negative:unexpected-cell-field",
+      "result": "PASS"
+    },
+    {
+      "name": "negative:zero-span",
+      "result": "PASS"
+    },
+    {
+      "name": "negative:overlapping-span",
+      "result": "PASS"
+    },
+    {
+      "name": "negative:unexplained-hole",
+      "result": "PASS"
+    },
+    {
+      "name": "negative:incorrect-slot-map",
+      "result": "PASS"
+    },
+    {
+      "name": "negative:wrong-evidence-source",
+      "result": "PASS"
+    },
+    {
+      "name": "negative:accepted-without-review",
+      "result": "PASS"
+    },
+    {
+      "name": "negative:deleted-review-context-in-final",
+      "result": "PASS"
+    },
+    {
+      "name": "negative:patch-protected-path",
+      "result": "PASS"
+    },
+    {
+      "name": "negative:patch-without-test",
+      "result": "PASS"
+    },
+    {
+      "name": "negative:release-without-consumer-ack",
+      "result": "PASS"
+    },
+    {
+      "name": "negative:processing-dependency-cycle",
+      "result": "PASS"
+    },
+    {
+      "name": "negative:singular-transform",
+      "result": "PASS"
+    },
+    {
+      "name": "negative:numeric-estimate-default-disabled",
+      "result": "PASS"
+    },
+    {
+      "name": "negative:data-cell-its-own-header",
+      "result": "PASS"
+    },
+    {
+      "name": "negative:new-output-writes-vault",
+      "result": "PASS"
+    },
+    {
+      "name": "negative:path-traversal",
+      "result": "PASS"
+    },
+    {
+      "name": "negative:estimate-not-exact",
+      "result": "PASS"
+    },
+    {
+      "name": "traceability-and-unexecuted-statuses",
+      "result": "PASS"
+    },
+    {
+      "name": "decisions-redlines-and-change-status",
+      "result": "PASS"
+    },
+    {
+      "name": "new-identity-fixed-vectors",
+      "result": "PASS"
+    },
+    {
+      "name": "legacy-uid-reference-vector",
+      "result": "PASS"
+    },
+    {
+      "name": "markdown-fences",
+      "result": "PASS"
+    },
+    {
+      "name": "python-reference-and-checker-syntax",
+      "result": "PASS"
+    },
+    {
+      "name": "machine-whitelist-paths",
+      "result": "PASS"
+    },
+    {
+      "name": "manifest-integrity",
+      "result": "PASS"
+    }
+  ],
+  "passed": true
+}

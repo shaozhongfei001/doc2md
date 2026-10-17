@@ -1,0 +1,129 @@
+{
+  "$defs": {
+    "FileRef": {
+      "additionalProperties": false,
+      "properties": {
+        "root": {
+          "enum": [
+            "EXTENSION",
+            "RAW_VAULT",
+            "PARSED"
+          ],
+          "title": "Root",
+          "type": "string"
+        },
+        "relative_path": {
+          "minLength": 1,
+          "title": "Relative Path",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "root",
+        "relative_path",
+        "sha256"
+      ],
+      "title": "FileRef",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "enhancement-release/1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "release_id": {
+      "minLength": 1,
+      "title": "Release Id",
+      "type": "string"
+    },
+    "generation_ids": {
+      "items": {
+        "pattern": "^[0-9a-f]{64}$",
+        "type": "string"
+      },
+      "title": "Generation Ids",
+      "type": "array"
+    },
+    "expected_previous_release_id": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Expected Previous Release Id"
+    },
+    "source_access_revisions": {
+      "additionalProperties": {
+        "type": "integer"
+      },
+      "title": "Source Access Revisions",
+      "type": "object"
+    },
+    "required_consumer_ids": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Required Consumer Ids",
+      "type": "array"
+    },
+    "review_decision_refs": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Review Decision Refs",
+      "type": "array"
+    },
+    "reconcile_report": {
+      "$ref": "#/$defs/FileRef"
+    },
+    "state": {
+      "enum": [
+        "PREPARED",
+        "LOCAL_READY",
+        "ACTIVE",
+        "RETIRED",
+        "BLOCKED"
+      ],
+      "title": "State",
+      "type": "string"
+    },
+    "external_ack_refs": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "External Ack Refs",
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "release_id",
+    "generation_ids",
+    "expected_previous_release_id",
+    "source_access_revisions",
+    "required_consumer_ids",
+    "review_decision_refs",
+    "reconcile_report",
+    "state",
+    "external_ack_refs"
+  ],
+  "title": "ReleaseManifest",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:doc2md:19cap:enhancement-release:1.0",
+  "x-contract-state": "DESIGN_CANDIDATE"
+}

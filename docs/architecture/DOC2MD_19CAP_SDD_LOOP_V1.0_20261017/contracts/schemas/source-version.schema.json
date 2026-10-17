@@ -1,0 +1,241 @@
+{
+  "$defs": {
+    "FileRef": {
+      "additionalProperties": false,
+      "properties": {
+        "root": {
+          "enum": [
+            "EXTENSION",
+            "RAW_VAULT",
+            "PARSED"
+          ],
+          "title": "Root",
+          "type": "string"
+        },
+        "relative_path": {
+          "minLength": 1,
+          "title": "Relative Path",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "root",
+        "relative_path",
+        "sha256"
+      ],
+      "title": "FileRef",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "source-version/1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "source_version_id": {
+      "minLength": 1,
+      "title": "Source Version Id",
+      "type": "string"
+    },
+    "source_id": {
+      "minLength": 1,
+      "title": "Source Id",
+      "type": "string"
+    },
+    "external_object_id": {
+      "minLength": 1,
+      "title": "External Object Id",
+      "type": "string"
+    },
+    "version_kind": {
+      "enum": [
+        "SOURCE_NATIVE",
+        "LOCAL_SNAPSHOT"
+      ],
+      "title": "Version Kind",
+      "type": "string"
+    },
+    "source_revision": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Source Revision"
+    },
+    "snapshot_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Snapshot Id"
+    },
+    "content_sha256": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Content Sha256"
+    },
+    "legacy_query_ref": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Legacy Query Ref"
+    },
+    "processing_route": {
+      "enum": [
+        "REUSE_QUERY",
+        "REPROCESS",
+        "METADATA_ONLY"
+      ],
+      "title": "Processing Route",
+      "type": "string"
+    },
+    "source_kind": {
+      "enum": [
+        "BANK_RULE",
+        "EXTERNAL_POLICY",
+        "PEER_REFERENCE",
+        "VISIT_RECORD",
+        "OTHER"
+      ],
+      "title": "Source Kind",
+      "type": "string"
+    },
+    "authority_class": {
+      "enum": [
+        "BANK_EFFECTIVE_RULE",
+        "EXTERNAL_REFERENCE",
+        "RESTRICTED_HISTORY",
+        "UNCLASSIFIED"
+      ],
+      "title": "Authority Class",
+      "type": "string"
+    },
+    "permission_ref": {
+      "minLength": 1,
+      "title": "Permission Ref",
+      "type": "string"
+    },
+    "owner_ref": {
+      "minLength": 1,
+      "title": "Owner Ref",
+      "type": "string"
+    },
+    "classification": {
+      "enum": [
+        "PUBLIC",
+        "INTERNAL",
+        "CONFIDENTIAL",
+        "RESTRICTED"
+      ],
+      "title": "Classification",
+      "type": "string"
+    },
+    "purpose_scopes": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Purpose Scopes",
+      "type": "array"
+    },
+    "license_ref": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "License Ref"
+    },
+    "valid_from": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Valid From"
+    },
+    "valid_to": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Valid To"
+    },
+    "source_file_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/FileRef"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "source_version_id",
+    "source_id",
+    "external_object_id",
+    "version_kind",
+    "source_revision",
+    "snapshot_id",
+    "content_sha256",
+    "legacy_query_ref",
+    "processing_route",
+    "source_kind",
+    "authority_class",
+    "permission_ref",
+    "owner_ref",
+    "classification",
+    "purpose_scopes",
+    "license_ref",
+    "valid_from",
+    "valid_to",
+    "source_file_ref"
+  ],
+  "title": "SourceVersion",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:doc2md:19cap:source-version:1.0",
+  "x-contract-state": "DESIGN_CANDIDATE"
+}

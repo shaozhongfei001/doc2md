@@ -1,0 +1,9 @@
+{
+  "source": "backend/app/services/evidence_chain.py::_evidence_uid at business baseline 52a63ec",
+  "chunk_uid": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+  "source_char_start": 2,
+  "source_char_end": 19,
+  "evidence_type": "section_quote",
+  "expected_evidence_uid": "c5caa6a6f06755e79ffd6d7c0c84d4b700056434bd07a4dd5d9cdb15c2df6dc5",
+  "rule": "This is a fixed reference vector; protected source/old DB evidence comparison still required in product regression."
+}

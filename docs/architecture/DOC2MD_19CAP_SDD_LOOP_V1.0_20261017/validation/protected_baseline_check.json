@@ -1,0 +1,15 @@
+{
+  "check": "PROTECTED_BASELINE_CONTENT_ONLY",
+  "passed": true,
+  "current_head": "a20389ffd3f61baacc51502c10f8a503cac4ca3f",
+  "checked_file_count": 322,
+  "mode_changes_not_treated_as_content_changes": [
+    "scripts/create_sample_dataset.py",
+    "scripts/create_sample_dataset.sh",
+    "scripts/init_db.sh",
+    "scripts/run_pipeline.sh"
+  ],
+  "append_exceptions": [],
+  "errors": [],
+  "limits": "No product tests, engine calls, bank authorization or independent QA performed"
+}

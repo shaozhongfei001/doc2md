@@ -1,0 +1,161 @@
+{
+  "file": "杭州银行_四智能体端到端技术落地与攻关清单_V0.3.xlsx",
+  "library_version": "2",
+  "sheet": "端到端技术分解",
+  "read_date": "2026-10-17",
+  "scope": "Only user-selected 19 rows, not the full workbook requirements baseline",
+  "rows": [
+    {
+      "sheet_data_index": 10,
+      "scenario": "产品解读智能体",
+      "task_stage": "03 取得和更新知识",
+      "method": "F03 WeKnora Connector增量接入",
+      "item": "PI-F03-01 登记源版本与复用路径",
+      "implementation_text": "工作类型：框架连接器适配｜WeKnora Connector\n实现：先盘点天权/易晓通可调用的资产与接口；能复用的知识查询继续走旧服务，需重加工的原件经FetchAll/FetchIncremental导入工作库。保存source_id/source_version→knowledge_id映射及授权、生效期；不默认全量迁移。\n输出：SourceVersion、处理路径、源接口能力清单。\n异常：同源版不同摘要隔离；没有源版本时登记本地快照，不伪称源系统版本。\n验证：源新增/变更/撤销分别对账；R02、D02/I02，U04未确认只阻塞真实联调。"
+    },
+    {
+      "sheet_data_index": 11,
+      "scenario": "产品解读智能体",
+      "task_stage": "03 取得和更新知识",
+      "method": "F03 WeKnora Connector增量接入",
+      "item": "PI-F03-02 同步新增、修改和撤销",
+      "implementation_text": "依托：WeKnora Connector / StreamingConnector\n复用与配置：实现天权、易晓通和访客源连接器；复用同步调度，补源ID/版本/授权映射、撤回事件与迁移对账。\n项目适配点（拟）：source/apply_change；读取源事件或分页水位；按源ID＋版本＋事件类型去重。新增进入加工；修改新建版本；删除/撤权先停用，再处理派生索引。持久化成功才推进水位。\n输出：更新事件、失效标记、下一水位。\n异常处理：缺页、乱序及重复事件可重放；本地异常不篡改源状态。\n验证：断点恢复不漏页，先到撤权后到旧新增不会恢复可见。\n依据：WK / R02；接口及场景规则为设计候选。"
+    },
+    {
+      "sheet_data_index": 12,
+      "scenario": "产品解读智能体",
+      "task_stage": "03 取得和更新知识",
+      "method": "F03 WeKnora Connector增量接入",
+      "item": "PI-F03-03 核对迁移与切换",
+      "implementation_text": "依托：WeKnora Connector / StreamingConnector\n复用与配置：实现天权、易晓通和访客源连接器；复用同步调度，补源ID/版本/授权映射、撤回事件与迁移对账。\n项目适配点（拟）：source/reconcile_and_switch；对比源清单、成功/失败/排除数、摘要、版本及权限；先建影子索引和双读样本。差异处理完成后切换入口，保存旧路由和水位。\n输出：差异报告及可恢复的切换记录。\n异常处理：任一关键权限/版本差异未解决，保留原入口；回退不能覆盖切换后新任务。\n验证：切换与回退各演练一次，检查原业务连续和新任务完整。\n依据：WK / R02；接口及场景规则为设计候选。"
+    },
+    {
+      "sheet_data_index": 13,
+      "scenario": "产品解读智能体",
+      "task_stage": "03 取得和更新知识",
+      "method": "F03 WeKnora Connector增量接入",
+      "item": "PI-F03-04 分别登记行内规则和外部参考",
+      "implementation_text": "依托：WeKnora Connector / StreamingConnector\n复用与配置：实现天权、易晓通和访客源连接器；复用同步调度，补源ID/版本/授权映射、撤回事件与迁移对账。\n项目适配点（拟）：source/classify_authority；上传政策文件、许可采集同业资料和行内制度分别登记source_kind、authority、license、用途与有效期；先检查许可再加工，保留来源全文和引用位置。\n输出：可追溯源版本及权威类别。\n异常处理：外部政策/同业信息不能直接覆盖本行有效产品规则；无许可不入有效知识。\n验证：至少一份上传外部政策贯通许可、解析、审核、发布与回看。\n依据：WK / R02；接口及场景规则为设计候选。"
+    },
+    {
+      "sheet_data_index": 14,
+      "scenario": "产品解读智能体",
+      "task_stage": "04 恢复表格结构",
+      "method": "F04 PaddleOCR表格解析＋结构保真适配",
+      "item": "PI-F04-01 原生Word表格还原合并格",
+      "implementation_text": "工作类型：复用＋保真扩展｜依托：WeKnora原生解析＋PaddleOCR-VL / PP-StructureV3\n实现：优先调用WeKnora的原生Word解析；用含合并格、嵌套表、修订的样本核对输出。表格进入Markdown转换前保留原始HTML/XML定位；只补行列跨度与最终正文映射，不把全部Word处理重写一遍。\n输出：TableCell{row,col,row_span,col_span,text,xml_path}。\n异常处理：纵向继续格没有上方起点、跨列宽不一致或嵌套表未分离时标结构异常；不按空白自动合并。\n验证：横纵合并、行首空格、真实空白、表中表及删除条款。\n依据：WK＋PD / R03、R08；均为设计建议，未实施。"
+    },
+    {
+      "sheet_data_index": 15,
+      "scenario": "产品解读智能体",
+      "task_stage": "04 恢复表格结构",
+      "method": "F04 PaddleOCR表格解析＋结构保真适配",
+      "item": "PI-F04-02 扫描表格生成结构候选",
+      "implementation_text": "工作类型：配置＋服务接入｜依托：WeKnora原生解析＋PaddleOCR-VL / PP-StructureV3\n实现：扫描PDF/图片配置WeKnora的paddleocr_vl引擎，接行内PaddleOCR-VL服务；高风险表格调用PP-StructureV3.predict，保存pred_html、cell_box_list、table_ocr_pred。开发JSON到D04适配器，不开发OCR网络。\n输出：表格区域、单元格候选、OCR文字框。\n异常处理：模型返回空结构、页数不全或框越界时转复核；不把一段Markdown当完整表格。\n验证：有线、无线、旋转、低清和跨页样本分别报告，核对输入输出页数。\n依据：WK＋PD / R03、R08；均为设计建议，未实施。"
+    },
+    {
+      "sheet_data_index": 16,
+      "scenario": "产品解读智能体",
+      "task_stage": "04 恢复表格结构",
+      "method": "F04 PaddleOCR表格解析＋结构保真适配",
+      "item": "PI-F04-03 统一裁切图和原页坐标",
+      "implementation_text": "工作类型：接入适配｜依托：WeKnora原生解析＋PaddleOCR-VL / PP-StructureV3\n实现：复用paddleocr_vl_layout.go/source_blocks.go产出的页面位置；适配器记录原图尺寸和裁切变换，将PP-Structure单元框转回原页。位置不能对齐时标为“仅页级证据”，禁止声称已定位单元格。\n输出：每个框的原页坐标及表内坐标。\n异常处理：逆变换不成立或框超出原图时拒绝该区域自动处理。\n验证：同一表旋转/缩放后，回显框仍覆盖原单元格。\n依据：WK＋PD / R03、R08；均为设计建议，未实施。"
+    },
+    {
+      "sheet_data_index": 17,
+      "scenario": "产品解读智能体",
+      "task_stage": "04 恢复表格结构",
+      "method": "F04 PaddleOCR表格解析＋结构保真适配",
+      "item": "PI-F04-04 检查并展开行列跨度",
+      "implementation_text": "工作类型：框架结果校验｜依托：WeKnora原生解析＋PaddleOCR-VL / PP-StructureV3\n实现：直接读取识别结果HTML中的rowspan/colspan，用成熟HTML解析库生成D04单元清单；项目只校验越界、重叠和漏格。异常表送人工，避免用本地网格算法覆盖框架输出。\n输出：逻辑格坐标到物理cell_id的映射。\n异常处理：不使用前向填充修补缺格；保留结构错误和待核位置。\n验证：UT01/03/04/06：合并正确，重叠、空洞和越界被拦截。\n依据：WK＋PD / R03、R08；均为设计建议，未实施。"
+    },
+    {
+      "sheet_data_index": 18,
+      "scenario": "产品解读智能体",
+      "task_stage": "04 恢复表格结构",
+      "method": "F04 PaddleOCR表格解析＋结构保真适配",
+      "item": "PI-F04-05 把OCR文字放回对应格",
+      "implementation_text": "工作类型：复用＋异常复核｜依托：WeKnora原生解析＋PaddleOCR-VL / PP-StructureV3\n实现：优先使用Paddle返回的单元文字，不对所有表格重新做文字分配。仅对跨格、低质量或框文字不一致区域发起局部重识别；保留两份候选给人工选，不能靠文本顺序猜列。\n输出：cell_id对应文字、token_ids及原文框。\n异常处理：跨格文本、覆盖不足或两格得分接近时不强分；只重识别或复核该区域。\n验证：UT07/08；另测跨边界文字、多行折返和负数括号。\n依据：WK＋PD / R03、R08；均为设计建议，未实施。"
+    },
+    {
+      "sheet_data_index": 19,
+      "scenario": "产品解读智能体",
+      "task_stage": "04 恢复表格结构",
+      "method": "F04 PaddleOCR表格解析＋结构保真适配",
+      "item": "PI-F04-06 建立多级表头和行标题路径",
+      "implementation_text": "工作类型：语义适配｜依托：WeKnora原生解析＋PaddleOCR-VL / PP-StructureV3\n实现：复用WeKnora表头跟踪与表格分块；在其前面把多级表头、行标题、单位组合成D04.header_path。索引文本同步携带路径，原始单元结构保留在证据库；不把普通列名补齐误当多级语义恢复。\n输出：例如“人民币/期限”和“外币/期限”两条不同字段路径。\n异常处理：缺上级表头或跨多个异义列的数据格进入待核；不可只靠同名词合并字段。\n验证：UT02；重复子表头、左侧层级行标题、空表头都要验证。\n依据：WK＋PD / R03、R08；均为设计建议，未实施。"
+    },
+    {
+      "sheet_data_index": 20,
+      "scenario": "产品解读智能体",
+      "task_stage": "04 恢复表格结构",
+      "method": "F04 PaddleOCR表格解析＋结构保真适配",
+      "item": "PI-F04-07 判断相邻页是不是同一续表",
+      "implementation_text": "工作类型：项目扩展｜依托：WeKnora原生解析＋PaddleOCR-VL / PP-StructureV3\n实现：先读取框架各页表格结果，再按表名、列定义、单位、期间与页边界生成续表候选；确认前保留两张表。续表关系用独立元数据存储，避免改写识别器；冲突进入审核单。\n输出：JOIN_CANDIDATE、SEPARATE或NEEDS_REVIEW。\n异常处理：无表头续页、断行或证据不足时先请求核对；列数相同不是拼接依据。\n验证：UT09—12；需另测缺表头续页与一页两个相似表。\n依据：WK＋PD / R03、R08；均为设计建议，未实施。"
+    },
+    {
+      "sheet_data_index": 21,
+      "scenario": "产品解读智能体",
+      "task_stage": "04 恢复表格结构",
+      "method": "F04 PaddleOCR表格解析＋结构保真适配",
+      "item": "PI-F04-08 绑定脚注和表外条件",
+      "implementation_text": "工作类型：项目扩展｜依托：WeKnora原生解析＋PaddleOCR-VL / PP-StructureV3\n实现：利用Paddle版面块和WeKnora原文定位找到表下备注；用条款Schema把脚注与被限定单元关联。生成检索块时带上这些限制，回看显示原表与备注，不只存一个表格摘要。\n输出：cell_id→note_id/condition_id及适用范围。\n异常处理：标记有多个可能出处时不默认套整表；无法确定范围阻止相关业务条件发布。\n验证：同页两表同为*、仅一列适用的例外、币种/单位在表题中。\n依据：WK＋PD / R03、R08；均为设计建议，未实施。"
+    },
+    {
+      "sheet_data_index": 22,
+      "scenario": "产品解读智能体",
+      "task_stage": "04 恢复表格结构",
+      "method": "F04 PaddleOCR表格解析＋结构保真适配",
+      "item": "PI-F04-09 保存人工纠错补丁并重算影响",
+      "implementation_text": "工作类型：复用＋纠错适配｜依托：WeKnora原生解析＋PaddleOCR-VL / PP-StructureV3\n实现：复用WeKnora分块修订能力管理可读文本；项目另存单元/表头补丁与基版，不直接覆盖原件。补丁使相关抽取、图谱、Wiki和索引变为待重建；重建并复核后再发布。\n输出：纠错版本、修改前后差异及受影响资产。\n异常处理：基础版本变化返回冲突；改表头必须让其下所有字段重新校验。\n验证：改一个父表头后所有子字段更新，原版和修改依据可回查。\n依据：WK＋PD / R03、R08；均为设计建议，未实施。"
+    },
+    {
+      "sheet_data_index": 23,
+      "scenario": "产品解读智能体",
+      "task_stage": "05 理解图片与流程",
+      "method": "F05 Paddle多模态＋受控视觉理解",
+      "item": "PI-F05-01 区分表格、流程图、统计图和装饰图",
+      "implementation_text": "工作类型：配置｜依托：WeKnora图像处理＋PaddleOCR-VL＋本行视觉模型\n实现：复用Paddle版面分类和WeKnora图片链路，按表格、统计图、流程图分别配置处理器；装饰图仅保留附件。低置信类型进入人工队列，防止所有图片都被统一写成摘要。\n输出：区域类型及后续处理计划。\n异常处理：类型不确定时并列候选，交人工选择，不让同一张图同时产生重复事实。\n验证：带表格的流程图、截图文字、图表和页眉标识。\n依据：WK＋PD / R03、R08；均为设计建议，未实施。"
+    },
+    {
+      "sheet_data_index": 24,
+      "scenario": "产品解读智能体",
+      "task_stage": "05 理解图片与流程",
+      "method": "F05 Paddle多模态＋受控视觉理解",
+      "item": "PI-F05-02 抽取流程节点及箭头候选",
+      "implementation_text": "工作类型：模型接入＋Schema扩展｜依托：WeKnora图像处理＋PaddleOCR-VL＋本行视觉模型\n实现：复用OCR定位图中文字，再调用本行批准的视觉模型输出节点、箭头端点、泳道和标签候选。LangGraph节点验证JSON及证据区域；无需训练箭头检测模型起步，方向不明则人工画线确认。\n输出：node{bbox,text,role}、edge{from,to,label,evidence}。\n异常处理：箭头交叉、双向或端点不清时标候选，不能按阅读顺序猜连线。\n验证：交叉线、回流线、菱形是/否及两泳道同名动作。\n依据：WK＋PD / R03、R08；均为设计建议，未实施。"
+    },
+    {
+      "sheet_data_index": 25,
+      "scenario": "产品解读智能体",
+      "task_stage": "05 理解图片与流程",
+      "method": "F05 Paddle多模态＋受控视觉理解",
+      "item": "PI-F05-03 检查图结构与图文一致",
+      "implementation_text": "工作类型：业务校验｜依托：WeKnora图像处理＋PaddleOCR-VL＋本行视觉模型\n实现：在视觉候选之后运行节点ID、孤立点、分支标签和正文一致检查；循环不是一律错误。仅已核对的图结构用于办理步骤解释，未确认的边显示为待核。\n输出：有效候选图及节点/边级问题清单。\n异常处理：不因图有环就删除返回流程；不把视觉模型解释直接当审批规则。\n验证：缺端点、错方向、漏否定分支和正文与图相反。\n依据：WK＋PD / R03、R08；均为设计建议，未实施。"
+    },
+    {
+      "sheet_data_index": 26,
+      "scenario": "产品解读智能体",
+      "task_stage": "05 理解图片与流程",
+      "method": "F05 Paddle多模态＋受控视觉理解",
+      "item": "PI-F05-04 读取统计图的轴、单位及数据",
+      "implementation_text": "工作类型：复用＋输出约束｜依托：WeKnora图像处理＋PaddleOCR-VL＋本行视觉模型\n实现：用PaddleOCR-VL读标题/坐标轴/图例，视觉模型输出数据候选与读取方式。原数据表可用时直接取表；只有柱高估读时标“估算”，禁止进入财务计算与硬规则。\n输出：series、period、unit、value_type、evidence。\n异常处理：轴截断、双轴不明、单位缺失时不报精确数字，转原图核对。\n验证：双轴、百分比、万元、缺刻度、仅有趋势无数字。\n依据：WK＋PD / R03、R08；均为设计建议，未实施。"
+    },
+    {
+      "sheet_data_index": 27,
+      "scenario": "产品解读智能体",
+      "task_stage": "05 理解图片与流程",
+      "method": "F05 Paddle多模态＋受控视觉理解",
+      "item": "PI-F05-05 对不一致区域局部复识别",
+      "implementation_text": "工作类型：配置＋路由扩展｜依托：WeKnora图像处理＋PaddleOCR-VL＋本行视觉模型\n实现：配置只对有分歧的图块追加一次PP-Structure或视觉复核，保存引擎/模型/参数。仍冲突时interrupt转人工；同一模型换提示重答不算独立验证。\n输出：一致项、分歧项及重新识别记录。\n异常处理：分歧未消除则相关事实保持待核；不得提升到已审核知识。\n验证：“不支持”漏“不”、1与7混淆、表格单元错列等对照。\n依据：WK＋PD / R03、R08；均为设计建议，未实施。"
+    },
+    {
+      "sheet_data_index": 28,
+      "scenario": "产品解读智能体",
+      "task_stage": "05 理解图片与流程",
+      "method": "F05 Paddle多模态＋受控视觉理解",
+      "item": "PI-F05-06 把图中发现转换为带证据的候选",
+      "implementation_text": "工作类型：证据适配｜依托：WeKnora图像处理＋PaddleOCR-VL＋本行视觉模型\n实现：把Paddle块位置和视觉结果映射D03/D05，标记图中可见事实、模型解释、人工确认。图中的箭头只构成候选关系，后续必须经F08/F09后才能进入正式知识。\n输出：图文统一候选结构及原图引用。\n异常处理：无法回指具体图区域的结论不入知识关系；图片中的指令不执行。\n验证：图片被替换或撤权后，关联候选和结果可准确失效。\n依据：WK＋PD / R03、R08；均为设计建议，未实施。"
+    }
+  ]
+}

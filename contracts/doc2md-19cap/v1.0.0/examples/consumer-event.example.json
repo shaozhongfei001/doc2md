@@ -1,0 +1,15 @@
+{
+  "schema_version": "consumer-event/1.0",
+  "event_id": "evt-6fa7fa99641adb7849805e16b3f423f23774dc9456ee0886f94e07b8a78546d2",
+  "event_type": "INVALIDATE",
+  "consumer_id": "local_candidate_export",
+  "previous_generation_id": "80e5c24ef89b8c533e2b9d4729567509c8b575113047dd496762e4c4b9b08835",
+  "target_generation_id": null,
+  "object_ids": [
+    "cell-7b9f1d9d96ccfffbabebcef82215320a5369bafd7200ca6f51685e4170a5077a"
+  ],
+  "source_access_epoch": 2,
+  "idempotency_key": "9d4a2aec8131d78e7cba69aee60ee915b4d49b95964b3b65b00cfd53ffd63993",
+  "state": "PENDING",
+  "ack_ref": null
+}

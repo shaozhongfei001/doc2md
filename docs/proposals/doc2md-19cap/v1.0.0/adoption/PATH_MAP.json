@@ -1,0 +1,733 @@
+{
+  "schema_version": "doc2md-19cap-path-map/1.0",
+  "workflow": "DOC2MD-19CAP",
+  "adoption_batch": "DOC_IMPORT",
+  "recorded_at_commit": "a20389ffd3f61baacc51502c10f8a503cac4ca3f",
+  "source_zip": {
+    "path": "docs/architecture/doc2md_19项能力_SDD与Loop工程契约包_V1.0_20261017.zip",
+    "sha256": "f196a238b203e272a23a4a9c4e1485edf3d233ea329f340eb6e6ee7a30ccfc51",
+    "expected_sha256": "f196a238b203e272a23a4a9c4e1485edf3d233ea329f340eb6e6ee7a30ccfc51",
+    "matches_expected": true
+  },
+  "source_package_root": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017",
+  "reference_basis": "All relative references in the working copy are resolved relative to the directory containing the referencing file.",
+  "counts": {
+    "pack_files": 71,
+    "relocated_to_work_copy": 61,
+    "pack_only": 10,
+    "work_copy_content_identical": 55,
+    "work_copy_with_registered_path_edit": 6
+  },
+  "entries": [
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/00_READ_ME_FIRST.md",
+      "source_sha256": "03d0962814ad14eab28529fa19df437b34770c0d8c32c0a63bdec82153078efb",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "docs/proposals/doc2md-19cap/v1.0.0/00_READ_ME_FIRST.md",
+      "work_sha256": "03d0962814ad14eab28529fa19df437b34770c0d8c32c0a63bdec82153078efb",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/01_SDD.md",
+      "source_sha256": "3e2bf4a414f11e5edbefa7a0298418005dfea0ad82d8aeb9f14e8904cf23f5f8",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "docs/proposals/doc2md-19cap/v1.0.0/01_SDD.md",
+      "work_sha256": "3e2bf4a414f11e5edbefa7a0298418005dfea0ad82d8aeb9f14e8904cf23f5f8",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/02_LOOP_ENGINEERING.md",
+      "source_sha256": "c1cd5d85e7b1a8827691e346dcc9c76d720a5f3d6ce30013c2214c8755e6ff40",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "docs/proposals/doc2md-19cap/v1.0.0/02_LOOP_ENGINEERING.md",
+      "work_sha256": "c1cd5d85e7b1a8827691e346dcc9c76d720a5f3d6ce30013c2214c8755e6ff40",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/03_CHANGE_DECISIONS.md",
+      "source_sha256": "c62f2cb52f24dca3e89867f2a782b1656ee8efb4ca7acf3095f96183eed49e01",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "docs/proposals/doc2md-19cap/v1.0.0/03_CHANGE_DECISIONS.md",
+      "work_sha256": "c62f2cb52f24dca3e89867f2a782b1656ee8efb4ca7acf3095f96183eed49e01",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/04_TRACEABILITY.csv",
+      "source_sha256": "c6decad28d34dd894c6b86eed4f1f10fcc4fd4dde0119ed86ed5282aa16ef407",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "docs/proposals/doc2md-19cap/v1.0.0/04_TRACEABILITY.csv",
+      "work_sha256": "c6decad28d34dd894c6b86eed4f1f10fcc4fd4dde0119ed86ed5282aa16ef407",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/04_TRACEABILITY.md",
+      "source_sha256": "b1a0ff93c84c1dc0099def4fc2b7981826220e5eb424ffd19eb24757a533cadf",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "docs/proposals/doc2md-19cap/v1.0.0/04_TRACEABILITY.md",
+      "work_sha256": "b1a0ff93c84c1dc0099def4fc2b7981826220e5eb424ffd19eb24757a533cadf",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/05_TEST_ACCEPTANCE.md",
+      "source_sha256": "1e008d0075082077209f09ff6b457e5bca1814f953534e926594f24f83270dea",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "docs/proposals/doc2md-19cap/v1.0.0/05_TEST_ACCEPTANCE.md",
+      "work_sha256": "1e008d0075082077209f09ff6b457e5bca1814f953534e926594f24f83270dea",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/06_FRAMEWORKS.md",
+      "source_sha256": "4e431bae8742cc5611f73ea5d0531b6d8199d2ba41021147c0b11e67b9be3b63",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "docs/proposals/doc2md-19cap/v1.0.0/06_FRAMEWORKS.md",
+      "work_sha256": "4e431bae8742cc5611f73ea5d0531b6d8199d2ba41021147c0b11e67b9be3b63",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/07_OPEN_INPUTS.md",
+      "source_sha256": "d88cdce96d504911c6c9af67eb7368a54c954e069c09139b1d7a63ca21dadb29",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "docs/proposals/doc2md-19cap/v1.0.0/07_OPEN_INPUTS.md",
+      "work_sha256": "d88cdce96d504911c6c9af67eb7368a54c954e069c09139b1d7a63ca21dadb29",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/08_CODEBUDDY_TL_PROMPT.md",
+      "source_sha256": "08dd005e9762bbb02adb1075c0f5a78a8e737335e20f83eea862962c27df3c84",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "docs/proposals/doc2md-19cap/v1.0.0/08_CODEBUDDY_TL_PROMPT.md",
+      "work_sha256": "08dd005e9762bbb02adb1075c0f5a78a8e737335e20f83eea862962c27df3c84",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/09_DECISION_ALIGNMENT.md",
+      "source_sha256": "8e936058059767ff6c2212d808902e1dd02df51f185540a09e4bf9028b5b113e",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "docs/proposals/doc2md-19cap/v1.0.0/09_DECISION_ALIGNMENT.md",
+      "work_sha256": "8e936058059767ff6c2212d808902e1dd02df51f185540a09e4bf9028b5b113e",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/MANIFEST.json",
+      "source_sha256": "8910d085567ee00b107cbfb0582904e1fe8e6ac550aa500041117c06a1f961ff",
+      "source_sha256_matches_pack_manifest": null,
+      "work_path": null,
+      "work_sha256": null,
+      "relocated": false,
+      "content_identical": null,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/VALIDATION_REPORT.md",
+      "source_sha256": "75fb4e9d85f36ac8eb383890c0a41b8dae8d016f5fc3ea80c7dbf62873a95da0",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "docs/proposals/doc2md-19cap/v1.0.0/VALIDATION_REPORT.md",
+      "work_sha256": "75fb4e9d85f36ac8eb383890c0a41b8dae8d016f5fc3ea80c7dbf62873a95da0",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/adoption/SPEC_INDEX_APPEND_CANDIDATE.md",
+      "source_sha256": "da4841e0abbac830ef191ff0a6b87692bff1278fc1e9a56ada4cd6f0e8d106c5",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": null,
+      "work_sha256": null,
+      "relocated": false,
+      "content_identical": null,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/IDENTITY_AND_PATHS.md",
+      "source_sha256": "f11e27e3354499986f711fdb5ea4a9a5f7e4b898d5f5fdf35a44e29c531a033c",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/IDENTITY_AND_PATHS.md",
+      "work_sha256": "f11e27e3354499986f711fdb5ea4a9a5f7e4b898d5f5fdf35a44e29c531a033c",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/README.md",
+      "source_sha256": "43b8a685db1b1e70e2d7b38d16a07d9c55f14251d72a05a6ce5a44dfdec05772",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/README.md",
+      "work_sha256": "43b8a685db1b1e70e2d7b38d16a07d9c55f14251d72a05a6ce5a44dfdec05772",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/cli_contract.json",
+      "source_sha256": "cfa723d81bf9cf514aabac5f39889d98338ccc936e99e4589a9faa41f35c82e5",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/cli_contract.json",
+      "work_sha256": "cfa723d81bf9cf514aabac5f39889d98338ccc936e99e4589a9faa41f35c82e5",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/config.example.yaml",
+      "source_sha256": "4abe9cfaba7a9cbb3ae840c0ddddd6b88137daed9fa59f84ef5703a3acda61f7",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/config.example.yaml",
+      "work_sha256": "4abe9cfaba7a9cbb3ae840c0ddddd6b88137daed9fa59f84ef5703a3acda61f7",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/contract_models.py",
+      "source_sha256": "41c37a600d00859bcad2198d34b9ed03e2a48b4dd1e3989b209b87ea00c93988",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/contract_models.py",
+      "work_sha256": "41c37a600d00859bcad2198d34b9ed03e2a48b4dd1e3989b209b87ea00c93988",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/example_map.json",
+      "source_sha256": "8fe6d17c4326c8d4b6e309b913326180b06a7de6738525249f309341cb49095c",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/example_map.json",
+      "work_sha256": "8fe6d17c4326c8d4b6e309b913326180b06a7de6738525249f309341cb49095c",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/examples/consumer-event.example.json",
+      "source_sha256": "6dd8a68285118d4fc20ac907cd98a6fea4d583d01e93144afbb656f9cb3a8274",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/examples/consumer-event.example.json",
+      "work_sha256": "6dd8a68285118d4fc20ac907cd98a6fea4d583d01e93144afbb656f9cb3a8274",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/examples/correction-patch.example.json",
+      "source_sha256": "bde1053345120a5828e4867b13cec74d37833d1f17fe3acbffd0597f2b34e16f",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/examples/correction-patch.example.json",
+      "work_sha256": "bde1053345120a5828e4867b13cec74d37833d1f17fe3acbffd0597f2b34e16f",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/examples/document-enhancement.example.json",
+      "source_sha256": "5724cbd0fa583addd9f1a891edc33b1b2cce3ea2ea63e5e1022339c5970e7773",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/examples/document-enhancement.example.json",
+      "work_sha256": "5724cbd0fa583addd9f1a891edc33b1b2cce3ea2ea63e5e1022339c5970e7773",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/examples/enhancement-dependencies.example.json",
+      "source_sha256": "0374316ffa8c80f3e4af579dac9a9916f9f4132dd44eb20c77fa5beb74783580",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/examples/enhancement-dependencies.example.json",
+      "work_sha256": "0374316ffa8c80f3e4af579dac9a9916f9f4132dd44eb20c77fa5beb74783580",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/examples/enhancement-release.example.json",
+      "source_sha256": "50829df0fbd9f9c084c6098861ee7e7f96f788cf850680598df43ba3cc052e6d",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/examples/enhancement-release.example.json",
+      "work_sha256": "50829df0fbd9f9c084c6098861ee7e7f96f788cf850680598df43ba3cc052e6d",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/examples/enhancement-review.example.json",
+      "source_sha256": "8a5ec57b1092849c42d5d9ebc78839f042fb49c82b235cf3179f4860ec10688d",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/examples/enhancement-review.example.json",
+      "work_sha256": "8a5ec57b1092849c42d5d9ebc78839f042fb49c82b235cf3179f4860ec10688d",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/examples/extension-manifest.example.json",
+      "source_sha256": "63f5905b61a7db0e5e29f911e99993887bc413837876660b1012ad1a4e29bbe4",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/examples/extension-manifest.example.json",
+      "work_sha256": "63f5905b61a7db0e5e29f911e99993887bc413837876660b1012ad1a4e29bbe4",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/examples/extension-run.example.json",
+      "source_sha256": "d7f5d49c36bd504cab457f04f8945ac0a22108ea2ac834005e34c34470d8a1a5",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/examples/extension-run.example.json",
+      "work_sha256": "d7f5d49c36bd504cab457f04f8945ac0a22108ea2ac834005e34c34470d8a1a5",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/examples/source-access.example.json",
+      "source_sha256": "57470ba8027071327a356aba8621d96f56b5409de67012695d53988935e27a20",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/examples/source-access.example.json",
+      "work_sha256": "57470ba8027071327a356aba8621d96f56b5409de67012695d53988935e27a20",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/examples/source-checkpoint.example.json",
+      "source_sha256": "afda703668fae28b2b52a477a8ee8cde36b4413192c0e179f598b07f1982ad07",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/examples/source-checkpoint.example.json",
+      "work_sha256": "afda703668fae28b2b52a477a8ee8cde36b4413192c0e179f598b07f1982ad07",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/examples/source-event.example.json",
+      "source_sha256": "b3af334cbc4d0dec41bf380d43ac063c81017be0881beab5f067ed7efa09dead",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/examples/source-event.example.json",
+      "work_sha256": "b3af334cbc4d0dec41bf380d43ac063c81017be0881beab5f067ed7efa09dead",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/examples/source-version.example.json",
+      "source_sha256": "430ba0dfe085b2650b230facfed83034c28633d9110bab27fd8e8ce6774ccd96",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/examples/source-version.example.json",
+      "work_sha256": "430ba0dfe085b2650b230facfed83034c28633d9110bab27fd8e8ce6774ccd96",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/identity.py",
+      "source_sha256": "80b49dac193a52b3dac25c86b7322038c255b1034a1c7ebd71fc90575199d3f1",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/identity.py",
+      "work_sha256": "80b49dac193a52b3dac25c86b7322038c255b1034a1c7ebd71fc90575199d3f1",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/identity_vectors.json",
+      "source_sha256": "6ff38499d76cf064a8ac2b91c242dac5b3ac36eb7190a9e86d553c284b922e6e",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/identity_vectors.json",
+      "work_sha256": "6ff38499d76cf064a8ac2b91c242dac5b3ac36eb7190a9e86d553c284b922e6e",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/interfaces.py",
+      "source_sha256": "71fb3ec82934bb1af801ae9e11b78ce4c80b1eb8d81a5577960c37399a97ef67",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/interfaces.py",
+      "work_sha256": "71fb3ec82934bb1af801ae9e11b78ce4c80b1eb8d81a5577960c37399a97ef67",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/legacy_uid_vector.json",
+      "source_sha256": "fcac7daa888c9db18bd643202b16997323906d2d4ef0e99879448162f958b923",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/legacy_uid_vector.json",
+      "work_sha256": "fcac7daa888c9db18bd643202b16997323906d2d4ef0e99879448162f958b923",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/schemas/consumer-event.schema.json",
+      "source_sha256": "5377bb163d47db7df0c4550e30aa0d9a1c30ab80e9483264db97a3966618391d",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/schemas/consumer-event.schema.json",
+      "work_sha256": "5377bb163d47db7df0c4550e30aa0d9a1c30ab80e9483264db97a3966618391d",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/schemas/correction-patch.schema.json",
+      "source_sha256": "0941d5ffb9ca19815268321de1dcad29fc8941275e518ab2c7ed67fcbdeaf3ba",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/schemas/correction-patch.schema.json",
+      "work_sha256": "0941d5ffb9ca19815268321de1dcad29fc8941275e518ab2c7ed67fcbdeaf3ba",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/schemas/document-enhancement.schema.json",
+      "source_sha256": "02154455073f0933a57ea289534c57694d48f238478f64595330a6aa9deb7625",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/schemas/document-enhancement.schema.json",
+      "work_sha256": "02154455073f0933a57ea289534c57694d48f238478f64595330a6aa9deb7625",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/schemas/enhancement-dependencies.schema.json",
+      "source_sha256": "4e5887cff1607c82bcf96e7858a02ae2b7c85ba4563169d4e1492d52307e28f3",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/schemas/enhancement-dependencies.schema.json",
+      "work_sha256": "4e5887cff1607c82bcf96e7858a02ae2b7c85ba4563169d4e1492d52307e28f3",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/schemas/enhancement-release.schema.json",
+      "source_sha256": "92c351e2d5221c9569933faec2b06bce2f7d6ad99355b95f64a52957fb3865f1",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/schemas/enhancement-release.schema.json",
+      "work_sha256": "92c351e2d5221c9569933faec2b06bce2f7d6ad99355b95f64a52957fb3865f1",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/schemas/enhancement-review.schema.json",
+      "source_sha256": "3492234b1227b7df03de0fc75187d2fdcf9ace07be79f15c8abb6243013eb3d5",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/schemas/enhancement-review.schema.json",
+      "work_sha256": "3492234b1227b7df03de0fc75187d2fdcf9ace07be79f15c8abb6243013eb3d5",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/schemas/extension-manifest.schema.json",
+      "source_sha256": "ed736f8339725eb6b96900a76c16db3ff5e823c97d3062cfde287fe44636da0d",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/schemas/extension-manifest.schema.json",
+      "work_sha256": "ed736f8339725eb6b96900a76c16db3ff5e823c97d3062cfde287fe44636da0d",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/schemas/extension-run.schema.json",
+      "source_sha256": "25d53e3a9ccfc153b18a2ee702c83eb8e63095ea4c34ec29a36d2be98ecb9a3c",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/schemas/extension-run.schema.json",
+      "work_sha256": "25d53e3a9ccfc153b18a2ee702c83eb8e63095ea4c34ec29a36d2be98ecb9a3c",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/schemas/source-access.schema.json",
+      "source_sha256": "8ee2020a5c3234af39fa7c07f975b4e8b873648cebdedd96bdf15550538e2a6c",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/schemas/source-access.schema.json",
+      "work_sha256": "8ee2020a5c3234af39fa7c07f975b4e8b873648cebdedd96bdf15550538e2a6c",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/schemas/source-checkpoint.schema.json",
+      "source_sha256": "d0b286d82867b31462f60126b38c86459678aae5b26aecf6a7b0796494d37bae",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/schemas/source-checkpoint.schema.json",
+      "work_sha256": "d0b286d82867b31462f60126b38c86459678aae5b26aecf6a7b0796494d37bae",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/schemas/source-event.schema.json",
+      "source_sha256": "254398c25cfc82e6cf9f6ed31e2cc12f6c4a383141ced1af30f17364ec5d8b78",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/schemas/source-event.schema.json",
+      "work_sha256": "254398c25cfc82e6cf9f6ed31e2cc12f6c4a383141ced1af30f17364ec5d8b78",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/contracts/schemas/source-version.schema.json",
+      "source_sha256": "d021815f765f58fbe5921b0ed9155e6962a502ed71a8905a1a82e9bbce546336",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "contracts/doc2md-19cap/v1.0.0/schemas/source-version.schema.json",
+      "work_sha256": "d021815f765f58fbe5921b0ed9155e6962a502ed71a8905a1a82e9bbce546336",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/inputs/baseline_lock.json",
+      "source_sha256": "9cca1d20a5c9bd13d8da43aa28d3903084a3f82e416aa381777af7544296fa39",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "docs/proposals/doc2md-19cap/v1.0.0/inputs/baseline_lock.json",
+      "work_sha256": "9cca1d20a5c9bd13d8da43aa28d3903084a3f82e416aa381777af7544296fa39",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/inputs/source_evidence.json",
+      "source_sha256": "57e8245ac9b3417af6dffa5819f44ada33cd955af3832c8c49da5768a17703cb",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "docs/proposals/doc2md-19cap/v1.0.0/inputs/source_evidence.json",
+      "work_sha256": "57e8245ac9b3417af6dffa5819f44ada33cd955af3832c8c49da5768a17703cb",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/inputs/workbook_selected_19_rows.json",
+      "source_sha256": "814061f4115a9b1a4608984030ef43dad185e1cda9da5f010790cc4e1d5ca5dd",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "docs/proposals/doc2md-19cap/v1.0.0/inputs/workbook_selected_19_rows.json",
+      "work_sha256": "814061f4115a9b1a4608984030ef43dad185e1cda9da5f010790cc4e1d5ca5dd",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/loop/change_decisions.json",
+      "source_sha256": "0ac32e6e0bb7085aa0d8c45c3e957bd2246c0ef886d85e6993801fd43c37b319",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "loop/proposals/doc2md-19cap/v1.0.0/change_decisions.json",
+      "work_sha256": "0ac32e6e0bb7085aa0d8c45c3e957bd2246c0ef886d85e6993801fd43c37b319",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/loop/decision_alignment.json",
+      "source_sha256": "0ca1e09637894a32ba900423284814c794e458efb109914f6d09f47891c57ea1",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "loop/proposals/doc2md-19cap/v1.0.0/decision_alignment.json",
+      "work_sha256": "0ca1e09637894a32ba900423284814c794e458efb109914f6d09f47891c57ea1",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/loop/loop_contract.json",
+      "source_sha256": "56716b6f5d885a08bf048123e4972ef57238e4ff03b4812778e33b56bfe74746",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "loop/proposals/doc2md-19cap/v1.0.0/loop_contract.json",
+      "work_sha256": "0577d413533501831007fd955dd8bcc54a7c63e70bb5c828f43130069152380e",
+      "relocated": true,
+      "content_identical": false,
+      "path_edit": "baseline_lock / protected_existing_files_ref 由 ../inputs/baseline_lock.json 改为 ../../../../docs/proposals/doc2md-19cap/v1.0.0/inputs/baseline_lock.json；traceability / test_cases 保持同目录引用"
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/loop/open_inputs.json",
+      "source_sha256": "b869e925e71369ce616914bb6944c7c0ca703ee5e232cd77485a58111e38afe3",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "loop/proposals/doc2md-19cap/v1.0.0/open_inputs.json",
+      "work_sha256": "b869e925e71369ce616914bb6944c7c0ca703ee5e232cd77485a58111e38afe3",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/loop/requirements_trace.json",
+      "source_sha256": "d009eb193a92288bc7648ab0fcd06f96c8e1eb6a8be98952994107ce958ba2f6",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "loop/proposals/doc2md-19cap/v1.0.0/requirements_trace.json",
+      "work_sha256": "d009eb193a92288bc7648ab0fcd06f96c8e1eb6a8be98952994107ce958ba2f6",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/loop/test_cases.json",
+      "source_sha256": "3bba73f699941c06abe67310b368dc573e39bb0e753f207e2da0b0b32560fd88",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "loop/proposals/doc2md-19cap/v1.0.0/test_cases.json",
+      "work_sha256": "3bba73f699941c06abe67310b368dc573e39bb0e753f207e2da0b0b32560fd88",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/spec-proposal/README.md",
+      "source_sha256": "db104021cb7744a8d14752087ff2266fbbceb699833ba40bb37f59696b8b3a30",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "specs/proposals/doc2md-19cap-v1.0.0/README.md",
+      "work_sha256": "db104021cb7744a8d14752087ff2266fbbceb699833ba40bb37f59696b8b3a30",
+      "relocated": true,
+      "content_identical": true,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/spec-proposal/acceptance.md",
+      "source_sha256": "95f77523c86543c8a9938b843979cb8ba295eb92de3d5705dacbe8245f16b175",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "specs/proposals/doc2md-19cap-v1.0.0/acceptance.md",
+      "work_sha256": "75f691da25a2a1e60d83870cddfb1f0f1223b842d8c73fdf6eab4fbe1562d913",
+      "relocated": true,
+      "content_identical": false,
+      "path_edit": "../05_TEST_ACCEPTANCE.md -> ../../../docs/proposals/doc2md-19cap/v1.0.0/05_TEST_ACCEPTANCE.md"
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/spec-proposal/plan.md",
+      "source_sha256": "c4f84dd54e5123754666c248c363e87ee7e83bb4e452c55ddd667f2f20618af0",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "specs/proposals/doc2md-19cap-v1.0.0/plan.md",
+      "work_sha256": "9cf64db292997779fa8efc494636674ff48304c675f8dd6e83027531ac703904",
+      "relocated": true,
+      "content_identical": false,
+      "path_edit": "../02_LOOP_ENGINEERING.md -> ../../../docs/proposals/doc2md-19cap/v1.0.0/02_LOOP_ENGINEERING.md"
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/spec-proposal/spec.md",
+      "source_sha256": "ba8ffc1120d79f6db7ef4e1a4e92d8d9c8d25f7ec77fe37ddb988f3855639dc4",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "specs/proposals/doc2md-19cap-v1.0.0/spec.md",
+      "work_sha256": "6a9b2a8ee678a977fb27e7687840645b558ac1a5144460409af2b856625e65bf",
+      "relocated": true,
+      "content_identical": false,
+      "path_edit": "../01_SDD.md -> ../../../docs/proposals/doc2md-19cap/v1.0.0/01_SDD.md"
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/spec-proposal/tasks.md",
+      "source_sha256": "7a4c3c76df50971c45e3cfdeba971a3b55579a8b3b756c40c79861bfcefb2de1",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "specs/proposals/doc2md-19cap-v1.0.0/tasks.md",
+      "work_sha256": "b41678e5129623aa17571bd347b021229eb5c5500cd0a9fda9f10df3c1296305",
+      "relocated": true,
+      "content_identical": false,
+      "path_edit": "../02_LOOP_ENGINEERING.md -> ../../../docs/proposals/doc2md-19cap/v1.0.0/02_LOOP_ENGINEERING.md"
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/spec-proposal/test_cases.md",
+      "source_sha256": "d3bf22b4fc63be45c4342134f286d081608569de830ed933b3878495caa033a0",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": "specs/proposals/doc2md-19cap-v1.0.0/test_cases.md",
+      "work_sha256": "40724ce2a391a7372f565ec49166c1a7486a040e7c394b681771a3c51c695f9e",
+      "relocated": true,
+      "content_identical": false,
+      "path_edit": "../05_TEST_ACCEPTANCE.md -> ../../../docs/proposals/doc2md-19cap/v1.0.0/05_TEST_ACCEPTANCE.md"
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/tools/check_baseline.py",
+      "source_sha256": "111dac26eb6fb8aecdcc7b1b5c76ce5e2f09afcee73b299e96dc7d7b7ad69b1c",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": null,
+      "work_sha256": null,
+      "relocated": false,
+      "content_identical": null,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/tools/check_delivery.py",
+      "source_sha256": "b7b1eb27f843c56b66feeaf2806fda1099505dfd2af046b177f302dde1615b4b",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": null,
+      "work_sha256": null,
+      "relocated": false,
+      "content_identical": null,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/tools/check_loop_diff.py",
+      "source_sha256": "2dea58c3c99b83b8e78326f286a89b655b03c14cf783c97d5801fff4d883a3ff",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": null,
+      "work_sha256": null,
+      "relocated": false,
+      "content_identical": null,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/tools/test_scope_guard.py",
+      "source_sha256": "7ef665835bb41843cb5a0abd9eb54c3180f7ad11a4a647ea2e7bdd182134249e",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": null,
+      "work_sha256": null,
+      "relocated": false,
+      "content_identical": null,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/validation/contract_package_self_check.json",
+      "source_sha256": "a5fd8adb84757e802725d71f6cd6e0bfcb653d1cb2429535775c12cd994ecf8f",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": null,
+      "work_sha256": null,
+      "relocated": false,
+      "content_identical": null,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/validation/current_loop_scope_check.json",
+      "source_sha256": "1f4e345e09700b29bbed4b92d220a91c2bcdaeddb1f32c2b419453fa3aacc89f",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": null,
+      "work_sha256": null,
+      "relocated": false,
+      "content_identical": null,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/validation/protected_baseline_check.json",
+      "source_sha256": "91a8853a92450ad513130da1a3127eb4d313adc7e32ac23395388adb59e9fc05",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": null,
+      "work_sha256": null,
+      "relocated": false,
+      "content_identical": null,
+      "path_edit": null
+    },
+    {
+      "source_path": "docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/validation/scope_guard_synthetic_self_test.json",
+      "source_sha256": "c957de18c3cabf80e7afefaf0f5b741a3e8bf50985b7c244d8bfe9737d5d3b64",
+      "source_sha256_matches_pack_manifest": true,
+      "work_path": null,
+      "work_sha256": null,
+      "relocated": false,
+      "content_identical": null,
+      "path_edit": null
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": "correction-patch/1.0",
+  "patch_id": "patch-0a9e1066f4ae986c6cd49c796df63ccd8c20f31f4dbb5353805cc2ece2cad667",
+  "base_generation_id": "80e5c24ef89b8c533e2b9d4729567509c8b575113047dd496762e4c4b9b08835",
+  "expected_current_generation_id": "80e5c24ef89b8c533e2b9d4729567509c8b575113047dd496762e4c4b9b08835",
+  "target_object_ids": [
+    "cell-7b9f1d9d96ccfffbabebcef82215320a5369bafd7200ca6f51685e4170a5077a"
+  ],
+  "operations": [
+    {
+      "op": "test",
+      "path": "/tables/0/cells/3/text",
+      "value": "12个月"
+    },
+    {
+      "op": "replace",
+      "path": "/tables/0/cells/3/text",
+      "value": "18个月"
+    }
+  ],
+  "reason": "合成示例：人工对照原文修正",
+  "evidence_ids": [
+    "ce-bc247ddc68e0584706bf2f2c51b6c45b390a3e8e26da991c54a22b1173403a38"
+  ],
+  "review_ref": null
+}

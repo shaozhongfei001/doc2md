@@ -1,0 +1,14 @@
+{
+  "schema_version": "source-checkpoint/1.0",
+  "source_id": "demo_bank_policy",
+  "generation_id": "ledger-391552c099c101b131feaf24c5795a6a15bc8ec82015424e0d2b4274a369a0bf",
+  "previous_generation_id": null,
+  "cursor_token": "demo-page-2",
+  "cursor_sha256": "ce6508df1c0540173971c8c309fe8d68ce2034f7e6c61a9401a7519ca8322429",
+  "committed_event_ids": [
+    "event-27c503503ca87aeafa845ecbf4e3020ac405910bcb29ca445d2f8a62d9334c2b"
+  ],
+  "enumeration_complete": false,
+  "selection_scope_hash": "f6a1ecb38b08f1eeb4ee1888d5b31c27b4ab37472a0de565ba03e061552c9195",
+  "authorization_snapshot_ref": "demo-access-1"
+}

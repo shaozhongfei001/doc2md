@@ -1,0 +1,256 @@
+{
+  "$defs": {
+    "FileRef": {
+      "additionalProperties": false,
+      "properties": {
+        "root": {
+          "enum": [
+            "EXTENSION",
+            "RAW_VAULT",
+            "PARSED"
+          ],
+          "title": "Root",
+          "type": "string"
+        },
+        "relative_path": {
+          "minLength": 1,
+          "title": "Relative Path",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "root",
+        "relative_path",
+        "sha256"
+      ],
+      "title": "FileRef",
+      "type": "object"
+    },
+    "RunItem": {
+      "additionalProperties": false,
+      "properties": {
+        "object_id": {
+          "minLength": 1,
+          "title": "Object Id",
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "PLANNED",
+            "COMMITTED",
+            "ALREADY_COMMITTED",
+            "NEEDS_REVIEW",
+            "FAILED",
+            "DENIED",
+            "SKIPPED"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "generation_id": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Generation Id"
+        },
+        "error_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Error Code"
+        },
+        "retryable": {
+          "title": "Retryable",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "object_id",
+        "state",
+        "generation_id",
+        "error_code",
+        "retryable"
+      ],
+      "title": "RunItem",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "extension-run/1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "request_id": {
+      "minLength": 1,
+      "title": "Request Id",
+      "type": "string"
+    },
+    "attempt_id": {
+      "minLength": 1,
+      "title": "Attempt Id",
+      "type": "string"
+    },
+    "job_key": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Job Key"
+    },
+    "state": {
+      "enum": [
+        "PLANNED",
+        "RUNNING",
+        "COMMITTED",
+        "ALREADY_COMMITTED",
+        "NEEDS_REVIEW",
+        "FAILED",
+        "DENIED"
+      ],
+      "title": "State",
+      "type": "string"
+    },
+    "input_refs": {
+      "items": {
+        "$ref": "#/$defs/FileRef"
+      },
+      "title": "Input Refs",
+      "type": "array"
+    },
+    "items": {
+      "items": {
+        "$ref": "#/$defs/RunItem"
+      },
+      "title": "Items",
+      "type": "array"
+    },
+    "started_at": {
+      "format": "date-time",
+      "title": "Started At",
+      "type": "string"
+    },
+    "ended_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Ended At"
+    },
+    "duration_seconds": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Duration Seconds"
+    },
+    "model_request_count": {
+      "minimum": 0,
+      "title": "Model Request Count",
+      "type": "integer"
+    },
+    "roi_round_count": {
+      "minimum": 0,
+      "title": "Roi Round Count",
+      "type": "integer"
+    },
+    "inference_input_tokens": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Inference Input Tokens"
+    },
+    "inference_output_tokens": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Inference Output Tokens"
+    },
+    "environment_lock_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/FileRef"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "product_test_evidence_class": {
+      "enum": [
+        "NOT_A_TEST",
+        "SYNTHETIC",
+        "REAL_ENGINE",
+        "BANK_JOINT"
+      ],
+      "title": "Product Test Evidence Class",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "request_id",
+    "attempt_id",
+    "job_key",
+    "state",
+    "input_refs",
+    "items",
+    "started_at",
+    "ended_at",
+    "duration_seconds",
+    "model_request_count",
+    "roi_round_count",
+    "inference_input_tokens",
+    "inference_output_tokens",
+    "environment_lock_ref",
+    "product_test_evidence_class"
+  ],
+  "title": "RunReport",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:doc2md:19cap:extension-run:1.0",
+  "x-contract-state": "DESIGN_CANDIDATE"
+}

@@ -1,0 +1,132 @@
+{
+  "$defs": {
+    "ArtifactFile": {
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "$ref": "#/$defs/FileRef"
+        },
+        "artifact_type": {
+          "enum": [
+            "ENHANCEMENT",
+            "RAW",
+            "ASSET",
+            "RENDERED",
+            "REVIEW_CONTEXT",
+            "DEPENDENCIES",
+            "INPUT_SNAPSHOT"
+          ],
+          "title": "Artifact Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "file",
+        "artifact_type"
+      ],
+      "title": "ArtifactFile",
+      "type": "object"
+    },
+    "FileRef": {
+      "additionalProperties": false,
+      "properties": {
+        "root": {
+          "enum": [
+            "EXTENSION",
+            "RAW_VAULT",
+            "PARSED"
+          ],
+          "title": "Root",
+          "type": "string"
+        },
+        "relative_path": {
+          "minLength": 1,
+          "title": "Relative Path",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "root",
+        "relative_path",
+        "sha256"
+      ],
+      "title": "FileRef",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "extension-manifest/1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "job_key": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Job Key",
+      "type": "string"
+    },
+    "generation_id": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Generation Id",
+      "type": "string"
+    },
+    "input_manifest": {
+      "items": {
+        "$ref": "#/$defs/FileRef"
+      },
+      "title": "Input Manifest",
+      "type": "array"
+    },
+    "producer_locks": {
+      "items": {
+        "$ref": "#/$defs/FileRef"
+      },
+      "title": "Producer Locks",
+      "type": "array"
+    },
+    "files": {
+      "items": {
+        "$ref": "#/$defs/ArtifactFile"
+      },
+      "title": "Files",
+      "type": "array"
+    },
+    "dependency_manifest_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Dependency Manifest Sha256",
+      "type": "string"
+    },
+    "execution_state": {
+      "const": "VALIDATED",
+      "title": "Execution State",
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "job_key",
+    "generation_id",
+    "input_manifest",
+    "producer_locks",
+    "files",
+    "dependency_manifest_sha256",
+    "execution_state",
+    "created_at"
+  ],
+  "title": "ExtensionManifest",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:doc2md:19cap:extension-manifest:1.0",
+  "x-contract-state": "DESIGN_CANDIDATE"
+}

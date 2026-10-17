@@ -1,0 +1,53 @@
+# 设计候选参数，不是银行实测值。不得含真实地址/密钥。
+schema_version: doc2md-extensions-config/1.0
+enabled: false
+extension_root: ./extension_data
+identity_mode: local_os_subject
+allow_external_network: false
+worker:
+  cpu_parallelism: 2
+  model_parallelism: 1
+  hard_timeout_seconds: 180
+  job_budget_seconds: 600
+  transport_retry_count: 2
+  roi_retry_rounds: 1
+sources:
+  adapter: local_manifest
+  page_size: 100
+  access_lease_seconds: null  # 本地受控样例无远程租约；远程启用前必须填来源约定，不能无限复用授权
+engines:
+  structure:
+    enabled: false
+    provider: paddle_structure_v3
+    reference_paddleocr_version: 3.3.3
+    exact_environment_lock_ref: null
+    weights_hash_manifest_ref: null
+  chart:
+    enabled: false
+    provider: pp_chart2table
+    exact_environment_lock_ref: null
+  vision:
+    enabled: false
+    provider: approved_intranet_service
+    model_id: null
+    model_revision: null
+    endpoint_config_ref: null
+policy:
+  numeric_chart_estimates_enabled: false
+  require_verified_region_for_exact_visual_claim: true
+  require_manual_review_for_release: true
+  allow_bank_approved_label_with_local_identity: false
+thresholds:
+  # 初始工程建议，待Gold校准；不是本行验收指标
+  geometry_roundtrip_epsilon_px: 1.0
+  token_to_cell_min_coverage: 0.8
+  token_to_cell_min_margin: 0.15
+limits:
+  max_file_bytes: 104857600
+  max_docx_expanded_bytes: 536870912
+  max_docx_members: 10000
+  max_grid_slots_per_table: 100000
+  max_image_pixels: 40000000
+release:
+  required_consumers: [local_candidate_export]
+  real_bank_cutover_enabled: false

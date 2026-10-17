@@ -1,0 +1,29 @@
+# 标识、字段基准与状态快照
+
+以identity.py与identity_vectors.json为精确的新ID判据，旧UID公式完全不受影响。
+canonical JSON固定UTF-8、排序键、紧凑分隔符、显式null、禁止NaN/Infinity；集合字段先排序，
+顺序有含义的数组（header path、reading order、polygon）不得排序。
+不做Unicode NFC或浮点四舍五入，非Python消费者默认把ID当opaque，不自行重算直至通过共享固定向量。
+
+source-version输入键固定source_id/external_object_id/version_kind/source_revision/snapshot_id/
+content_sha256/legacy_query_ref_hash；无查询指针时hash为null。
+job输入包含source_version_ids(排序)、content_sha256、read_set(按root/path排序FileRef)、
+access_revisions(键为access_key)、profile_sha256、engine_lock_sha256、normalizer_version、patchset_sha256。
+generation由job_key/raw_output_sha256/normalizer_version/patchset_sha256产生，不含输出自引用ID，避免循环hash。
+
+object ID用类型/generation/来源locator/本次局部path；candidate evidence另加source version和observation_class。
+同源版解析升级、模型输出不同或patch变更都会产生新generation；不宣称跨不同解析版本cell_id永远不变，
+跨版映射需要显式mapping及人工/结构依据，不能靠相同短ID连接旧新版。
+
+FileRef.root是EXTENSION、RAW_VAULT或PARSED；relative_path相对该配置根。
+新输出只准EXTENSION。sources中的原件引用可以RAW_VAULT；旧parsed读入后长期快照在EXTENSION。
+不存在任意URL/绝对路径FileRef，实际打开还须resolve+sha+ACL检查。
+
+ExtensionManifest.files不含manifest自身以免自hash；最终manifest hash放入提交指针/ledger。
+manifest.execution_state固定VALIDATED；generation只有被原子HEAD/route或已提交目录索引引用时才对reader提交可见，
+不在rename后改manifest为COMMITTED。提交事实由commit receipt记录，不修改不可变payload。
+每次release状态变化写新revision/release record，CURRENT只指完整状态记录；不覆盖旧审核历史。
+
+source_access_revisions map键使用access_key：
+access- + digest(source-access-key/1,{source_id,external_object_id})。
+该key可通过本次SourceVersion找到对应来源对象；同源不同对象不能混成同一租约。

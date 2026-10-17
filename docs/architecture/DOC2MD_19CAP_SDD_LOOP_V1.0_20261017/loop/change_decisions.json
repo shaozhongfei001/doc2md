@@ -1,0 +1,112 @@
+[
+  {
+    "decision_id": "DX-01",
+    "kind": "框架引用调整",
+    "requirements": "PI-F03-01…04",
+    "current": "Excel F03拟复用WeKnora Connector/StreamingConnector",
+    "proposed": "采用Python SourceAdapter+本地manifest实现，借鉴能力/游标/checkpoint，不导入WeKnora Go平台",
+    "reason": "避免第二套运行态/身份/存储；真实银行connector尚无接口",
+    "consumer_compatibility": "不改旧source/DB/CLI，新增来源账本和合同；所有旧消费者不接新字段",
+    "validation": "L02事件/撤权/崩溃/银行联调；真实源缺失保留NOT_CONNECTED",
+    "state": "PROPOSED_DESIGN_ROUTE"
+  },
+  {
+    "decision_id": "DX-02",
+    "kind": "Word框架调整",
+    "requirements": "PI-F04-01/04",
+    "current": "Excel建议WeKnora原生Word解析前保留HTML/XML",
+    "proposed": "python-docx 1.2.0+lxml直接只读OOXML；只补原生合并/最终显示/定位适配",
+    "reason": "Docx2优先MarkItDown和重复文本合并不证明原生merge保真；用户要求最小引用",
+    "consumer_compatibility": "不换旧MarkItDown，不改parsed_text；新表格在伴随产物",
+    "validation": "横纵合并/嵌套/空白/修订Gold对照，源hash不变",
+    "state": "PROPOSED_DESIGN_ROUTE"
+  },
+  {
+    "decision_id": "DX-03",
+    "kind": "新伴随产物",
+    "requirements": "PI-F04/PI-F05",
+    "current": "IR1.0 cell bbox恒null、无confidence，键集封闭",
+    "proposed": "新增document-enhancement/1.0存坐标、表头、脚注、图结构和候选；IR1.0只读",
+    "reason": "新需求无法合法塞回封闭IR；保护D15/D18",
+    "consumer_compatibility": "旧schema/renderer/evidence消费者不变；新消费者明确opt-in，禁止把sidecar交旧validator",
+    "validation": "schema正反、对照hash、缺sidecar旧链路仍可跑",
+    "state": "PROPOSED_ADDITIVE"
+  },
+  {
+    "decision_id": "DX-04",
+    "kind": "CLI与存储新增",
+    "requirements": "全部19项",
+    "current": "旧19CLI、SQL、目录冻结",
+    "proposed": "新增app.extensions.cli+extension_root，文件账本单写者/原子generation",
+    "reason": "减少旧命令/注册表的语义冲击，零数据库迁移",
+    "consumer_compatibility": "新入口/新错误码只在扩展CLI，旧参数/返回保持；源码采用新增命名空间",
+    "validation": "dry-run/幂等/权限位与hash对照、全量旧回归",
+    "state": "PROPOSED_ADDITIVE"
+  },
+  {
+    "decision_id": "DX-05",
+    "kind": "候选证据分离",
+    "requirements": "PI-F05-06/PI-F04-09",
+    "current": "017规划table_cell/image_region进入旧证据；field_value零数据",
+    "proposed": "本包先提供candidate_evidence_id伴随证据，不写kb_evidence；旧UID v1保持",
+    "reason": "本期是候选加工，未完成017证据生产闭环，不冒充已接入",
+    "consumer_compatibility": "下游需读取新候选schema；未来DB证据适配另按017裁定或新差异处理",
+    "validation": "原UID固定向量、零旧表写、候选回链与撤权E2E",
+    "state": "PROPOSED_ADDITIVE"
+  },
+  {
+    "decision_id": "DX-06",
+    "kind": "图表数值估读条件",
+    "requirements": "PI-F05-04",
+    "current": "Excel允许柱高估读但标估算，不入硬规则；原D08要求缺数据不编造",
+    "proposed": "默认仅定性/未知，exact_value=null；数值estimated_value分支保留但禁用，待Owner明确用途和边界",
+    "reason": "避免模型数字冒充来源精确值，同时不悄悄删除Excel条件分支",
+    "consumer_compatibility": "只影响数值估读；原表/可见数字标签精确读取可继续",
+    "validation": "exact/estimate分离负例、无标签不得填精确值；启用需另有决定",
+    "state": "OWNER_DECISION_REQUIRED_FOR_NUMERIC_ESTIMATE"
+  },
+  {
+    "decision_id": "DX-07",
+    "kind": "发布与下游失效边界",
+    "requirements": "PI-F04-09/PI-F03-03",
+    "current": "Excel描述图谱/Wiki/索引重建与切换",
+    "proposed": "本期生成依赖manifest、outbox/ACK合同及本地消费实现；外部真实适配按接口条件",
+    "reason": "doc2md无Graph/Wiki运行系统，不能借名字假装完成",
+    "consumer_compatibility": "未连必需consumer不能ACTIVE；不把LOCAL_READY改叫全量发布；外部接口仍待确认",
+    "validation": "ACK晚到/缺失、真实联调、回退演练分开报告",
+    "state": "PROPOSED_CONDITIONAL_SCOPE"
+  },
+  {
+    "decision_id": "DX-08",
+    "kind": "依赖与推理隔离",
+    "requirements": "PI-F04/PI-F05",
+    "current": "旧requirements/图片Protocol+Mock与主机环境",
+    "proposed": "新Word/patch依赖单独锁；Paddle模型独立worker；VLM通过批准内网服务",
+    "reason": "不污染旧venv；不把Mock或个人GPU配置当银行环境",
+    "consumer_compatibility": "backend/requirements.txt不改；不默认升级magic-pdf；模型/驱动/weight版本仍需实测锁",
+    "validation": "缺依赖/超时/worker回收、真实模型矩阵",
+    "state": "PROPOSED_ADDITIVE"
+  },
+  {
+    "decision_id": "DX-09",
+    "kind": "编排范围调整",
+    "requirements": "PI-F05-02/05",
+    "current": "Excel在智能体链路中提及LangGraph节点/interrupt",
+    "proposed": "19项预处理用普通Python受控任务DAG与持久化候选/人工状态；本包不引LangGraph",
+    "reason": "无四智能体会话编排需求，避免为了少量节点增加另一套运行态",
+    "consumer_compatibility": "未来四智能体编排保留LangGraph候选，不因此修改其需求",
+    "validation": "中断恢复/预算/一次ROI/人工继续有明确测试",
+    "state": "PROPOSED_DESIGN_ROUTE"
+  },
+  {
+    "decision_id": "DX-10",
+    "kind": "017与SPEC_INDEX状态对齐",
+    "requirements": "全部19项",
+    "current": "017存在DRAFT、DESIGN REVIEWED、P1/P2实现等不同状态，原裁定要求继承",
+    "proposed": "新工作流另目录；TL仅追加选择记录并引用既有TL-RULINGS；不覆盖017、不擅自升级状态",
+    "reason": "设计授权可推进独立新增层；旧017剩余工作/QA不能被抹掉",
+    "consumer_compatibility": "本包所有对017都是只读；若未来完成017原轨按其验收独立交付",
+    "validation": "baseline锁/SPEC_INDEX增量diff/交付状态核对",
+    "state": "PROPOSED_ADOPTION_RECORD"
+  }
+]

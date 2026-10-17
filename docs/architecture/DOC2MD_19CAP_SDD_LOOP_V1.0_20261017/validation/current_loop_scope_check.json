@@ -1,0 +1,15 @@
+{
+  "check": "LOOP_DIFF_SCOPE_ONLY",
+  "loop": "L01",
+  "base_commit": "a20389ffd3f61baacc51502c10f8a503cac4ca3f",
+  "passed": true,
+  "allowed_changed_paths": [],
+  "ignored_known_mode_only_changes": [
+    "scripts/create_sample_dataset.py",
+    "scripts/create_sample_dataset.sh",
+    "scripts/init_db.sh",
+    "scripts/run_pipeline.sh"
+  ],
+  "errors": [],
+  "limits": "No code correctness, tests, bank authorization, role identity or runtime side effects verified"
+}

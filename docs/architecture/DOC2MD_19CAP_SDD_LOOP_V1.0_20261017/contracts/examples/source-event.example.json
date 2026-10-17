@@ -1,0 +1,13 @@
+{
+  "schema_version": "source-event/1.0",
+  "event_id": "event-27c503503ca87aeafa845ecbf4e3020ac405910bcb29ca445d2f8a62d9334c2b",
+  "source_id": "demo_bank_policy",
+  "external_object_id": "policy_demo_01",
+  "event_type": "UPSERT",
+  "source_version_id": "sv-bbeaf4cdd91bb8011f0c37a5a7d578ca803e77aa10aacd93d9c97238b2c69a26",
+  "source_order_token": null,
+  "source_epoch": 1,
+  "access_revision": "demo-access-1",
+  "payload_hash": "f4c78f27b6cd694de004b27e9faa068b46980b0fcd38cb40dff7dd2ba849d941",
+  "observed_at": "2026-10-17T15:54:02Z"
+}

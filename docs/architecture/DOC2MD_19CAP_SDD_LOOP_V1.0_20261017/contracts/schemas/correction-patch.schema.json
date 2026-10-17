@@ -1,0 +1,112 @@
+{
+  "$defs": {
+    "JsonValue": {},
+    "PatchOperation": {
+      "additionalProperties": false,
+      "properties": {
+        "op": {
+          "enum": [
+            "test",
+            "replace"
+          ],
+          "title": "Op",
+          "type": "string"
+        },
+        "path": {
+          "minLength": 1,
+          "title": "Path",
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/$defs/JsonValue"
+        }
+      },
+      "required": [
+        "op",
+        "path",
+        "value"
+      ],
+      "title": "PatchOperation",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "correction-patch/1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "patch_id": {
+      "minLength": 1,
+      "title": "Patch Id",
+      "type": "string"
+    },
+    "base_generation_id": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Base Generation Id",
+      "type": "string"
+    },
+    "expected_current_generation_id": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Expected Current Generation Id",
+      "type": "string"
+    },
+    "target_object_ids": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Target Object Ids",
+      "type": "array"
+    },
+    "operations": {
+      "items": {
+        "$ref": "#/$defs/PatchOperation"
+      },
+      "title": "Operations",
+      "type": "array"
+    },
+    "reason": {
+      "minLength": 1,
+      "title": "Reason",
+      "type": "string"
+    },
+    "evidence_ids": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Evidence Ids",
+      "type": "array"
+    },
+    "review_ref": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Review Ref"
+    }
+  },
+  "required": [
+    "schema_version",
+    "patch_id",
+    "base_generation_id",
+    "expected_current_generation_id",
+    "target_object_ids",
+    "operations",
+    "reason",
+    "evidence_ids",
+    "review_ref"
+  ],
+  "title": "CorrectionPatch",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:doc2md:19cap:correction-patch:1.0",
+  "x-contract-state": "DESIGN_CANDIDATE"
+}

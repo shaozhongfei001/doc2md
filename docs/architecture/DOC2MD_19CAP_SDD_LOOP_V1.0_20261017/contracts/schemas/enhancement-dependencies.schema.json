@@ -1,0 +1,122 @@
+{
+  "$defs": {
+    "DependencyEdge": {
+      "additionalProperties": false,
+      "properties": {
+        "parent_object_id": {
+          "minLength": 1,
+          "title": "Parent Object Id",
+          "type": "string"
+        },
+        "child_object_id": {
+          "minLength": 1,
+          "title": "Child Object Id",
+          "type": "string"
+        },
+        "relation": {
+          "enum": [
+            "DERIVED_FROM",
+            "HEADER_CONTEXT",
+            "NOTE_CONTEXT",
+            "COMPOSITE_VIEW",
+            "EXPORTED_TO"
+          ],
+          "title": "Relation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "parent_object_id",
+        "child_object_id",
+        "relation"
+      ],
+      "title": "DependencyEdge",
+      "type": "object"
+    },
+    "DependencyNode": {
+      "additionalProperties": false,
+      "properties": {
+        "object_id": {
+          "minLength": 1,
+          "title": "Object Id",
+          "type": "string"
+        },
+        "generation_id": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Generation Id",
+          "type": "string"
+        },
+        "object_type": {
+          "minLength": 1,
+          "title": "Object Type",
+          "type": "string"
+        },
+        "consumer_id": {
+          "minLength": 1,
+          "title": "Consumer Id",
+          "type": "string"
+        },
+        "external": {
+          "title": "External",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "object_id",
+        "generation_id",
+        "object_type",
+        "consumer_id",
+        "external"
+      ],
+      "title": "DependencyNode",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "enhancement-dependencies/1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "generation_id": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Generation Id",
+      "type": "string"
+    },
+    "nodes": {
+      "items": {
+        "$ref": "#/$defs/DependencyNode"
+      },
+      "title": "Nodes",
+      "type": "array"
+    },
+    "edges": {
+      "items": {
+        "$ref": "#/$defs/DependencyEdge"
+      },
+      "title": "Edges",
+      "type": "array"
+    },
+    "required_consumer_ids": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Required Consumer Ids",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "generation_id",
+    "nodes",
+    "edges",
+    "required_consumer_ids"
+  ],
+  "title": "DependencyManifest",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:doc2md:19cap:enhancement-dependencies:1.0",
+  "x-contract-state": "DESIGN_CANDIDATE"
+}

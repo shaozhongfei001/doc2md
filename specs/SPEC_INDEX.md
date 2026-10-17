@@ -372,3 +372,66 @@ But real `magic-pdf` / MinerU E2E was not completed because:
 3. There was no COPIED non-PDF live sample for CLI ROUTE_MISMATCH validation.
 
 This caveat does not change the 007 implementation contract. 008 detects stale vault path and parsed/registry consistency issues in its JSON report; 009 may summarize those findings but must not fix them.
+
+---
+
+## 7. Workflow Selection Record — DOC2MD-19CAP (Append Only)
+
+> Appended by TL at `DOC_IMPORT` batch. Nothing above this line was edited, reordered or deleted.
+> This record does **not** claim customer sign-off, requirement freeze, independent QA pass,
+> bank acceptance, or completion of 017.
+
+| Item | Value |
+|---|---|
+| Workflow ID | `DOC2MD-19CAP` |
+| Contract version | `DOC2MD-19CAP-V1.0` (package status `DESIGN_CANDIDATE`, not `APPROVED`, not `FROZEN`) |
+| Official spec number | **Not assigned.** 018 is not claimed. The workflow ID is the working identifier until project rules assign a number. |
+| Spec entry (five-piece set) | `specs/proposals/doc2md-19cap-v1.0.0/` — `spec.md` / `plan.md` / `tasks.md` / `test_cases.md` / `acceptance.md` / `README.md` |
+| Detailed design (authoritative body) | `docs/proposals/doc2md-19cap/v1.0.0/01_SDD.md` |
+| Loop engineering | `docs/proposals/doc2md-19cap/v1.0.0/02_LOOP_ENGINEERING.md` |
+| Machine-readable loop contract | `loop/proposals/doc2md-19cap/v1.0.0/loop_contract.json` |
+| Field schemas / interfaces / identity rules | `contracts/doc2md-19cap/v1.0.0/` |
+| Source inputs (baseline lock, workbook rows) | `docs/proposals/doc2md-19cap/v1.0.0/inputs/` |
+| Adoption record | `docs/proposals/doc2md-19cap/v1.0.0/adoption/ADOPTION_RECORD.md` |
+| Path relocation record | `docs/proposals/doc2md-19cap/v1.0.0/adoption/ADOPT-PATH-01.md` |
+| Path map / adopted manifest | `docs/proposals/doc2md-19cap/v1.0.0/adoption/PATH_MAP.json`, `.../ADOPTED_MANIFEST.json` |
+| Execution evidence | `docs/proposals/doc2md-19cap/v1.0.0/evidence/` |
+| Original read-only snapshot | `docs/architecture/DOC2MD_19CAP_SDD_LOOP_V1.0_20261017/` (ZIP sha256 `f196a238b203e272a23a4a9c4e1485edf3d233ea329f340eb6e6ee7a30ccfc51`) |
+
+### 7.1 Scope actually selected for this incremental development
+
+This record selects **only** the 19 capability rows, not the whole workbook:
+
+| Group | Rows | Loop |
+|---|---|---|
+| Source version / incremental sync / migration switch check / in-house vs external registration | `PI-F03-01`, `PI-F03-02`, `PI-F03-03`, `PI-F03-04` | L02, L08 |
+| Word / scanned tables, coordinates, spans, text-into-cell, headers, continuation, footnotes, manual correction | `PI-F04-01` … `PI-F04-09` | L03, L04, L05, L07 |
+| Image classification, flow charts, text-image consistency, statistical charts, local re-OCR, evidence candidates | `PI-F05-01` … `PI-F05-06` | L06, L07 |
+
+Traceability: `docs/proposals/doc2md-19cap/v1.0.0/04_TRACEABILITY.csv` and
+`loop/proposals/doc2md-19cap/v1.0.0/requirements_trace.json` (63 planned test cases,
+all `NOT_RUN` at append time).
+
+### 7.2 What is preserved and unchanged
+
+- `specs/001`—`specs/016`: sealed, read-only. Not edited by this workflow.
+- `specs/017-unified-document-ir`: **status unchanged** (DESIGN REVIEWED). Its remaining tasks,
+  TL rulings R-01…R-18, and acceptance IDs are preserved. This workflow does not replace it and
+  does not mark it DONE.
+- `docs/architecture/DOCUMENT_IR_DESIGN_V1.md`: unchanged; no sidecar field is written into IR 1.0.
+- Existing triple artifact contract (`parsed_text.md` / `parsed_metadata.json` / `parse_manifest.json`),
+  `evidence_uid` v1 formula, all 19 legacy CLI commands and `sql/**`: unchanged.
+- `raw_vault/`, source directories and existing `parsed/` output are **read-only** for the new layer.
+
+### 7.3 Implementation namespace
+
+New code only under `backend/app/extensions/` with its own tests (`backend/tests/extensions/`),
+separate dependency lock files, and its own artifact root (`extension_root`). The legacy
+`backend/app/**` services are reused read-only through a bridge; they are not modified.
+
+### 7.4 Status vocabulary used here
+
+`DESIGN_CANDIDATE` (this package) / `PLANNED` (all 9 loops) / `TODO` (all 45 tasks) /
+`NOT_RUN` (all product test cases). Any later status change must cite executed evidence
+with real command exit codes, and independent QA must be performed by a role independent of
+the code author.

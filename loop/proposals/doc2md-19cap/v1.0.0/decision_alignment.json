@@ -1,0 +1,188 @@
+{
+  "decisions": [
+    {
+      "id": "D-01",
+      "existing": "sha256即内容身份",
+      "action": "保留",
+      "design": "新source_version和source_access与content身份分离；多来源同字节不共享授权",
+      "verification": "inputs/baseline_lock.json、TC-PI-F03-01-01"
+    },
+    {
+      "id": "D-02",
+      "existing": "源文件/raw_vault只读",
+      "action": "保留",
+      "design": "readbridge仅rb读取；原生Word不save；新目录不允许包含/嵌入源根",
+      "verification": "G4原件hash、路径逃逸负例"
+    },
+    {
+      "id": "D-03",
+      "existing": "三件套只增不改",
+      "action": "保留且本期零改动",
+      "design": "伴随产物在extension_root，不给旧三件套加新键",
+      "verification": "G4旧manifest逐键和hash"
+    },
+    {
+      "id": "D-04",
+      "existing": "PDF路由fail-closed",
+      "action": "保留既有代码",
+      "design": "不改014路由；缺vault例外表达冲突登记，新增层缺原件直接拒绝",
+      "verification": "旧parser_router_v2/pdf_sniffing回归、NEEDS_BASE_PARSE"
+    },
+    {
+      "id": "D-05",
+      "existing": "规则版本化/旧版复现",
+      "action": "保留",
+      "design": "新runner不改旧routing_rules；新profile自带版本与hash",
+      "verification": "G1/G4旧v1路由向量"
+    },
+    {
+      "id": "D-06",
+      "existing": "嗅探环境态不缓存",
+      "action": "保留",
+      "design": "新worker依赖缺失不缓存成成功；不改旧缓存白名单",
+      "verification": "缺依赖复测、worker恢复"
+    },
+    {
+      "id": "D-07",
+      "existing": "parser版本/profile参与幂等",
+      "action": "扩展独立新job_key",
+      "design": "旧profile不变；新job另纳输入/权限/engine/normalizer/patch摘要",
+      "verification": "新ID固定向量、重跑幂等"
+    },
+    {
+      "id": "D-08",
+      "existing": "缺数据null/计数，禁编造",
+      "action": "保留",
+      "design": "未知bbox/单位/confidence为null/PAGE_ONLY；数值估读默认关，DX-06单列",
+      "verification": "TC-PI-F04-03-02、TC-PI-F05-04-02/03"
+    },
+    {
+      "id": "D-09",
+      "existing": "asset sha对齐fail-closed",
+      "action": "保留",
+      "design": "旧asset按manifest校验；新asset在新manifest按完整sha核对",
+      "verification": "TC-PI-F05-06-02、G4"
+    },
+    {
+      "id": "D-10",
+      "existing": "可选依赖与Mock诚实性",
+      "action": "保留",
+      "design": "不改旧图片行为；新增真实worker缺依赖显式失败/未覆盖；Mock不得发布",
+      "verification": "缺依赖/Mock负例、实际引擎门"
+    },
+    {
+      "id": "D-11",
+      "existing": "样本不足跳过而非ratio=0",
+      "action": "保留",
+      "design": "不改旧semantic checker；新评测缺样本报INPUT_BLOCKED，不计算伪100%",
+      "verification": "G1旧语义回归、05分母"
+    },
+    {
+      "id": "D-12",
+      "existing": "阈值真实接线",
+      "action": "保留",
+      "design": "旧quality yaml不变；新profile阈值必须变异证实生效",
+      "verification": "G3与threshold profile hash"
+    },
+    {
+      "id": "D-13",
+      "existing": "no-semantic复现008",
+      "action": "保留",
+      "design": "不改quality checker/summarizer和旧开关输出",
+      "verification": "旧semantic_disabled字段/文件读断言"
+    },
+    {
+      "id": "D-14",
+      "existing": "两套offset字段并存",
+      "action": "保留",
+      "design": "新TextLocator引用固定text sha与半开Unicode区间，不改DB字段",
+      "verification": "旧UID向量/offset回归"
+    },
+    {
+      "id": "D-15",
+      "existing": "IR1.0严格键集",
+      "action": "保留",
+      "design": "新schema namespace，绝不塞cell confidence/bbox/header_path进IR1.0",
+      "verification": "schema负例和旧IR文件hash"
+    },
+    {
+      "id": "D-16",
+      "existing": "block_id/reading_order稳定",
+      "action": "保留",
+      "design": "不重写旧block；新object id独立按generation/locator生成",
+      "verification": "旧IR不变，新identity vectors"
+    },
+    {
+      "id": "D-17",
+      "existing": "零SQL迁移",
+      "action": "保留并覆盖新增层",
+      "design": "文件账本；只经现有服务完成既有登记，无新直接DB写",
+      "verification": "G5 sql树无新增/无diff、DB审查"
+    },
+    {
+      "id": "D-18",
+      "existing": "rendered与parsed_text分离",
+      "action": "保留",
+      "design": "新rendered在extension_root；不覆盖旧rendered或基准parsed_text",
+      "verification": "G4正文hash/offset"
+    },
+    {
+      "id": "D-19",
+      "existing": "可扩展证据但field_value零数据",
+      "action": "不动旧证据合同",
+      "design": "candidate_evidence独立；旧kb_evidence无写，table/image正式入库另审",
+      "verification": "G4固定旧UID与旧表快照"
+    },
+    {
+      "id": "D-20",
+      "existing": "ir_source保留additive且旧v1空数组",
+      "action": "保留只读",
+      "design": "新bridge读取并快照原JSON；不改旧MinerU/force清理逻辑",
+      "verification": "旧v1/新raw hash与解析回归"
+    }
+  ],
+  "redlines": [
+    {
+      "id": "L-1",
+      "existing": "原parsed_text语义/hash",
+      "design": "零回写，快照只在新目录",
+      "verification": "G4"
+    },
+    {
+      "id": "L-2",
+      "existing": "evidence_uid v1",
+      "design": "旧公式/源码/行不变；新ce命名不同",
+      "verification": "G4"
+    },
+    {
+      "id": "L-3",
+      "existing": "sql/**",
+      "design": "无schema/迁移/建新DB",
+      "verification": "G5"
+    },
+    {
+      "id": "L-4",
+      "existing": "001—016封版",
+      "design": "只读，差异另表",
+      "verification": "G5"
+    },
+    {
+      "id": "L-5",
+      "existing": "fail-closed/不编造",
+      "design": "半成品不COMMITTED；未知空值和待核",
+      "verification": "G2/G3"
+    },
+    {
+      "id": "L-6",
+      "existing": "硬编码凭据",
+      "design": "只用安全配置引用和环境；不把真实app.yaml打包",
+      "verification": "L00/安全扫描"
+    },
+    {
+      "id": "L-7",
+      "existing": "本机独有依赖",
+      "design": "独立锁worker/源码hash与信创实测，不依赖个人路径/GPU",
+      "verification": "L00/L04/L06"
+    }
+  ]
+}

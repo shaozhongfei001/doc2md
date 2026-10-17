@@ -1,0 +1,90 @@
+{
+  "schema_version": "doc2md-extension-cli/1.0",
+  "state": "DESIGN_CANDIDATE",
+  "module": "app.extensions.cli",
+  "old_cli_modified": false,
+  "common_flags": [
+    "--base-config",
+    "--extension-config",
+    "--dry-run",
+    "--output-json"
+  ],
+  "operations": [
+    {
+      "command": "source-register",
+      "service_contract": "IF01",
+      "input": "source-version JSON",
+      "output": "SourceVersion + receipt"
+    },
+    {
+      "command": "source-sync",
+      "service_contract": "IF02",
+      "input": "source id / cursor / mode",
+      "output": "checkpoint + per-event report"
+    },
+    {
+      "command": "enhance",
+      "service_contract": "IF03…IF08",
+      "input": "content sha / source version / profile",
+      "output": "generation / NEEDS_REVIEW report"
+    },
+    {
+      "command": "review-export",
+      "service_contract": "IF11",
+      "input": "generation id / purpose",
+      "output": "local review packet"
+    },
+    {
+      "command": "patch-preview",
+      "service_contract": "IF09",
+      "input": "patch JSON / expected current",
+      "output": "preview + dependency impact; no route switch"
+    },
+    {
+      "command": "patch-apply",
+      "service_contract": "IF09",
+      "input": "patch / version-bound review ref",
+      "output": "new generation / outbox"
+    },
+    {
+      "command": "release-prepare",
+      "service_contract": "IF10",
+      "input": "reconcile report / required consumer set",
+      "output": "PREPARED/LOCAL_READY/BLOCKED"
+    },
+    {
+      "command": "route-switch",
+      "service_contract": "IF10",
+      "input": "release id / expected current / scope",
+      "output": "route CAS receipt"
+    },
+    {
+      "command": "route-rollback",
+      "service_contract": "IF10",
+      "input": "previous release / expected current / scope",
+      "output": "new route decision; access epoch unchanged"
+    },
+    {
+      "command": "candidate-get",
+      "service_contract": "IF11",
+      "input": "candidate id / generation / purpose",
+      "output": "authorized candidate or denial"
+    },
+    {
+      "command": "outbox-dispatch",
+      "service_contract": "IF10",
+      "input": "consumer id / pending events",
+      "output": "ACK/FAILED/NOT_CONNECTED; no fake endpoint"
+    }
+  ],
+  "dry_run": "No file/DB writes, lockfile creation, model/source network side effects or output-file write; stdout only",
+  "error_exit_codes": {
+    "0": "request-completed",
+    "2": "input-error",
+    "3": "dependency-error",
+    "4": "needs-review-or-not-requested-release-state",
+    "5": "version-conflict",
+    "6": "failed-item-or-batch",
+    "7": "source-or-permission-denied"
+  }
+}

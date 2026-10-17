@@ -1,0 +1,120 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "source-access/1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "source_id": {
+      "minLength": 1,
+      "title": "Source Id",
+      "type": "string"
+    },
+    "external_object_id": {
+      "minLength": 1,
+      "title": "External Object Id",
+      "type": "string"
+    },
+    "access_epoch": {
+      "minimum": 0,
+      "title": "Access Epoch",
+      "type": "integer"
+    },
+    "state": {
+      "enum": [
+        "ACTIVE",
+        "REVOKED",
+        "EXPIRED",
+        "QUARANTINED"
+      ],
+      "title": "State",
+      "type": "string"
+    },
+    "current_source_version_id": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Current Source Version Id"
+    },
+    "permission_ref": {
+      "minLength": 1,
+      "title": "Permission Ref",
+      "type": "string"
+    },
+    "purpose_scopes": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Purpose Scopes",
+      "type": "array"
+    },
+    "authority_decision_ref": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Authority Decision Ref"
+    },
+    "last_deny_event_id": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Last Deny Event Id"
+    },
+    "lease_expires_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Lease Expires At"
+    },
+    "observed_at": {
+      "format": "date-time",
+      "title": "Observed At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "source_id",
+    "external_object_id",
+    "access_epoch",
+    "state",
+    "current_source_version_id",
+    "permission_ref",
+    "purpose_scopes",
+    "authority_decision_ref",
+    "last_deny_event_id",
+    "lease_expires_at",
+    "observed_at"
+  ],
+  "title": "SourceAccessState",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:doc2md:19cap:source-access:1.0",
+  "x-contract-state": "DESIGN_CANDIDATE"
+}

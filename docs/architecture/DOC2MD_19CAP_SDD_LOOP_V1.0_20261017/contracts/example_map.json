@@ -1,0 +1,50 @@
+{
+  "source-version": {
+    "schema": "schemas/source-version.schema.json",
+    "example": "examples/source-version.example.json"
+  },
+  "source-event": {
+    "schema": "schemas/source-event.schema.json",
+    "example": "examples/source-event.example.json"
+  },
+  "source-checkpoint": {
+    "schema": "schemas/source-checkpoint.schema.json",
+    "example": "examples/source-checkpoint.example.json"
+  },
+  "document-enhancement": {
+    "schema": "schemas/document-enhancement.schema.json",
+    "example": "examples/document-enhancement.example.json"
+  },
+  "correction-patch": {
+    "schema": "schemas/correction-patch.schema.json",
+    "example": "examples/correction-patch.example.json"
+  },
+  "consumer-event": {
+    "schema": "schemas/consumer-event.schema.json",
+    "example": "examples/consumer-event.example.json"
+  },
+  "enhancement-release": {
+    "schema": "schemas/enhancement-release.schema.json",
+    "example": "examples/enhancement-release.example.json"
+  },
+  "source-access": {
+    "schema": "schemas/source-access.schema.json",
+    "example": "examples/source-access.example.json"
+  },
+  "enhancement-review": {
+    "schema": "schemas/enhancement-review.schema.json",
+    "example": "examples/enhancement-review.example.json"
+  },
+  "extension-manifest": {
+    "schema": "schemas/extension-manifest.schema.json",
+    "example": "examples/extension-manifest.example.json"
+  },
+  "enhancement-dependencies": {
+    "schema": "schemas/enhancement-dependencies.schema.json",
+    "example": "examples/enhancement-dependencies.example.json"
+  },
+  "extension-run": {
+    "schema": "schemas/extension-run.schema.json",
+    "example": "examples/extension-run.example.json"
+  }
+}

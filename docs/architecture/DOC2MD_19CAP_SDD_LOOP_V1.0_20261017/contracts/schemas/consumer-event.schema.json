@@ -1,0 +1,110 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "consumer-event/1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "event_id": {
+      "minLength": 1,
+      "title": "Event Id",
+      "type": "string"
+    },
+    "event_type": {
+      "enum": [
+        "INVALIDATE",
+        "REBUILD_READY",
+        "SOURCE_REVOKED"
+      ],
+      "title": "Event Type",
+      "type": "string"
+    },
+    "consumer_id": {
+      "minLength": 1,
+      "title": "Consumer Id",
+      "type": "string"
+    },
+    "previous_generation_id": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Previous Generation Id"
+    },
+    "target_generation_id": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Target Generation Id"
+    },
+    "object_ids": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Object Ids",
+      "type": "array"
+    },
+    "source_access_epoch": {
+      "minimum": 0,
+      "title": "Source Access Epoch",
+      "type": "integer"
+    },
+    "idempotency_key": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Idempotency Key",
+      "type": "string"
+    },
+    "state": {
+      "enum": [
+        "PENDING",
+        "ACKNOWLEDGED",
+        "FAILED",
+        "NOT_CONNECTED"
+      ],
+      "title": "State",
+      "type": "string"
+    },
+    "ack_ref": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Ack Ref"
+    }
+  },
+  "required": [
+    "schema_version",
+    "event_id",
+    "event_type",
+    "consumer_id",
+    "previous_generation_id",
+    "target_generation_id",
+    "object_ids",
+    "source_access_epoch",
+    "idempotency_key",
+    "state",
+    "ack_ref"
+  ],
+  "title": "ConsumerEvent",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:doc2md:19cap:consumer-event:1.0",
+  "x-contract-state": "DESIGN_CANDIDATE"
+}

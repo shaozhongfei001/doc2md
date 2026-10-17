@@ -1,0 +1,26 @@
+{
+  "schema_version": "extension-run/1.0",
+  "request_id": "demo-request-only",
+  "attempt_id": "demo-attempt-only",
+  "job_key": "8b650f0993401eaa8aaad5f332bc1b326585df75a42a1a6c3ee792b0bf3ea3a2",
+  "state": "NEEDS_REVIEW",
+  "input_refs": [],
+  "items": [
+    {
+      "object_id": "table-163e78a142e1a6e9db13aec82e8162d5dd4e15aa066de1148ea7a727c5c62d03",
+      "state": "NEEDS_REVIEW",
+      "generation_id": "80e5c24ef89b8c533e2b9d4729567509c8b575113047dd496762e4c4b9b08835",
+      "error_code": "E_REVIEW_REQUIRED",
+      "retryable": false
+    }
+  ],
+  "started_at": "2026-10-17T15:54:02Z",
+  "ended_at": "2026-10-17T15:54:03Z",
+  "duration_seconds": 1.0,
+  "model_request_count": 0,
+  "roi_round_count": 0,
+  "inference_input_tokens": null,
+  "inference_output_tokens": null,
+  "environment_lock_ref": null,
+  "product_test_evidence_class": "SYNTHETIC"
+}

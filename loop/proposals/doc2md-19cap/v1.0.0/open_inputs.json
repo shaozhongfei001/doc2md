@@ -1,0 +1,65 @@
+[
+  {
+    "id": "OI01",
+    "topic": "017状态漂移",
+    "input_owner_and_content": "TL/Owner记录现有裁定/未完任务状态",
+    "blocking_scope": "只阻塞旧017变更或宣布其完成；新sidecar只读复用可继续",
+    "interim_action": "L00只读/新工作流采用记录，不替017改状态"
+  },
+  {
+    "id": "OI02",
+    "topic": "真实银行源接口",
+    "input_owner_and_content": "本行天权/易晓通/访客系统提供对象ID/版本/授权/分页/撤回/频率/错误码/网络/测试账号",
+    "blocking_scope": "PI-F03真实连接与BANK_JOINT，不阻塞manifest模拟/结构开发",
+    "interim_action": "逐源能力表；不要编造通用URL或同步删除语义"
+  },
+  {
+    "id": "OI03",
+    "topic": "模型与信创环境",
+    "input_owner_and_content": "本行批准CPU/OS/AI卡/驱动/Paddle/推理服务/模型revision与weights",
+    "blocking_scope": "真实OCR/VLM质量和适配/容量验收，不阻塞schema/native Word",
+    "interim_action": "按06独立worker原型验证，未测配置不写采购或性能承诺"
+  },
+  {
+    "id": "OI04",
+    "topic": "真实脱敏样本和Gold",
+    "input_owner_and_content": "有权来源负责人提供授权样本及人工标注",
+    "blocking_scope": "模型准确率/三PDF坐标实测，不阻塞合成结构/IO/状态测试",
+    "interim_action": "05语料分层；不得用repo合成demo冒充真实样本"
+  },
+  {
+    "id": "OI05",
+    "topic": "数字估读用途",
+    "input_owner_and_content": "Owner决定是否允许单列estimated_value及披露/禁止计算范围",
+    "blocking_scope": "仅PI-F05-04数值估读分支；精确标签/原表和定性趋势可继续",
+    "interim_action": "默认禁用数字估读；保留候选结构，见DX-06"
+  },
+  {
+    "id": "OI06",
+    "topic": "人工复核与认证",
+    "input_owner_and_content": "本行明确有权角色/认证上下文/双人审批需求",
+    "blocking_scope": "BANK_APPROVED与外部正式发布，不阻塞本地LOCAL_OPERATOR review",
+    "interim_action": "CLI记录只证明本地操作者；不能自报审批人获得权限"
+  },
+  {
+    "id": "OI07",
+    "topic": "外部图谱/Wiki/索引consumer",
+    "input_owner_and_content": "消费者负责人给依赖对象、invalidate/rebuild API、ACK版本/幂等/重试",
+    "blocking_scope": "外部实际失效/重建与ACTIVE发布，不阻塞本地outbox和候选",
+    "interim_action": "未连保持NOT_CONNECTED；缺必需ACK不切换"
+  },
+  {
+    "id": "OI08",
+    "topic": "切换入口和业务连续性",
+    "input_owner_and_content": "本行提供真实旧入口路由控制/双读/回退权限和观察窗口",
+    "blocking_scope": "真实PI-F03-03切/回退，不阻塞影子产物/本地route CAS",
+    "interim_action": "doc2md当前FULLTEXT不因为新文件指针自动成为影子向量索引"
+  },
+  {
+    "id": "OI09",
+    "topic": "性能/质量最终验收目标",
+    "input_owner_and_content": "本行确认文档分布、容量/并发/时延/RPO/RTO、05指标目标",
+    "blocking_scope": "最终银行NFR/业务验收，不阻塞受限工程验证",
+    "interim_action": "建议阈值标CANDIDATE；报告实测值和差距"
+  }
+]

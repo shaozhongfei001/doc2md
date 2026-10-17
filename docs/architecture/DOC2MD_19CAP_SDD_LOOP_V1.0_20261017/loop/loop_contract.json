@@ -1,0 +1,817 @@
+{
+  "schema_version": "doc2md-loop-contract/1.0",
+  "contract_id": "DOC2MD-19CAP-V1.0",
+  "state": "DESIGN_CANDIDATE",
+  "generated_on": "2026-10-17",
+  "scope_requirement_ids": [
+    "PI-F03-01",
+    "PI-F03-02",
+    "PI-F03-03",
+    "PI-F03-04",
+    "PI-F04-01",
+    "PI-F04-02",
+    "PI-F04-03",
+    "PI-F04-04",
+    "PI-F04-05",
+    "PI-F04-06",
+    "PI-F04-07",
+    "PI-F04-08",
+    "PI-F04-09",
+    "PI-F05-01",
+    "PI-F05-02",
+    "PI-F05-03",
+    "PI-F05-04",
+    "PI-F05-05",
+    "PI-F05-06"
+  ],
+  "baseline_lock": "../inputs/baseline_lock.json",
+  "traceability": "requirements_trace.json",
+  "test_cases": "test_cases.json",
+  "old_contract_policy": "PRESERVE_AND_APPEND",
+  "production_implementation_executed": false,
+  "independent_qa_executed": false,
+  "protected_existing_files_ref": "../inputs/baseline_lock.json",
+  "forbidden_write_roots": [
+    "sql/",
+    "raw_vault/",
+    "parsed/",
+    "curated/",
+    ".cursor/rules/"
+  ],
+  "forbidden_existing_paths": [
+    "backend/requirements.txt",
+    "config/app.yaml"
+  ],
+  "whitelist_dialect": "case-sensitive Python fnmatch on repository-relative POSIX paths; brace notation is pre-expanded; a whitelist does not override protected baseline files except explicit APPEND_ONLY scope",
+  "gates": [
+    {
+      "id": "G0",
+      "name": "范围/来源/差异与当前工作流选择",
+      "owner": "TL",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "G1",
+      "name": "同环境旧全量与失败/skip身份对照",
+      "owner": "QA",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "G2",
+      "name": "新增合同/业务正反用例与实际引擎覆盖",
+      "owner": "QA",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "G3",
+      "name": "关键拒绝分支变异→FAIL→恢复PASS+hash",
+      "owner": "QA",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "G4",
+      "name": "旧三件套/原件/UID不变及新幂等/故障恢复",
+      "owner": "QA",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "G5",
+      "name": "零SQL/封版语义变动及白名单核对",
+      "owner": "DB/TL",
+      "status": "NOT_RUN"
+    }
+  ],
+  "loops": [
+    {
+      "loop_id": "L00",
+      "name": "基线、环境和实施选择",
+      "status": "PLANNED",
+      "depends_on": [],
+      "conditional_dependencies": [],
+      "requirement_ids": [],
+      "allowed_new_or_scoped_paths": [
+        "docs/proposals/doc2md-19cap/**",
+        "specs/proposals/doc2md-19cap-v1.0.0/**",
+        "specs/SPEC_INDEX.md"
+      ],
+      "scoped_existing_edits": [
+        {
+          "path": "specs/SPEC_INDEX.md",
+          "operation": "APPEND_ONLY",
+          "required_marker": "DOC2MD-19CAP"
+        }
+      ],
+      "tasks": [
+        {
+          "task_id": "T001",
+          "description": "记录ZIP HEAD、业务父提交、内容哈希及4项mode差异；核对最新工作树",
+          "output": "BASELINE_REPORT.md",
+          "responsible_role": "TL",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T002",
+          "description": "复测实际Python/Click/Typer/MySQL与旧pytest，记录具体失败与skip身份；不沿用数量容忍",
+          "output": "ENV_BASELINE.json",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T003",
+          "description": "锁定新目录/写入根和来源范围；把017保持只读的工作流选择记录追加到SPEC_INDEX",
+          "output": "SELECTION_RECORD.md",
+          "responsible_role": "TL",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T004",
+          "description": "DB预审新增层无直接DB写、无migration，核对旧服务只读/调用边界",
+          "output": "DB_PRECHECK.md",
+          "responsible_role": "DB",
+          "status": "TODO"
+        }
+      ],
+      "role_route": [
+        "TL_PLAN",
+        "DEV_SELF_TEST",
+        "DB_REVIEW",
+        "INDEPENDENT_QA",
+        "E2E",
+        "HO_HANDOFF",
+        "TL_FINAL"
+      ],
+      "required_evidence": [
+        "input_commit_and_hashes",
+        "actual_commands_and_exit_codes",
+        "test_case_id_results",
+        "protected_file_hash_comparison",
+        "known_gaps_by_scope",
+        "role_and_execution_identity"
+      ],
+      "next_loop_permission": "Only after applicable evidence gates. Missing real-source/model input blocks its acceptance, not independent coding branches."
+    },
+    {
+      "loop_id": "L01",
+      "name": "合同、输入桥接与原子产物仓库",
+      "status": "PLANNED",
+      "depends_on": [
+        "L00"
+      ],
+      "conditional_dependencies": [],
+      "requirement_ids": [
+        "PI-F03-01",
+        "PI-F03-02",
+        "PI-F03-03",
+        "PI-F03-04",
+        "PI-F04-01",
+        "PI-F04-02",
+        "PI-F04-03",
+        "PI-F04-04",
+        "PI-F04-05",
+        "PI-F04-06",
+        "PI-F04-07",
+        "PI-F04-08",
+        "PI-F04-09",
+        "PI-F05-01",
+        "PI-F05-02",
+        "PI-F05-03",
+        "PI-F05-04",
+        "PI-F05-05",
+        "PI-F05-06"
+      ],
+      "allowed_new_or_scoped_paths": [
+        "backend/app/extensions/__init__.py",
+        "backend/app/extensions/contracts.py",
+        "backend/app/extensions/identity.py",
+        "backend/app/extensions/cli.py",
+        "backend/app/extensions/runner.py",
+        "backend/app/extensions/io/**",
+        "backend/tests/extensions/conftest.py",
+        "backend/tests/extensions/test_contracts.py",
+        "backend/tests/extensions/test_artifact_store.py",
+        "backend/tests/extensions/test_extension_cli.py",
+        "backend/tests/extensions/test_read_bridge.py",
+        "config/doc2md_extensions.example.yaml",
+        "backend/requirements-extensions.in",
+        "backend/requirements-extensions.lock"
+      ],
+      "scoped_existing_edits": [],
+      "tasks": [
+        {
+          "task_id": "T101",
+          "description": "实现身份canonicalization与独立伴随schema，正反例及跨进程稳定ID",
+          "output": "contracts.py/identity.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T102",
+          "description": "实现受限extension_root、路径/符号链接校验和read-set固定",
+          "output": "io/paths.py、io/read_bridge.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T103",
+          "description": "实现单源/对象锁、staging+fsync+rename+CAS，故障点恢复",
+          "output": "io/artifact_store.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T104",
+          "description": "新增独立CLI薄壳；dry-run不建锁文件、不调用模型、不写报告",
+          "output": "cli.py、runner.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T105",
+          "description": "读取既有三件套/可选IR/manifest资产；缺失显式NEEDS_BASE_PARSE",
+          "output": "io/read_bridge.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T106",
+          "description": "新增目录fixture和contract/IO/CLI测试；对照原保护hash",
+          "output": "tests/extensions/test_contracts.py等",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        }
+      ],
+      "role_route": [
+        "TL_PLAN",
+        "DEV_SELF_TEST",
+        "DB_REVIEW",
+        "INDEPENDENT_QA",
+        "E2E",
+        "HO_HANDOFF",
+        "TL_FINAL"
+      ],
+      "required_evidence": [
+        "input_commit_and_hashes",
+        "actual_commands_and_exit_codes",
+        "test_case_id_results",
+        "protected_file_hash_comparison",
+        "known_gaps_by_scope",
+        "role_and_execution_identity"
+      ],
+      "next_loop_permission": "Only after applicable evidence gates. Missing real-source/model input blocks its acceptance, not independent coding branches."
+    },
+    {
+      "loop_id": "L02",
+      "name": "来源版本、许可与可恢复同步",
+      "status": "PLANNED",
+      "depends_on": [
+        "L01"
+      ],
+      "conditional_dependencies": [],
+      "requirement_ids": [
+        "PI-F03-01",
+        "PI-F03-02",
+        "PI-F03-03",
+        "PI-F03-04"
+      ],
+      "allowed_new_or_scoped_paths": [
+        "backend/app/extensions/sources/**",
+        "backend/tests/extensions/test_source_*.py"
+      ],
+      "scoped_existing_edits": [],
+      "tasks": [
+        {
+          "task_id": "T201",
+          "description": "定义SourceAdapter协议；先实现LocalManifestConnector与能力探测",
+          "output": "sources/base.py、local_manifest.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T202",
+          "description": "登记原生revision/本地snapshot、复用/重加工路径、同源版冲突",
+          "output": "sources/versioning.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T203",
+          "description": "来源类别/权威/许可/用途/有效期校验，不让外部覆盖行内",
+          "output": "sources/authority.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T204",
+          "description": "提交事件页、完整checkpoint与cursor；撤权先落账、墓碑禁止旧事件复活",
+          "output": "sources/sync.py、access.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T205",
+          "description": "生成源清单对账与影子路由；未连银行源保持UNSUPPORTED/NOT_CONNECTED",
+          "output": "sources/reconcile.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        }
+      ],
+      "role_route": [
+        "TL_PLAN",
+        "DEV_SELF_TEST",
+        "DB_REVIEW",
+        "INDEPENDENT_QA",
+        "E2E",
+        "HO_HANDOFF",
+        "TL_FINAL"
+      ],
+      "required_evidence": [
+        "input_commit_and_hashes",
+        "actual_commands_and_exit_codes",
+        "test_case_id_results",
+        "protected_file_hash_comparison",
+        "known_gaps_by_scope",
+        "role_and_execution_identity"
+      ],
+      "next_loop_permission": "Only after applicable evidence gates. Missing real-source/model input blocks its acceptance, not independent coding branches."
+    },
+    {
+      "loop_id": "L03",
+      "name": "原生Word与表格结构",
+      "status": "PLANNED",
+      "depends_on": [
+        "L01"
+      ],
+      "conditional_dependencies": [],
+      "requirement_ids": [
+        "PI-F04-01",
+        "PI-F04-04"
+      ],
+      "allowed_new_or_scoped_paths": [
+        "backend/app/extensions/word/**",
+        "backend/app/extensions/tables/grid.py",
+        "backend/tests/extensions/test_word_*.py",
+        "backend/tests/extensions/test_table_grid.py"
+      ],
+      "scoped_existing_edits": [],
+      "tasks": [
+        {
+          "task_id": "T301",
+          "description": "安全只读OOXML；FINAL文字与审阅批注分轨，结构修订识别",
+          "output": "word/package.py、final_view.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T302",
+          "description": "gridSpan/vMerge/gridBefore/After、anchor和嵌套表定位",
+          "output": "word/native_tables.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T303",
+          "description": "独立grid严格校验和slots生成；可复用旧schema的合法矩形投影校验但不写旧IR",
+          "output": "tables/grid.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T304",
+          "description": "构造/读取横纵合并、修订、空白、嵌套Word Gold并验证原件零变化",
+          "output": "test_word_tables.py、test_table_grid.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        }
+      ],
+      "role_route": [
+        "TL_PLAN",
+        "DEV_SELF_TEST",
+        "DB_REVIEW",
+        "INDEPENDENT_QA",
+        "E2E",
+        "HO_HANDOFF",
+        "TL_FINAL"
+      ],
+      "required_evidence": [
+        "input_commit_and_hashes",
+        "actual_commands_and_exit_codes",
+        "test_case_id_results",
+        "protected_file_hash_comparison",
+        "known_gaps_by_scope",
+        "role_and_execution_identity"
+      ],
+      "next_loop_permission": "Only after applicable evidence gates. Missing real-source/model input blocks its acceptance, not independent coding branches."
+    },
+    {
+      "loop_id": "L04",
+      "name": "Paddle/MinerU适配、坐标和OCR",
+      "status": "PLANNED",
+      "depends_on": [
+        "L01"
+      ],
+      "conditional_dependencies": [],
+      "requirement_ids": [
+        "PI-F04-02",
+        "PI-F04-03",
+        "PI-F04-05"
+      ],
+      "allowed_new_or_scoped_paths": [
+        "backend/app/extensions/adapters/paddle_structure.py",
+        "backend/app/extensions/adapters/mineru_reader.py",
+        "backend/app/extensions/geometry/**",
+        "backend/app/extensions/tables/ocr_alignment.py",
+        "backend/app/extensions/worker/**",
+        "backend/tests/extensions/test_layout_adapter.py",
+        "backend/tests/extensions/test_geometry.py",
+        "backend/tests/extensions/test_ocr_alignment.py",
+        "backend/tests/extensions/test_worker_limits.py",
+        "backend/requirements-ocr-worker.in",
+        "backend/requirements-ocr-worker.lock"
+      ],
+      "scoped_existing_edits": [],
+      "tasks": [
+        {
+          "task_id": "T401",
+          "description": "在独立worker环境锁PaddleOCR/Paddle/权重；保存真实golden raw和API字段清单",
+          "output": "adapters/paddle_structure.py、worker/",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T402",
+          "description": "MinerU content_list/middle只读映射，唯一匹配才绑定坐标；复用已有正确表",
+          "output": "adapters/mineru_reader.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T403",
+          "description": "实现PDF point/像素/旋转/缩放/crop矩阵与可逆验证",
+          "output": "geometry/transform.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T404",
+          "description": "优先引擎cell文字，仅对歧义做token候选关联与局部处理",
+          "output": "tables/ocr_alignment.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T405",
+          "description": "真实扫描语料分层评测；记录三份PDF坐标单位和回显；缺真实引擎不得标完成",
+          "output": "test_layout_adapter.py、reports",
+          "responsible_role": "QA",
+          "status": "TODO"
+        }
+      ],
+      "role_route": [
+        "TL_PLAN",
+        "DEV_SELF_TEST",
+        "DB_REVIEW",
+        "INDEPENDENT_QA",
+        "E2E",
+        "HO_HANDOFF",
+        "TL_FINAL"
+      ],
+      "required_evidence": [
+        "input_commit_and_hashes",
+        "actual_commands_and_exit_codes",
+        "test_case_id_results",
+        "protected_file_hash_comparison",
+        "known_gaps_by_scope",
+        "role_and_execution_identity"
+      ],
+      "next_loop_permission": "Only after applicable evidence gates. Missing real-source/model input blocks its acceptance, not independent coding branches."
+    },
+    {
+      "loop_id": "L05",
+      "name": "多级表头、续表与脚注",
+      "status": "PLANNED",
+      "depends_on": [
+        "L03"
+      ],
+      "conditional_dependencies": [
+        {
+          "condition": "扫描表语义验收",
+          "loop": "L04"
+        }
+      ],
+      "requirement_ids": [
+        "PI-F04-06",
+        "PI-F04-07",
+        "PI-F04-08"
+      ],
+      "allowed_new_or_scoped_paths": [
+        "backend/app/extensions/tables/semantics.py",
+        "backend/app/extensions/tables/continuation.py",
+        "backend/app/extensions/tables/notes.py",
+        "backend/app/extensions/render/**",
+        "backend/tests/extensions/test_header_paths.py",
+        "backend/tests/extensions/test_continuation.py",
+        "backend/tests/extensions/test_notes.py",
+        "backend/tests/extensions/test_review_packet.py"
+      ],
+      "scoped_existing_edits": [],
+      "tasks": [
+        {
+          "task_id": "T501",
+          "description": "列/行标题路径由cell引用形成，单位/表题上下文独立",
+          "output": "tables/semantics.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T502",
+          "description": "相邻页续表候选，比较表名/期间/单位/列定义；确认前不合并",
+          "output": "tables/continuation.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T503",
+          "description": "原生脚注/版面备注绑定到明确scope，歧义阻断条件发布",
+          "output": "tables/notes.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T504",
+          "description": "生成独立可读rendered/review packet及上下文，不改旧parsed_text",
+          "output": "render/review_packet.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        }
+      ],
+      "role_route": [
+        "TL_PLAN",
+        "DEV_SELF_TEST",
+        "DB_REVIEW",
+        "INDEPENDENT_QA",
+        "E2E",
+        "HO_HANDOFF",
+        "TL_FINAL"
+      ],
+      "required_evidence": [
+        "input_commit_and_hashes",
+        "actual_commands_and_exit_codes",
+        "test_case_id_results",
+        "protected_file_hash_comparison",
+        "known_gaps_by_scope",
+        "role_and_execution_identity"
+      ],
+      "next_loop_permission": "Only after applicable evidence gates. Missing real-source/model input blocks its acceptance, not independent coding branches."
+    },
+    {
+      "loop_id": "L06",
+      "name": "流程图、图表与一次ROI复识别",
+      "status": "PLANNED",
+      "depends_on": [
+        "L04"
+      ],
+      "conditional_dependencies": [],
+      "requirement_ids": [
+        "PI-F05-01",
+        "PI-F05-02",
+        "PI-F05-03",
+        "PI-F05-04",
+        "PI-F05-05",
+        "PI-F05-06"
+      ],
+      "allowed_new_or_scoped_paths": [
+        "backend/app/extensions/vision/**",
+        "backend/app/extensions/adapters/vision_http.py",
+        "backend/app/extensions/adapters/chart_paddle.py",
+        "backend/tests/extensions/test_vision_*.py"
+      ],
+      "scoped_existing_edits": [],
+      "tasks": [
+        {
+          "task_id": "T601",
+          "description": "Paddle布局+VLM分类候选和唯一事实路由，混合图分区域",
+          "output": "vision/classify.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T602",
+          "description": "批准VLM结构化流程节点/边，schema与引用校验，不训练检测网络",
+          "output": "vision/flow.py、adapters/vision_http.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T603",
+          "description": "图结构及正文一致检查，循环保留、否定/冲突按证据报告",
+          "output": "vision/consistency.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T604",
+          "description": "PP-Chart2Table适配、轴/单位/标签回核；估读不能伪装精确",
+          "output": "vision/chart.py、adapters/chart_paddle.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T605",
+          "description": "基于verified region追加一次ROI复识别，保存全部候选和预算/超时",
+          "output": "vision/roi.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T606",
+          "description": "真实流程图/统计图语料盲评，分离模型能力与工程结构校验",
+          "output": "VISION_GOLD_REPORT.md",
+          "responsible_role": "QA",
+          "status": "TODO"
+        }
+      ],
+      "role_route": [
+        "TL_PLAN",
+        "DEV_SELF_TEST",
+        "DB_REVIEW",
+        "INDEPENDENT_QA",
+        "E2E",
+        "HO_HANDOFF",
+        "TL_FINAL"
+      ],
+      "required_evidence": [
+        "input_commit_and_hashes",
+        "actual_commands_and_exit_codes",
+        "test_case_id_results",
+        "protected_file_hash_comparison",
+        "known_gaps_by_scope",
+        "role_and_execution_identity"
+      ],
+      "next_loop_permission": "Only after applicable evidence gates. Missing real-source/model input blocks its acceptance, not independent coding branches."
+    },
+    {
+      "loop_id": "L07",
+      "name": "人工纠错、候选证据与依赖失效",
+      "status": "PLANNED",
+      "depends_on": [
+        "L02",
+        "L05",
+        "L06"
+      ],
+      "conditional_dependencies": [],
+      "requirement_ids": [
+        "PI-F04-09",
+        "PI-F05-06"
+      ],
+      "allowed_new_or_scoped_paths": [
+        "backend/app/extensions/evidence/**",
+        "backend/app/extensions/review/**",
+        "backend/app/extensions/release/consumers.py",
+        "backend/tests/extensions/test_candidate_evidence.py",
+        "backend/tests/extensions/test_patches.py",
+        "backend/tests/extensions/test_review_decisions.py",
+        "backend/tests/extensions/test_dependencies.py",
+        "backend/tests/extensions/test_consumer_events.py"
+      ],
+      "scoped_existing_edits": [],
+      "tasks": [
+        {
+          "task_id": "T701",
+          "description": "带版本/证据的candidate_evidence；每次读取/导出检查当前权限",
+          "output": "evidence/candidates.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T702",
+          "description": "RFC6902 test/replace白名单、基版CAS、只读预览、授权复核记录",
+          "output": "review/patches.py、review/decisions.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T703",
+          "description": "依赖DAG，父表头/轴单位等fan-out重算；反向补丁留历史",
+          "output": "review/dependencies.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T704",
+          "description": "outbox事件和幂等ACK/晚到ACK校验，未连consumer不造成功",
+          "output": "release/consumers.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T705",
+          "description": "本地纠错→影响清单→重算→复核完整E2E；外部只报真实已连接范围",
+          "output": "PATCH_E2E_REPORT.md",
+          "responsible_role": "QA",
+          "status": "TODO"
+        }
+      ],
+      "role_route": [
+        "TL_PLAN",
+        "DEV_SELF_TEST",
+        "DB_REVIEW",
+        "INDEPENDENT_QA",
+        "E2E",
+        "HO_HANDOFF",
+        "TL_FINAL"
+      ],
+      "required_evidence": [
+        "input_commit_and_hashes",
+        "actual_commands_and_exit_codes",
+        "test_case_id_results",
+        "protected_file_hash_comparison",
+        "known_gaps_by_scope",
+        "role_and_execution_identity"
+      ],
+      "next_loop_permission": "Only after applicable evidence gates. Missing real-source/model input blocks its acceptance, not independent coding branches."
+    },
+    {
+      "loop_id": "L08",
+      "name": "最终对账、切换、恢复与交付",
+      "status": "PLANNED",
+      "depends_on": [
+        "L07"
+      ],
+      "conditional_dependencies": [],
+      "requirement_ids": [
+        "PI-F03-03"
+      ],
+      "allowed_new_or_scoped_paths": [
+        "backend/app/extensions/release/reconcile.py",
+        "backend/app/extensions/release/switch.py",
+        "backend/app/extensions/release/recovery.py",
+        "backend/tests/extensions/test_switch_recovery.py",
+        "backend/tests/extensions/test_full_extension_e2e.py",
+        "docs/proposals/doc2md-19cap/reports/**"
+      ],
+      "scoped_existing_edits": [],
+      "tasks": [
+        {
+          "task_id": "T801",
+          "description": "完整迁移分母/许可/版本/权限差分，LOCAL_READY与ACTIVE分开",
+          "output": "release/reconcile.py、switch.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T802",
+          "description": "并发切换/回退与新旧任务pin，撤权状态不回滚",
+          "output": "test_switch_recovery.py",
+          "responsible_role": "QA",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T803",
+          "description": "真实源/consumer接口有输入才联调切换回退；缺失分项NOT_CONNECTED",
+          "output": "BANK_JOINT_REPORT.md",
+          "responsible_role": "QA",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T804",
+          "description": "旧全量回归、合同负例变异和原件/parsed/hash/UID/SQL零变化",
+          "output": "REGRESSION_REPORT.md",
+          "responsible_role": "QA",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T805",
+          "description": "故障注入、备份恢复、cold/warm性能和资源边界实测",
+          "output": "RECOVERY_PERFORMANCE_REPORT.md",
+          "responsible_role": "QA",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T806",
+          "description": "HO按证据写交接，TL逐验收项决定可交范围/缺口；不假定全部已验收",
+          "output": "HANDOFF.md、TL_FINAL_REVIEW.md",
+          "responsible_role": "HO/TL",
+          "status": "TODO"
+        }
+      ],
+      "role_route": [
+        "TL_PLAN",
+        "DEV_SELF_TEST",
+        "DB_REVIEW",
+        "INDEPENDENT_QA",
+        "E2E",
+        "HO_HANDOFF",
+        "TL_FINAL"
+      ],
+      "required_evidence": [
+        "input_commit_and_hashes",
+        "actual_commands_and_exit_codes",
+        "test_case_id_results",
+        "protected_file_hash_comparison",
+        "known_gaps_by_scope",
+        "role_and_execution_identity"
+      ],
+      "next_loop_permission": "Only after applicable evidence gates. Missing real-source/model input blocks its acceptance, not independent coding branches."
+    }
+  ]
+}

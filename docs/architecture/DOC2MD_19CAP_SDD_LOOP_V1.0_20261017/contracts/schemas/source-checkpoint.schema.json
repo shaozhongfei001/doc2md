@@ -1,0 +1,94 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "source-checkpoint/1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "source_id": {
+      "minLength": 1,
+      "title": "Source Id",
+      "type": "string"
+    },
+    "generation_id": {
+      "minLength": 1,
+      "title": "Generation Id",
+      "type": "string"
+    },
+    "previous_generation_id": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Previous Generation Id"
+    },
+    "cursor_token": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Cursor Token"
+    },
+    "cursor_sha256": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Cursor Sha256"
+    },
+    "committed_event_ids": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Committed Event Ids",
+      "type": "array"
+    },
+    "enumeration_complete": {
+      "title": "Enumeration Complete",
+      "type": "boolean"
+    },
+    "selection_scope_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Selection Scope Hash",
+      "type": "string"
+    },
+    "authorization_snapshot_ref": {
+      "minLength": 1,
+      "title": "Authorization Snapshot Ref",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "source_id",
+    "generation_id",
+    "previous_generation_id",
+    "cursor_token",
+    "cursor_sha256",
+    "committed_event_ids",
+    "enumeration_complete",
+    "selection_scope_hash",
+    "authorization_snapshot_ref"
+  ],
+  "title": "SyncCheckpoint",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:doc2md:19cap:source-checkpoint:1.0",
+  "x-contract-state": "DESIGN_CANDIDATE"
+}

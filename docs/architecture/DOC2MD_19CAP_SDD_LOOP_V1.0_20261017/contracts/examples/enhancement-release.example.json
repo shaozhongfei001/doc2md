@@ -1,0 +1,22 @@
+{
+  "schema_version": "enhancement-release/1.0",
+  "release_id": "release-99e5095aacce94d035c31d3e0842540182591e18766b7cdf6c9f3e095e837dda",
+  "generation_ids": [
+    "80e5c24ef89b8c533e2b9d4729567509c8b575113047dd496762e4c4b9b08835"
+  ],
+  "expected_previous_release_id": null,
+  "source_access_revisions": {
+    "access-0863d0a7db9e2dd431ab93aabdd2d76205cc3ab58c4c97e4a27073a6e2daf1e6": 1
+  },
+  "required_consumer_ids": [
+    "local_candidate_export"
+  ],
+  "review_decision_refs": [],
+  "reconcile_report": {
+    "relative_path": "reports/demo_reconcile.json",
+    "sha256": "6c58468cae0e1c8314db2c8e76b5fdd4800afaf5228beb0bffab222353d1491f",
+    "root": "EXTENSION"
+  },
+  "state": "PREPARED",
+  "external_ack_refs": {}
+}

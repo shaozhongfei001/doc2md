@@ -1,0 +1,245 @@
+{
+  "schema_version": "document-enhancement/1.0",
+  "generation_id": "80e5c24ef89b8c533e2b9d4729567509c8b575113047dd496762e4c4b9b08835",
+  "job_key": "8b650f0993401eaa8aaad5f332bc1b326585df75a42a1a6c3ee792b0bf3ea3a2",
+  "content_sha256": "953b60cf03a3b48258ecae1785963e5064535cb80c74efe9a7e992c28da44ef0",
+  "source_version_ids": [
+    "sv-bbeaf4cdd91bb8011f0c37a5a7d578ca803e77aa10aacd93d9c97238b2c69a26"
+  ],
+  "base_manifest_sha256": null,
+  "base_ir_sha256": null,
+  "raw_output_sha256": "e079bf29901fdbbdacc4d76ff3a382464d6cdf6bcda9ceb16d3f4a0c9d6e08b1",
+  "normalizer_version": "candidate-1.0",
+  "profile_sha256": "410fc72acc95d52d010350785fdeed7105710d2d3a1ba0f3ef1c0dd7fa3ce28b",
+  "geometries": [],
+  "tables": [
+    {
+      "table_id": "table-163e78a142e1a6e9db13aec82e8162d5dd4e15aa066de1148ea7a727c5c62d03",
+      "ir_ref": null,
+      "parent_cell_id": null,
+      "n_rows": 3,
+      "n_cols": 2,
+      "cells": [
+        {
+          "cell_id": "cell-2d7a18dfff68ed4b9ab2c53c37080665ff3777d80a9f6ac5f79e14897c974611",
+          "row": 0,
+          "col": 0,
+          "rowspan": 1,
+          "colspan": 2,
+          "text": "期限",
+          "text_origin": "SOURCE_XML",
+          "text_alignment": "NATIVE",
+          "engine_confidence": null,
+          "token_ids": [],
+          "evidence_ids": [
+            "ce-d5b49fb36e21f270d2bf24639e945b43da77a6a88dd8b99fd2b949fe4cadd310"
+          ],
+          "nested_table_ids": []
+        },
+        {
+          "cell_id": "cell-0ed02b03827e63aa3c5ae7e8ae7a5124b10960ccd8b925b2ef4c46d05d144fcf",
+          "row": 1,
+          "col": 0,
+          "rowspan": 1,
+          "colspan": 1,
+          "text": "人民币",
+          "text_origin": "SOURCE_XML",
+          "text_alignment": "NATIVE",
+          "engine_confidence": null,
+          "token_ids": [],
+          "evidence_ids": [
+            "ce-f1ae1d4431bc3ab4f2daf1e9540d8f5b7ec02f2a0eb9240de5c6413a728a89c7"
+          ],
+          "nested_table_ids": []
+        },
+        {
+          "cell_id": "cell-415e1e61f946d15a32506d35faeac8ddaf473232357ae2d521f08e5b1447c842",
+          "row": 1,
+          "col": 1,
+          "rowspan": 1,
+          "colspan": 1,
+          "text": "外币",
+          "text_origin": "SOURCE_XML",
+          "text_alignment": "NATIVE",
+          "engine_confidence": null,
+          "token_ids": [],
+          "evidence_ids": [
+            "ce-dbb5eaa1c7dd9f0c106bbd71ae696380e4540f57f9570e94d5b4795028b7cac9"
+          ],
+          "nested_table_ids": []
+        },
+        {
+          "cell_id": "cell-7b9f1d9d96ccfffbabebcef82215320a5369bafd7200ca6f51685e4170a5077a",
+          "row": 2,
+          "col": 0,
+          "rowspan": 1,
+          "colspan": 1,
+          "text": "12个月",
+          "text_origin": "SOURCE_XML",
+          "text_alignment": "NATIVE",
+          "engine_confidence": null,
+          "token_ids": [],
+          "evidence_ids": [
+            "ce-bc247ddc68e0584706bf2f2c51b6c45b390a3e8e26da991c54a22b1173403a38"
+          ],
+          "nested_table_ids": []
+        },
+        {
+          "cell_id": "cell-3b0b134586e2af8d4d56897d985857b69de2435416f9f14dec2d31f3d5f9dd98",
+          "row": 2,
+          "col": 1,
+          "rowspan": 1,
+          "colspan": 1,
+          "text": "6个月",
+          "text_origin": "SOURCE_XML",
+          "text_alignment": "NATIVE",
+          "engine_confidence": null,
+          "token_ids": [],
+          "evidence_ids": [
+            "ce-277cddfa1d244f26f752161274951697df7050fb9c8e7650b5914ad6fd00cdb5"
+          ],
+          "nested_table_ids": []
+        }
+      ],
+      "slots": [
+        [
+          "cell-2d7a18dfff68ed4b9ab2c53c37080665ff3777d80a9f6ac5f79e14897c974611",
+          "cell-2d7a18dfff68ed4b9ab2c53c37080665ff3777d80a9f6ac5f79e14897c974611"
+        ],
+        [
+          "cell-0ed02b03827e63aa3c5ae7e8ae7a5124b10960ccd8b925b2ef4c46d05d144fcf",
+          "cell-415e1e61f946d15a32506d35faeac8ddaf473232357ae2d521f08e5b1447c842"
+        ],
+        [
+          "cell-7b9f1d9d96ccfffbabebcef82215320a5369bafd7200ca6f51685e4170a5077a",
+          "cell-3b0b134586e2af8d4d56897d985857b69de2435416f9f14dec2d31f3d5f9dd98"
+        ]
+      ],
+      "omitted_slots": [],
+      "omission_evidence_ids": [],
+      "cell_semantics": [
+        {
+          "data_cell_id": "cell-7b9f1d9d96ccfffbabebcef82215320a5369bafd7200ca6f51685e4170a5077a",
+          "column_header_cell_ids": [
+            "cell-2d7a18dfff68ed4b9ab2c53c37080665ff3777d80a9f6ac5f79e14897c974611",
+            "cell-0ed02b03827e63aa3c5ae7e8ae7a5124b10960ccd8b925b2ef4c46d05d144fcf"
+          ],
+          "row_header_cell_ids": [],
+          "note_ids": [],
+          "unit_raw": null,
+          "state": "CANDIDATE"
+        },
+        {
+          "data_cell_id": "cell-3b0b134586e2af8d4d56897d985857b69de2435416f9f14dec2d31f3d5f9dd98",
+          "column_header_cell_ids": [
+            "cell-2d7a18dfff68ed4b9ab2c53c37080665ff3777d80a9f6ac5f79e14897c974611",
+            "cell-415e1e61f946d15a32506d35faeac8ddaf473232357ae2d521f08e5b1447c842"
+          ],
+          "row_header_cell_ids": [],
+          "note_ids": [],
+          "unit_raw": null,
+          "state": "CANDIDATE"
+        }
+      ],
+      "notes": [],
+      "source_html_ref": null,
+      "structure_state": "VALID_CANDIDATE"
+    }
+  ],
+  "continuations": [],
+  "visuals": [],
+  "evidence": [
+    {
+      "candidate_evidence_id": "ce-d5b49fb36e21f270d2bf24639e945b43da77a6a88dd8b99fd2b949fe4cadd310",
+      "source_version_id": "sv-bbeaf4cdd91bb8011f0c37a5a7d578ca803e77aa10aacd93d9c97238b2c69a26",
+      "locator": {
+        "kind": "DOCX_XML",
+        "source_sha256": "953b60cf03a3b48258ecae1785963e5064535cb80c74efe9a7e992c28da44ef0",
+        "part_name": "word/document.xml",
+        "part_sha256": "1c9cec8041147a1488ef27e75a4a7cfe144f724d72a0be72502e43a28df902cc",
+        "element_path": "/w:document/w:body/w:tbl[1]/w:tr[1]/w:tc[1]",
+        "view": "FINAL"
+      },
+      "raw_engine_ref": null,
+      "quote": "期限",
+      "crop_ref": null,
+      "observation_class": "SOURCE_CONTENT",
+      "review_state": "UNREVIEWED",
+      "review_decision_ref": null
+    },
+    {
+      "candidate_evidence_id": "ce-f1ae1d4431bc3ab4f2daf1e9540d8f5b7ec02f2a0eb9240de5c6413a728a89c7",
+      "source_version_id": "sv-bbeaf4cdd91bb8011f0c37a5a7d578ca803e77aa10aacd93d9c97238b2c69a26",
+      "locator": {
+        "kind": "DOCX_XML",
+        "source_sha256": "953b60cf03a3b48258ecae1785963e5064535cb80c74efe9a7e992c28da44ef0",
+        "part_name": "word/document.xml",
+        "part_sha256": "1c9cec8041147a1488ef27e75a4a7cfe144f724d72a0be72502e43a28df902cc",
+        "element_path": "/w:document/w:body/w:tbl[1]/w:tr[2]/w:tc[1]",
+        "view": "FINAL"
+      },
+      "raw_engine_ref": null,
+      "quote": "人民币",
+      "crop_ref": null,
+      "observation_class": "SOURCE_CONTENT",
+      "review_state": "UNREVIEWED",
+      "review_decision_ref": null
+    },
+    {
+      "candidate_evidence_id": "ce-dbb5eaa1c7dd9f0c106bbd71ae696380e4540f57f9570e94d5b4795028b7cac9",
+      "source_version_id": "sv-bbeaf4cdd91bb8011f0c37a5a7d578ca803e77aa10aacd93d9c97238b2c69a26",
+      "locator": {
+        "kind": "DOCX_XML",
+        "source_sha256": "953b60cf03a3b48258ecae1785963e5064535cb80c74efe9a7e992c28da44ef0",
+        "part_name": "word/document.xml",
+        "part_sha256": "1c9cec8041147a1488ef27e75a4a7cfe144f724d72a0be72502e43a28df902cc",
+        "element_path": "/w:document/w:body/w:tbl[1]/w:tr[2]/w:tc[2]",
+        "view": "FINAL"
+      },
+      "raw_engine_ref": null,
+      "quote": "外币",
+      "crop_ref": null,
+      "observation_class": "SOURCE_CONTENT",
+      "review_state": "UNREVIEWED",
+      "review_decision_ref": null
+    },
+    {
+      "candidate_evidence_id": "ce-bc247ddc68e0584706bf2f2c51b6c45b390a3e8e26da991c54a22b1173403a38",
+      "source_version_id": "sv-bbeaf4cdd91bb8011f0c37a5a7d578ca803e77aa10aacd93d9c97238b2c69a26",
+      "locator": {
+        "kind": "DOCX_XML",
+        "source_sha256": "953b60cf03a3b48258ecae1785963e5064535cb80c74efe9a7e992c28da44ef0",
+        "part_name": "word/document.xml",
+        "part_sha256": "1c9cec8041147a1488ef27e75a4a7cfe144f724d72a0be72502e43a28df902cc",
+        "element_path": "/w:document/w:body/w:tbl[1]/w:tr[3]/w:tc[1]",
+        "view": "FINAL"
+      },
+      "raw_engine_ref": null,
+      "quote": "12个月",
+      "crop_ref": null,
+      "observation_class": "SOURCE_CONTENT",
+      "review_state": "UNREVIEWED",
+      "review_decision_ref": null
+    },
+    {
+      "candidate_evidence_id": "ce-277cddfa1d244f26f752161274951697df7050fb9c8e7650b5914ad6fd00cdb5",
+      "source_version_id": "sv-bbeaf4cdd91bb8011f0c37a5a7d578ca803e77aa10aacd93d9c97238b2c69a26",
+      "locator": {
+        "kind": "DOCX_XML",
+        "source_sha256": "953b60cf03a3b48258ecae1785963e5064535cb80c74efe9a7e992c28da44ef0",
+        "part_name": "word/document.xml",
+        "part_sha256": "1c9cec8041147a1488ef27e75a4a7cfe144f724d72a0be72502e43a28df902cc",
+        "element_path": "/w:document/w:body/w:tbl[1]/w:tr[3]/w:tc[2]",
+        "view": "FINAL"
+      },
+      "raw_engine_ref": null,
+      "quote": "6个月",
+      "crop_ref": null,
+      "observation_class": "SOURCE_CONTENT",
+      "review_state": "UNREVIEWED",
+      "review_decision_ref": null
+    }
+  ],
+  "issues": [],
+  "numeric_estimates_enabled": false
+}

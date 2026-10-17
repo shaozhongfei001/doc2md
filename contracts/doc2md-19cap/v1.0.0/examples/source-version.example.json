@@ -1,0 +1,28 @@
+{
+  "schema_version": "source-version/1.0",
+  "source_version_id": "sv-bbeaf4cdd91bb8011f0c37a5a7d578ca803e77aa10aacd93d9c97238b2c69a26",
+  "source_id": "demo_bank_policy",
+  "external_object_id": "policy_demo_01",
+  "version_kind": "LOCAL_SNAPSHOT",
+  "source_revision": null,
+  "snapshot_id": "demo_snapshot_01",
+  "content_sha256": "953b60cf03a3b48258ecae1785963e5064535cb80c74efe9a7e992c28da44ef0",
+  "legacy_query_ref": null,
+  "processing_route": "REPROCESS",
+  "source_kind": "BANK_RULE",
+  "authority_class": "BANK_EFFECTIVE_RULE",
+  "permission_ref": "local_operator_demo",
+  "owner_ref": "demo_owner",
+  "classification": "INTERNAL",
+  "purpose_scopes": [
+    "LOCAL_DESIGN_TEST"
+  ],
+  "license_ref": null,
+  "valid_from": null,
+  "valid_to": null,
+  "source_file_ref": {
+    "relative_path": "inbox/demo.docx",
+    "sha256": "953b60cf03a3b48258ecae1785963e5064535cb80c74efe9a7e992c28da44ef0",
+    "root": "EXTENSION"
+  }
+}

@@ -1,0 +1,124 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "enhancement-review/1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "review_id": {
+      "minLength": 1,
+      "title": "Review Id",
+      "type": "string"
+    },
+    "object_type": {
+      "enum": [
+        "PATCH",
+        "CANDIDATE",
+        "TABLE",
+        "FLOW",
+        "CHART",
+        "RELEASE"
+      ],
+      "title": "Object Type",
+      "type": "string"
+    },
+    "object_id": {
+      "minLength": 1,
+      "title": "Object Id",
+      "type": "string"
+    },
+    "object_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Object Hash",
+      "type": "string"
+    },
+    "base_generation_id": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Base Generation Id",
+      "type": "string"
+    },
+    "source_access_revisions": {
+      "additionalProperties": {
+        "type": "integer"
+      },
+      "title": "Source Access Revisions",
+      "type": "object"
+    },
+    "scope_paths": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Scope Paths",
+      "type": "array"
+    },
+    "decision": {
+      "enum": [
+        "APPROVE",
+        "RETURN",
+        "REJECT"
+      ],
+      "title": "Decision",
+      "type": "string"
+    },
+    "reason": {
+      "minLength": 1,
+      "title": "Reason",
+      "type": "string"
+    },
+    "evidence_ids": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Evidence Ids",
+      "type": "array"
+    },
+    "reviewer_subject": {
+      "minLength": 1,
+      "title": "Reviewer Subject",
+      "type": "string"
+    },
+    "identity_mode": {
+      "enum": [
+        "LOCAL_OS",
+        "BANK_AUTH"
+      ],
+      "title": "Identity Mode",
+      "type": "string"
+    },
+    "authority_ref": {
+      "minLength": 1,
+      "title": "Authority Ref",
+      "type": "string"
+    },
+    "decided_at": {
+      "format": "date-time",
+      "title": "Decided At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "review_id",
+    "object_type",
+    "object_id",
+    "object_hash",
+    "base_generation_id",
+    "source_access_revisions",
+    "scope_paths",
+    "decision",
+    "reason",
+    "evidence_ids",
+    "reviewer_subject",
+    "identity_mode",
+    "authority_ref",
+    "decided_at"
+  ],
+  "title": "ReviewDecision",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:doc2md:19cap:enhancement-review:1.0",
+  "x-contract-state": "DESIGN_CANDIDATE"
+}
