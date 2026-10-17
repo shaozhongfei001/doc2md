@@ -11,3 +11,11 @@ rich==13.9.4
 pytest==8.3.4
 markitdown[all]>=0.1.0
 streamlit>=1.28,<1.41
+pypdf==6.20.1
+
+# --- 015 图片解析流水线：以下为**可选**依赖，刻意不写入本文件（D-4） --------------------
+# 015 的引擎依赖全部经惰性 import + 依赖探测，缺失时以 DEPENDENCY_MISSING 显式失败，
+# 绝不静默降级、绝不影响 014/016 主链路。如需启用对应引擎，请**手动**安装：
+#   paddleocr>=2.7      # --engine paddleocr：OCR 引擎（缺失 → 非 dry-run 时 exit 1）
+#   opencv-python-headless>=4.8.0   # 图像质量评分(laplacian)与预处理(deskew/denoise/binarize)
+# 缺失 cv2 时 image_quality 自动降级为 Pillow 梯度法（阈值 20.0），功能不中断。

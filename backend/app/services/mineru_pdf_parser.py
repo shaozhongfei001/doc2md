@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import shutil
 import subprocess
 import uuid
@@ -22,7 +23,9 @@ from app.core.parser_routing import (
     ext_from_path,
     match_route_type,
     normalize_file_ext,
+    route_pdf_with_sniff,
 )
+from app.core.pdf_sniffing import REASON_SNIFF_SKIPPED, load_sniff_config, resolve_pdf_sniff
 from app.core.vault_paths import VAULT_COPIED, build_vault_artifact_paths, build_vault_dir
 from app.models.file import KbFileContent, KbFileInstance
 from app.models.vault import KbRawVaultObject
@@ -206,6 +209,22 @@ def _utc_iso() -> str:
     return datetime.now(UTC).replace(tzinfo=UTC).isoformat().replace("+00:00", "Z")
 
 
+def _process_output_tail(run_result: MagicPdfRunResult, *, limit: int = 800) -> str:
+    """返回子进程输出的尾部（单行化），用于把真实失败原因带进错误信息。
+
+    magic-pdf 在解析器内部抛异常时**仍以 exit 0 退出**，只把 traceback 打到
+    stdout；若仅报 ``output missing markdown content``，真实原因会被完全掩盖，
+    排查只能靠复现。这里把 stdout/stderr 尾部附在消息里。
+    """
+    combined = "\n".join(
+        part.strip() for part in (run_result.stdout, run_result.stderr) if part and part.strip()
+    )
+    if not combined:
+        return f" | returncode={run_result.returncode} | output_tail=<empty>"
+    tail = combined[-limit:].replace("\r", "")
+    return f" | returncode={run_result.returncode} | output_tail={tail!r}"
+
+
 def _assets_dir_for(parsed_dir: Path) -> Path:
     return parsed_dir / "assets"
 
@@ -248,7 +267,7 @@ class MineruPdfParserService:
             raise ValueError("Must provide sha256 or content_uid")
 
         content = self._load_single_content(sha256=target_sha)
-        plan = self._build_plan(content=content, force=force)
+        plan = self._build_plan(content=content, force=force, dry_run=dry_run)
         item = self._plan_to_item(plan)
 
         if dry_run:
@@ -288,7 +307,7 @@ class MineruPdfParserService:
 
         for content in contents:
             assert content.sha256 is not None
-            plan = self._build_plan(content=content, force=force)
+            plan = self._build_plan(content=content, force=force, dry_run=dry_run)
             result.plans.append(plan)
 
             if dry_run:
@@ -397,7 +416,13 @@ class MineruPdfParserService:
             assets_dir=plan.assets_dir,
         )
 
-    def _build_plan(self, *, content: KbFileContent, force: bool) -> MineruParsePlan:
+    def _build_plan(
+        self,
+        *,
+        content: KbFileContent,
+        force: bool,
+        dry_run: bool = False,
+    ) -> MineruParsePlan:
         sha256 = content.sha256
         assert sha256 is not None
 
@@ -423,6 +448,26 @@ class MineruPdfParserService:
         assets_dir = _assets_dir_for(parsed_dir)
         vault_dir = self._resolve_vault_dir(db_content, vault_object, sha256)
         original_bin = build_vault_artifact_paths(vault_dir)["original_bin"]
+
+        # 014 §7.4：与 router 复用同一嗅探管线，保证「router 判 scanned 的内容，
+        # 007 不会按 digital 处理」。仅 PDF 分支生效，其余路径逐字节不变。
+        if route_type == RouteType.PDF_DIGITAL:
+            if original_bin.is_file():
+                sniff = resolve_pdf_sniff(
+                    original_bin,
+                    sha256,
+                    config=load_sniff_config(),
+                    cache_root=self.config.storage.sniff_cache_root,
+                    use_cache=True,
+                    write_cache=not dry_run,
+                )
+                route_type, decision, rule_name, _hint, reason = route_pdf_with_sniff(sniff)
+            else:
+                # D-3：original.bin 不可达 → 不嗅探，沿用 004 判定并标注原因。
+                reason = f"{reason}; {REASON_SNIFF_SKIPPED}"
+                logger.warning(
+                    "PDF sniff skipped for sha256=%s: original.bin not accessible", sha256
+                )
 
         base = MineruParsePlan(
             content_uid=db_content.content_uid,
@@ -515,8 +560,8 @@ class MineruPdfParserService:
                     sha256=sha256,
                     code=DECISION_SUBPROCESS_ERROR,
                     message=(
-                        f"magic-pdf exited with code {run_result.returncode}: "
-                        f"{run_result.stderr.strip() or run_result.stdout.strip()}"
+                        f"magic-pdf exited with code {run_result.returncode}"
+                        f"{_process_output_tail(run_result)}"
                     ),
                 )
                 item.status = STATUS_FAILED
@@ -559,7 +604,10 @@ class MineruPdfParserService:
                 content_uid=plan.content_uid,
                 sha256=plan.sha256,
                 code=DECISION_OUTPUT_CONTRACT_VIOLATION,
-                message="magic-pdf output missing markdown content",
+                message=(
+                    "magic-pdf output missing markdown content"
+                    f"{_process_output_tail(run_result)}"
+                ),
             )
             item = self._plan_to_item(plan)
             item.status = STATUS_FAILED
@@ -663,6 +711,22 @@ class MineruPdfParserService:
         )
         return item, error
 
+    def _stage_mineru_input(self, input_path: Path, output_dir: Path) -> Path:
+        """为 MinerU 准备带 ``.pdf`` 后缀的输入副本。
+
+        MinerU 按文件后缀分发解析器（``read_fn``），无扩展名会直接抛
+        ``Unknown file suffix``；而 vault 原件统一为 ``original.bin``。
+        副本落在 staging 目录内，由 ``_execute_parse`` 的 finally 一并清理。
+        """
+        staged = output_dir / f"{input_path.stem or 'document'}.pdf"
+        if staged.exists():
+            return staged
+        try:
+            os.link(input_path, staged)
+        except OSError:
+            shutil.copy2(input_path, staged)
+        return staged
+
     def _invoke_magic_pdf(
         self,
         *,
@@ -673,7 +737,7 @@ class MineruPdfParserService:
         cmd = [
             self.magic_pdf_cmd,
             "-p",
-            str(input_path),
+            str(self._stage_mineru_input(input_path, output_dir)),
             "-o",
             str(output_dir),
             "-m",

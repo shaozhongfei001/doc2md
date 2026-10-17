@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import json
-import os
 import shutil
 import subprocess
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
+from pypdf import PdfWriter
+from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject
 from sqlalchemy import create_engine, delete, func, select, update
 from typer.testing import CliRunner
 
@@ -42,15 +43,18 @@ from app.services.mineru_pdf_parser import (
     MineruPdfParserService,
 )
 from app.services.parse_registry import ParseRegistryService
+from tests._db_env import (
+    MYSQL_PASSWORD as DEFAULT_MYSQL_PASSWORD,
+    mysql_config_block,
+    mysql_url,
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_MYSQL_PASSWORD = os.environ.get("PKB_MYSQL_PASSWORD", "mahound")
 
 
 def _mysql_session_factory(password: str = DEFAULT_MYSQL_PASSWORD):
     engine = create_engine(
-        f"mysql+pymysql://personal_kb:{password}@127.0.0.1:3306/personal_kb"
-        f"?charset=utf8mb4",
+        mysql_url(password),
         pool_pre_ping=True,
         future=True,
     )
@@ -73,12 +77,7 @@ storage:
   reports_root: {workspace_root / "reports"}
 
 mysql:
-  host: 127.0.0.1
-  port: 3306
-  database: personal_kb
-  username: personal_kb
-  password: {DEFAULT_MYSQL_PASSWORD}
-  charset: utf8mb4
+{mysql_config_block(DEFAULT_MYSQL_PASSWORD)}
 
 raw:
   original_files_readonly: true
@@ -195,15 +194,57 @@ def _mineru_service(config_path: Path, subprocess_runner=None) -> MineruPdfParse
     )
 
 
+_FIXTURE_PDF_TEXT = (
+    "Digital PDF sample text for the mineru parser adapter tests. "
+    "The quick brown fox jumps over the lazy dog. "
+    "Pack my box with five dozen liquor jugs."
+)
+
+
+def _write_digital_pdf(path: Path) -> None:
+    """生成带真实文本层的数字 PDF 夹具。
+
+    014 内容嗅探要求 ``text_chars >= 100`` 且 ``avg_chars_per_page >= 20``
+    才判 ``PDF_DIGITAL``；伪 PDF 字节串（无文本层）会被正确判为
+    ``PDF_SCANNED_OR_IMAGE``，因此这里用 pypdf 写出可抽取文本的最小 PDF。
+    """
+    writer = PdfWriter()
+    page = writer.add_blank_page(width=612, height=792)
+    content = DecodedStreamObject()
+    content.set_data(
+        f"BT /F1 12 Tf 72 700 Td ({_FIXTURE_PDF_TEXT}) Tj ET".encode("latin-1")
+    )
+    font = DictionaryObject(
+        {
+            NameObject("/Type"): NameObject("/Font"),
+            NameObject("/Subtype"): NameObject("/Type1"),
+            NameObject("/BaseFont"): NameObject("/Helvetica"),
+        }
+    )
+    page[NameObject("/Resources")] = DictionaryObject(
+        {
+            NameObject("/Font"): DictionaryObject(
+                {NameObject("/F1"): writer._add_object(font)}
+            )
+        }
+    )
+    page[NameObject("/Contents")] = writer._add_object(content)
+    with path.open("wb") as handle:
+        writer.write(handle)
+
+
 def _prepare_copied_pdf(
     mineru_env: tuple[InventoryScanner, FileContentVaultService, Path, Path, Path, Path],
     tmp_path: Path,
     filename: str = "sample.pdf",
-    content_text: str = "%PDF-1.4 mineru test",
+    content_text: str | None = None,
 ) -> str:
     scanner, vault_service, vault_root, _parsed, _reports, _config = mineru_env
     sample = tmp_path / filename
-    sample.write_text(content_text, encoding="utf-8")
+    if content_text is None:
+        _write_digital_pdf(sample)
+    else:
+        sample.write_text(content_text, encoding="utf-8")
     prefix = tmp_path.as_posix()
     expected_sha = compute_sha256(sample)
     _cleanup_parser_data([prefix], [expected_sha], vault_root)
@@ -283,6 +324,44 @@ def test_manifest_three_file_names_match_005_contract(
     assert not (artifacts["parsed_dir"] / "parse_report.json").exists()
 
     _cleanup_parser_data([prefix], [expected_sha], vault_root, parsed_root)
+
+
+def test_magic_pdf_receives_pdf_suffixed_input(
+    tmp_path: Path,
+) -> None:
+    """MinerU 按后缀分发解析器，vault 原件 original.bin 必须以 .pdf 后缀传入。
+
+    该用例不依赖 MySQL：只验证调用 magic-pdf 时的入参构造与 staging 副本。
+    """
+    config_path = tmp_path / "app.yaml"
+    _write_test_config(config_path, tmp_path / "workspace")
+    config = load_config(config_path)
+
+    original = tmp_path / "original.bin"
+    original.write_bytes(b"%PDF-1.4 staged input test")
+    staging = tmp_path / "staging"
+    staging.mkdir()
+
+    seen: dict[str, Path] = {}
+
+    def runner(cmd: list[str], *, timeout: int) -> subprocess.CompletedProcess[str]:
+        seen["input"] = Path(cmd[cmd.index("-p") + 1])
+        seen["output"] = Path(cmd[cmd.index("-o") + 1])
+        return subprocess.CompletedProcess(cmd, 0, stdout="ok", stderr="")
+
+    service = MineruPdfParserService(
+        config,
+        magic_pdf_cmd="magic-pdf-mock",
+        subprocess_runner=runner,
+    )
+    service._invoke_magic_pdf(input_path=original, output_dir=staging, timeout_seconds=5)
+
+    staged = seen["input"]
+    assert staged.suffix == ".pdf", staged
+    assert staged == staging / "original.pdf"
+    assert staged.read_bytes() == original.read_bytes()
+    # 暂存副本只落在 staging 目录，不污染 vault 原件目录
+    assert not (tmp_path / "original.pdf").exists()
 
 
 def test_parse_manifest_field_completeness(
@@ -547,6 +626,38 @@ def test_output_contract_violation_no_manifest(
     artifacts = build_parsed_artifact_paths(build_parsed_content_dir(parsed_root, expected_sha))
     assert not artifacts["parse_manifest"].exists()
     assert not artifacts["parsed_text"].exists()
+
+    _cleanup_parser_data([prefix], [expected_sha], vault_root, parsed_root)
+
+
+def test_contract_violation_message_carries_magic_pdf_output(
+    mineru_env: tuple[InventoryScanner, FileContentVaultService, Path, Path, Path, Path],
+    tmp_path: Path,
+) -> None:
+    """magic-pdf 内部异常仍以 exit 0 退出时，错误信息必须带出输出尾部。"""
+    _scanner, _vault, vault_root, parsed_root, _reports, config_path = mineru_env
+    expected_sha = _prepare_copied_pdf(mineru_env, tmp_path)
+    prefix = tmp_path.as_posix()
+
+    def failing_runner(cmd: list[str], *, timeout: int) -> subprocess.CompletedProcess[str]:
+        output_dir = Path(cmd[cmd.index("-o") + 1])
+        output_dir.mkdir(parents=True, exist_ok=True)
+        return subprocess.CompletedProcess(
+            cmd,
+            0,
+            stdout="Traceback (most recent call last):\nException: Unknown file suffix: .bin\n",
+            stderr="",
+        )
+
+    service = _mineru_service(config_path, subprocess_runner=failing_runner)
+    result = service.parse_many(sha256=expected_sha, limit=1)
+
+    assert result.failed_count == 1
+    error = result.errors[0]
+    assert error.code == DECISION_OUTPUT_CONTRACT_VIOLATION
+    # 真实原因必须可见，否则排查只能靠复现
+    assert "Unknown file suffix: .bin" in error.message
+    assert "returncode=0" in error.message
 
     _cleanup_parser_data([prefix], [expected_sha], vault_root, parsed_root)
 

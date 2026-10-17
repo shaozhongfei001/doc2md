@@ -10,6 +10,7 @@ storage:
   curated_root: ./curated
   quarantine_root: ./quarantine
   reports_root: ./reports
+  sniff_cache_root: ./sniff_cache   # 014：PDF 嗅探派生缓存（可整体删除重建）
 
 mysql:
   host: 127.0.0.1

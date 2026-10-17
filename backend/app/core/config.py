@@ -10,6 +10,9 @@ DEFAULT_CONFIG_PATH = PROJECT_ROOT / "config" / "app.yaml"
 FALLBACK_CONFIG_PATH = PROJECT_ROOT / "config" / "app.example.yaml"
 
 
+DEFAULT_SNIFF_CACHE_ROOT = "./sniff_cache"
+
+
 @dataclass(frozen=True)
 class StorageConfig:
     source_registry_root: Path
@@ -18,6 +21,8 @@ class StorageConfig:
     curated_root: Path
     quarantine_root: Path
     reports_root: Path
+    # 014：PDF 嗅探派生缓存根（可整体删除重建；未配置时默认 ./sniff_cache）。
+    sniff_cache_root: Path = Path(DEFAULT_SNIFF_CACHE_ROOT)
 
 
 @dataclass(frozen=True)
@@ -78,6 +83,9 @@ def load_config(config_path: Path | None = None) -> AppConfig:
         curated_root=_resolve_storage_path(storage_data["curated_root"], base),
         quarantine_root=_resolve_storage_path(storage_data["quarantine_root"], base),
         reports_root=_resolve_storage_path(storage_data["reports_root"], base),
+        sniff_cache_root=_resolve_storage_path(
+            storage_data.get("sniff_cache_root", DEFAULT_SNIFF_CACHE_ROOT), base
+        ),
     )
     mysql = MysqlConfig(
         host=mysql_data["host"],

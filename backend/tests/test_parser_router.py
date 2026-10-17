@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import os
 import shutil
 from pathlib import Path
 
@@ -22,16 +21,19 @@ from app.models.vault import KbRawVaultObject
 from app.services.file_content_vault import FileContentVaultService
 from app.services.inventory_scanner import InventoryScanner
 from app.services.parser_router import ParserRouterService
+from tests._db_env import (
+    MYSQL_PASSWORD as DEFAULT_MYSQL_PASSWORD,
+    mysql_config_block,
+    mysql_url,
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 FIXTURES_ROOT = PROJECT_ROOT / "backend" / "tests" / "fixtures"
-DEFAULT_MYSQL_PASSWORD = os.environ.get("PKB_MYSQL_PASSWORD", "mahound")
 
 
 def _mysql_session_factory(password: str = DEFAULT_MYSQL_PASSWORD):
     engine = create_engine(
-        f"mysql+pymysql://personal_kb:{password}@127.0.0.1:3306/personal_kb"
-        f"?charset=utf8mb4",
+        mysql_url(password),
         pool_pre_ping=True,
         future=True,
     )
@@ -54,12 +56,7 @@ storage:
   reports_root: {workspace_root / "reports"}
 
 mysql:
-  host: 127.0.0.1
-  port: 3306
-  database: personal_kb
-  username: personal_kb
-  password: {DEFAULT_MYSQL_PASSWORD}
-  charset: utf8mb4
+{mysql_config_block(DEFAULT_MYSQL_PASSWORD)}
 
 raw:
   original_files_readonly: true
@@ -424,10 +421,10 @@ def test_route_single_error_continues(
 
     original_route = router_service._route_content
 
-    def _route_with_failure(content: KbFileContent):
+    def _route_with_failure(content: KbFileContent, **kwargs: object):
         if content.sha256 == sha_a:
             raise RuntimeError("injected route failure")
-        return original_route(content)
+        return original_route(content, **kwargs)
 
     router_service._route_content = _route_with_failure  # type: ignore[method-assign]
     result = router_service.route_parsers()

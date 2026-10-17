@@ -4,8 +4,25 @@ from enum import Enum
 from pathlib import Path
 
 from app.core.file_types import DOCUMENT_EXTENSIONS
+from app.core.pdf_sniffing import PdfSniffResult, SniffStatus
 
-ROUTING_RULES_VERSION = "004_mvp_v1"
+# 默认（当前生效）规则版本。014 起默认 v2：PDF 分支叠加内容嗅探。
+ROUTING_RULES_VERSION = "004_mvp_v2"
+# v1 冻结路径：仅扩展名规则，不做任何嗅探，逐字节复现 004 行为（A014-08）。
+ROUTING_RULES_VERSION_V1 = "004_mvp_v1"
+ROUTING_RULES_VERSIONS = frozenset({ROUTING_RULES_VERSION_V1, ROUTING_RULES_VERSION})
+
+# 014 新增的 PDF 嗅探 rule_name 闭集（plan §6）。
+PDF_SNIFF_RULE_NAMES = frozenset(
+    {
+        "pdf_sniff_digital",
+        "pdf_sniff_scanned",
+        "pdf_sniff_encrypted",
+        "pdf_sniff_empty",
+        "pdf_sniff_error",
+        "pdf_sniff_unavailable",
+    }
+)
 
 DECISION_ROUTE = "ROUTE"
 DECISION_UNKNOWN = "UNKNOWN"
@@ -176,4 +193,73 @@ def _unsupported(rule_name: str, reason: str) -> tuple[RouteType, str, str, str,
         rule_name,
         FutureParserHint.NONE.value,
         reason,
+    )
+
+
+# 014 §6：嗅探状态 → 路由判定闭集映射。任何未列状态由调用方 fail-closed 处理。
+_PDF_SNIFF_ROUTE_MAP: dict[SniffStatus, tuple[RouteType, str]] = {
+    SniffStatus.TEXT_LAYER_PRESENT: (RouteType.PDF_DIGITAL, "pdf_sniff_digital"),
+    SniffStatus.TEXT_LAYER_ABSENT: (RouteType.PDF_SCANNED_OR_IMAGE, "pdf_sniff_scanned"),
+    SniffStatus.ENCRYPTED: (RouteType.PDF_SCANNED_OR_IMAGE, "pdf_sniff_encrypted"),
+    SniffStatus.EMPTY_DOCUMENT: (RouteType.PDF_SCANNED_OR_IMAGE, "pdf_sniff_empty"),
+    SniffStatus.SNIFF_ERROR: (RouteType.PDF_SCANNED_OR_IMAGE, "pdf_sniff_error"),
+    SniffStatus.DEPENDENCY_MISSING: (RouteType.PDF_SCANNED_OR_IMAGE, "pdf_sniff_unavailable"),
+}
+
+# 运行时护栏（复核 [4']）：下述三条此前只被测试消费，import 期即校验，
+# 避免新增状态/改错映射时静默 fail-open（把「未嗅探成功」当成数字版）。
+assert set(_PDF_SNIFF_ROUTE_MAP) == set(SniffStatus), (
+    "嗅探状态映射表必须覆盖全部 SniffStatus 成员"
+)
+assert {rule for _route_type, rule in _PDF_SNIFF_ROUTE_MAP.values()} <= PDF_SNIFF_RULE_NAMES, (
+    "映射产出的 rule_name 必须落在 PDF_SNIFF_RULE_NAMES 闭集内"
+)
+assert {
+    status
+    for status, (route_type, _rule) in _PDF_SNIFF_ROUTE_MAP.items()
+    if route_type is RouteType.PDF_DIGITAL
+} == {SniffStatus.TEXT_LAYER_PRESENT}, (
+    "只有 TEXT_LAYER_PRESENT 允许判 PDF_DIGITAL（fail-closed 不变式）"
+)
+
+
+def pdf_sniff_reason(sniff: PdfSniffResult) -> str:
+    """由嗅探结果生成 reason。只依赖缓存字段，故缓存命中/未命中逐字段一致。"""
+
+    status = sniff.status
+    if status is SniffStatus.TEXT_LAYER_PRESENT:
+        return (
+            f"pdf text layer detected: {sniff.text_chars} chars over "
+            f"{sniff.pages_sampled}/{sniff.pages_total} pages"
+        )
+    if status is SniffStatus.TEXT_LAYER_ABSENT:
+        return (
+            f"pdf text layer absent: {sniff.text_chars} chars over "
+            f"{sniff.pages_sampled}/{sniff.pages_total} pages"
+        )
+    if status is SniffStatus.ENCRYPTED:
+        return "pdf is encrypted; text layer not readable (no password attempt)"
+    if status is SniffStatus.EMPTY_DOCUMENT:
+        return "pdf has zero pages; cannot confirm a text layer"
+    if status is SniffStatus.DEPENDENCY_MISSING:
+        return "pypdf is not installed; cannot verify pdf text layer"
+    return f"pdf sniff failed: {sniff.detail or 'unknown error'}"
+
+
+def route_pdf_with_sniff(sniff: PdfSniffResult) -> tuple[RouteType, str, str, str, str]:
+    """014 §6：嗅探 → (route_type, decision, rule_name, hint, reason)。
+
+    fail-closed：映射表未覆盖的状态一律落到 `PDF_SCANNED_OR_IMAGE` / `pdf_sniff_error`。
+    """
+
+    mapped = _PDF_SNIFF_ROUTE_MAP.get(sniff.status)
+    if mapped is None:
+        mapped = (RouteType.PDF_SCANNED_OR_IMAGE, "pdf_sniff_error")
+    route_type, rule_name = mapped
+    return (
+        route_type,
+        DECISION_ROUTE,
+        rule_name,
+        FutureParserHint.MINERU_FAMILY.value,
+        pdf_sniff_reason(sniff),
     )

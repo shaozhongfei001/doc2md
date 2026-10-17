@@ -8,6 +8,7 @@ import typer
 from rich.console import Console
 
 from app.core.config import DEFAULT_CONFIG_PATH, load_config
+from app.core.parser_routing import ROUTING_RULES_VERSION, ROUTING_RULES_VERSIONS
 from app.services.duplicate_governance import DuplicateGovernanceService
 from app.services.file_content_vault import FileContentVaultService
 from app.services.inventory_scanner import InventoryScanner
@@ -183,14 +184,43 @@ def route_parsers(
         "--content-uid",
         help="Process only the specified content uid (same as sha256 in 001).",
     ),
+    rules_version: str = typer.Option(
+        ROUTING_RULES_VERSION,
+        "--routing-rules-version",
+        help=(
+            "Routing rules version. Default v2 sniffs the PDF text layer; "
+            "004_mvp_v1 reproduces the legacy metadata-only behavior byte-for-byte."
+        ),
+    ),
+    sniff_cache: bool = typer.Option(
+        True,
+        "--sniff-cache/--no-sniff-cache",
+        help=(
+            "Reuse the content-addressed PDF sniff cache (v2 only). "
+            "--no-sniff-cache forces recomputation and writes nothing."
+        ),
+    ),
+    dry_run: bool = typer.Option(
+        False,
+        "--dry-run",
+        help="Plan only; write neither the sniff cache nor the parser route report.",
+    ),
 ) -> None:
     config_path = config or DEFAULT_CONFIG_PATH
     app_config = load_config(config_path)
+    if rules_version not in ROUTING_RULES_VERSIONS:
+        console.print(
+            f"ERROR: --routing-rules-version must be one of {sorted(ROUTING_RULES_VERSIONS)}"
+        )
+        raise typer.Exit(code=1)
     service = ParserRouterService(app_config)
     result = service.route_parsers(
         limit=limit,
         sha256=sha256,
         content_uid=content_uid,
+        rules_version=rules_version,
+        use_sniff_cache=sniff_cache,
+        dry_run=dry_run,
     )
 
     console.print(f"Candidates: {result.candidates}")
@@ -199,6 +229,18 @@ def route_parsers(
     console.print(f"Unknown: {result.unknown}")
     console.print(f"Unsupported: {result.unsupported}")
     console.print(f"Errors: {len(result.errors)}")
+    console.print(f"Routing rules version: {result.routing_rules_version}")
+    console.print(f"PDF sniffed: {result.pdf_sniffed}")
+    console.print(f"PDF digital: {result.pdf_digital}")
+    console.print(f"PDF scanned: {result.pdf_scanned}")
+    console.print(f"PDF cache hits: {result.pdf_cache_hits}")
+    if dry_run:
+        for decision in result.decisions:
+            console.print(
+                f"Decision: {decision.content_uid} {decision.route_type.value} "
+                f"({decision.rule_name})"
+            )
+        console.print("Dry run: no sniff cache or route report written")
     if result.report_path is not None:
         console.print(f"Parser route report: {result.report_path}")
 

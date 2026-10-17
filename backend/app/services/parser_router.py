@@ -15,12 +15,25 @@ from app.core.parser_routing import (
     DECISION_UNKNOWN,
     DECISION_UNSUPPORTED,
     ROUTING_RULES_VERSION,
+    ROUTING_RULES_VERSIONS,
     RouteType,
     ext_from_path,
     match_route_type,
     normalize_file_ext,
+    route_pdf_with_sniff,
 )
-from app.core.vault_paths import VAULT_COPIED
+from app.core.pdf_sniffing import (
+    REASON_SNIFF_SKIPPED,
+    PdfSniffConfig,
+    PdfSniffResult,
+    load_sniff_config,
+    resolve_pdf_sniff,
+)
+from app.core.vault_paths import (
+    VAULT_COPIED,
+    build_vault_artifact_paths,
+    build_vault_dir,
+)
 from app.models.file import KbFileContent, KbFileInstance
 from app.models.vault import KbRawVaultObject
 
@@ -50,9 +63,11 @@ class ParserRouteDecision:
     future_parser_hint: str
     parse_status: str | None
     vault_uid: str | None = None
+    # 014：仅当实际执行了内容嗅探时存在；非 PDF / v1 路径为 None（报告中不出现该键）。
+    pdf_sniff: PdfSniffResult | None = None
 
     def to_dict(self) -> dict:
-        return {
+        payload = {
             "content_uid": self.content_uid,
             "sha256": self.sha256,
             "vault_path": self.vault_path,
@@ -66,6 +81,9 @@ class ParserRouteDecision:
             "parse_status": self.parse_status,
             "vault_uid": self.vault_uid,
         }
+        if self.pdf_sniff is not None:
+            payload["pdf_sniff"] = self.pdf_sniff.evidence()
+        return payload
 
 
 @dataclass
@@ -78,6 +96,12 @@ class ParserRouteResult:
     errors: list[RouteError] = field(default_factory=list)
     decisions: list[ParserRouteDecision] = field(default_factory=list)
     report_path: Path | None = None
+    routing_rules_version: str = ROUTING_RULES_VERSION
+    pdf_sniffed: int = 0
+    pdf_digital: int = 0
+    pdf_scanned: int = 0
+    pdf_cache_hits: int = 0
+    dry_run: bool = False
 
     def to_dict(self) -> dict:
         return {
@@ -90,6 +114,12 @@ class ParserRouteResult:
                 {"sha256": item.sha256, "message": item.message} for item in self.errors
             ],
             "report_path": self.report_path.as_posix() if self.report_path else None,
+            "routing_rules_version": self.routing_rules_version,
+            "pdf_sniffed": self.pdf_sniffed,
+            "pdf_digital": self.pdf_digital,
+            "pdf_scanned": self.pdf_scanned,
+            "pdf_cache_hits": self.pdf_cache_hits,
+            "dry_run": self.dry_run,
         }
 
 
@@ -105,8 +135,19 @@ class ParserRouterService:
         limit: int | None = None,
         sha256: str | None = None,
         content_uid: str | None = None,
+        *,
+        rules_version: str = ROUTING_RULES_VERSION,
+        use_sniff_cache: bool = True,
+        dry_run: bool = False,
     ) -> ParserRouteResult:
-        result = ParserRouteResult()
+        if rules_version not in ROUTING_RULES_VERSIONS:
+            raise ValueError(f"Unsupported routing rules version: {rules_version}")
+
+        result = ParserRouteResult(routing_rules_version=rules_version, dry_run=dry_run)
+        # v2 才装载嗅探配置；v1 冻结路径不做任何文件读取。
+        sniff_config = (
+            load_sniff_config() if rules_version == ROUTING_RULES_VERSION else None
+        )
         contents = self._load_candidates(
             sha256=sha256,
             content_uid=content_uid,
@@ -116,7 +157,13 @@ class ParserRouterService:
 
         for content in contents:
             try:
-                decision = self._route_content(content)
+                decision = self._route_content(
+                    content,
+                    rules_version=rules_version,
+                    use_sniff_cache=use_sniff_cache,
+                    dry_run=dry_run,
+                    sniff_config=sniff_config,
+                )
                 result.decisions.append(decision)
                 if decision.decision == DECISION_ROUTE:
                     result.routed += 1
@@ -124,14 +171,34 @@ class ParserRouterService:
                     result.unknown += 1
                 elif decision.decision == DECISION_UNSUPPORTED:
                     result.unsupported += 1
+                self._accumulate_pdf_counters(result, decision)
             except Exception as exc:
                 logger.exception("Parser routing failed for sha256=%s", content.sha256)
                 result.errors.append(
                     RouteError(sha256=content.sha256 or "", message=str(exc))
                 )
 
-        result.report_path = self._write_report(result)
+        if dry_run:
+            logger.info("Dry run: parser route report not written")
+            result.report_path = None
+        else:
+            result.report_path = self._write_report(result)
         return result
+
+    @staticmethod
+    def _accumulate_pdf_counters(
+        result: ParserRouteResult,
+        decision: ParserRouteDecision,
+    ) -> None:
+        if decision.pdf_sniff is None:
+            return
+        result.pdf_sniffed += 1
+        if decision.pdf_sniff.from_cache:
+            result.pdf_cache_hits += 1
+        if decision.route_type == RouteType.PDF_DIGITAL:
+            result.pdf_digital += 1
+        elif decision.route_type == RouteType.PDF_SCANNED_OR_IMAGE:
+            result.pdf_scanned += 1
 
     def _load_candidates(
         self,
@@ -153,7 +220,15 @@ class ParserRouterService:
                 query = query.limit(limit)
             return list(session.scalars(query).all())
 
-    def _route_content(self, content: KbFileContent) -> ParserRouteDecision:
+    def _route_content(
+        self,
+        content: KbFileContent,
+        *,
+        rules_version: str = ROUTING_RULES_VERSION,
+        use_sniff_cache: bool = True,
+        dry_run: bool = False,
+        sniff_config: PdfSniffConfig | None = None,
+    ) -> ParserRouteDecision:
         sha256 = content.sha256
         assert sha256 is not None
 
@@ -188,6 +263,41 @@ class ParserRouterService:
             if vault_path is None:
                 reason = f"{reason}; vault_path is null in database metadata"
 
+            # 014 §7.3：v2 仅对 PDF 分支叠加内容嗅探；v1 冻结路径不读任何文件。
+            pdf_sniff: PdfSniffResult | None = None
+            if (
+                rules_version == ROUTING_RULES_VERSION
+                and route_type == RouteType.PDF_DIGITAL
+            ):
+                vault_dir = (
+                    Path(vault_path)
+                    if vault_path
+                    else build_vault_dir(self.config.storage.raw_vault_root, sha256)
+                )
+                original_bin = build_vault_artifact_paths(vault_dir)["original_bin"]
+                if original_bin.is_file():
+                    (
+                        route_type,
+                        decision,
+                        rule_name,
+                        future_parser_hint,
+                        reason,
+                        pdf_sniff,
+                    ) = self._sniff_pdf_route(
+                        sha256=sha256,
+                        original_bin=original_bin,
+                        use_sniff_cache=use_sniff_cache,
+                        dry_run=dry_run,
+                        sniff_config=sniff_config,
+                    )
+                else:
+                    # D-3：vault 路径缺失 / original.bin 不存在 → 回退 004 判定 + WARNING。
+                    reason = f"{reason}; {REASON_SNIFF_SKIPPED}"
+                    logger.warning(
+                        "PDF sniff skipped for sha256=%s: original.bin not accessible",
+                        sha256,
+                    )
+
             logger.info(
                 "Parser route processed sha256=%s route_type=%s decision=%s rule=%s",
                 sha256,
@@ -209,7 +319,34 @@ class ParserRouterService:
                 future_parser_hint=future_parser_hint,
                 parse_status=db_content.parse_status,
                 vault_uid=vault_uid,
+                pdf_sniff=pdf_sniff,
             )
+
+    def _sniff_pdf_route(
+        self,
+        *,
+        sha256: str,
+        original_bin: Path,
+        use_sniff_cache: bool = True,
+        dry_run: bool = False,
+        sniff_config: PdfSniffConfig | None = None,
+    ) -> tuple[RouteType, str, str, str, str, PdfSniffResult]:
+        """014 §7.3 嗅探 + 判定段（不触 DB，供确定性单测直接调用）。
+
+        缓存命中时不调用 `sniff_pdf`；`dry_run` 时不写缓存。
+        """
+
+        config = sniff_config or load_sniff_config()
+        sniff = resolve_pdf_sniff(
+            original_bin,
+            sha256,
+            config=config,
+            cache_root=self.config.storage.sniff_cache_root,
+            use_cache=use_sniff_cache,
+            write_cache=not dry_run,
+        )
+        route_type, decision, rule_name, hint, reason = route_pdf_with_sniff(sniff)
+        return route_type, decision, rule_name, hint, reason, sniff
 
     def _resolve_fallback_ext(
         self,
@@ -264,7 +401,7 @@ class ParserRouterService:
         payload = {
             "report_type": "parser_route_report",
             "pipeline_version": self.config.pipeline_version,
-            "routing_rules_version": ROUTING_RULES_VERSION,
+            "routing_rules_version": result.routing_rules_version,
             "generated_at": generated_at,
             "summary": {
                 "candidates": result.candidates,
@@ -273,6 +410,11 @@ class ParserRouterService:
                 "unknown": result.unknown,
                 "unsupported": result.unsupported,
                 "errors": len(result.errors),
+                # 014：PDF 嗅探计数（v1 运行恒为 0）。
+                "pdf_sniffed": result.pdf_sniffed,
+                "pdf_digital": result.pdf_digital,
+                "pdf_scanned": result.pdf_scanned,
+                "pdf_cache_hits": result.pdf_cache_hits,
             },
             "decisions": [item.to_dict() for item in result.decisions],
             "errors": [

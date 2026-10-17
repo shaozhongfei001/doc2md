@@ -1,0 +1,9 @@
+# 014 PDF 内容嗅探阈值配置（Owner O-5 FROZEN: 100 / 20 / 20）
+# 缺失时 backend/app/core/pdf_sniffing.py 使用代码内同值默认。
+
+pdf_sniffing:
+  sniffer_version: "pdf_sniff_v1"
+  pages_max: 20                     # 采样页数上限
+  digital_min_total_chars: 100       # 采样页累计可抽取字符下限
+  digital_min_avg_chars_per_page: 20 # 页均可抽取字符下限
+  cache_enabled: true
