@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import inspect
 import json
-import os
 import re
 import shutil
 from pathlib import Path
@@ -36,17 +35,20 @@ from app.services.parse_registry import (
     ParseRegistryService,
     generate_run_uid,
 )
+from tests._db_env import (
+    MYSQL_PASSWORD as DEFAULT_MYSQL_PASSWORD,
+    mysql_config_block,
+    mysql_url,
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 MIGRATION_SQL = PROJECT_ROOT / "sql" / "migrations" / "006_parse_registry_v1.sql"
-DEFAULT_MYSQL_PASSWORD = os.environ.get("PKB_MYSQL_PASSWORD", "mahound")
 cli_runner = CliRunner()
 
 
 def _mysql_session_factory(password: str = DEFAULT_MYSQL_PASSWORD):
     engine = create_engine(
-        f"mysql+pymysql://personal_kb:{password}@127.0.0.1:3306/personal_kb"
-        f"?charset=utf8mb4",
+        mysql_url(password),
         pool_pre_ping=True,
         future=True,
     )
@@ -69,12 +71,7 @@ storage:
   reports_root: {workspace_root / "reports"}
 
 mysql:
-  host: 127.0.0.1
-  port: 3306
-  database: personal_kb
-  username: personal_kb
-  password: {DEFAULT_MYSQL_PASSWORD}
-  charset: utf8mb4
+{mysql_config_block(DEFAULT_MYSQL_PASSWORD)}
 
 raw:
   original_files_readonly: true

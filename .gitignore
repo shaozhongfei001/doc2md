@@ -33,3 +33,10 @@ data/sample_dataset/
 Thumbs.db
 .vscode/
 .idea/
+
+# Runtime derived caches (014: 内容寻址 PDF 嗅探缓存；可由内容重建)
+sniff_cache/
+
+# Tool / agent artifacts (非交付物)
+.ua/
+.codebuddy/
