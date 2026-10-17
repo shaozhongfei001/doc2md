@@ -1,0 +1,43 @@
+# 015 图片解析流水线（image parse pipeline）配置。
+#
+# 本文件缺失时 `app.services.image_parser.load_image_parse_config()` 使用同值的内置默认值，
+# 因此 CI 与无配置环境行为一致（plan §2.3）。
+#
+# 注意：本文件与 `config/pdf_sniffing.yaml`（014 独享 FROZEN）互不相干，禁止交叉修改。
+version: 1
+
+parser:
+  # 写入 parsed_metadata.json 的 parser_adapter_version；也是幂等键的一部分。
+  adapter_version: "015_mvp_v1"
+
+quality:
+  # auto → 优先 cv2 Laplacian（不可用时回退 Pillow 梯度）；也可显式指定 laplacian / pillow_gradient。
+  scorer: auto
+  # Laplacian 方差阈值：>= 视为清晰（走 PaddleOCR 快路径），< 视为低质（走 VLM / 拒答）。
+  blur_threshold: 100.0
+  # Pillow 梯度均值阈值：量纲与 Laplacian 不同，故独立配置（plan §8.3 D-3）。
+  pillow_blur_threshold: 20.0
+
+preprocess:
+  enabled: true
+  # 任一 op 执行失败只记 warning 并跳过，绝不静默声称已执行（A015-04）。
+  ops:
+    - deskew
+    - denoise
+    - binarize
+
+engines:
+  # auto → 依质量评分与依赖可用性路由；也可被 CLI `--engine` 覆盖。
+  default: auto
+  paddleocr:
+    lang: ch
+    use_gpu: false
+  vlm:
+    # 015 只交付 mock adapter：真实 VLM（HTTP/SDK/密钥）另开 Spec（O-3）。
+    adapter: mock
+    endpoint: null
+
+# 单张图片的引擎调用超时（秒），可被 CLI `--timeout` 覆盖。
+timeout_seconds: 300
+# 单批最多处理多少条在范围内的候选（可被 CLI `--limit` 覆盖）。
+max_limit: 100

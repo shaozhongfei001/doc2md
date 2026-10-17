@@ -1077,5 +1077,134 @@ def parse(limit: int = 10) -> None:
     typer.echo(f"parse placeholder limit={limit}")
 
 
+# ======================================================================================
+# 015 图片解析流水线（image parse pipeline）—— append-only 追加区
+# 014 区块（含 `sniff-content` 的 --routing-rules-version / --no-sniff-cache / --dry-run）
+# 一字未改、一行未删；以下仅为纯新增。
+# ======================================================================================
+from app.adapters.ocr_paddle import (  # noqa: E402 - 追加区导入
+    EngineDependencyMissing,
+    check_paddleocr_available,
+)
+from app.services.image_parser import (  # noqa: E402 - 追加区导入
+    DEFAULT_TIMEOUT_SECONDS,
+    ENGINE_AUTO,
+    ENGINE_PADDLEOCR,
+    SUPPORTED_ENGINES,
+    ImageParserService,
+)
+
+
+@app.command("parse-images")
+def parse_images(
+    config: Path | None = typer.Option(
+        None,
+        "--config",
+        help="Path to app.yaml. Defaults to project config/app.yaml.",
+    ),
+    sha256: str | None = typer.Option(
+        None,
+        "--sha256",
+        help="Process only the specified content sha256.",
+    ),
+    content_uid: str | None = typer.Option(
+        None,
+        "--content-uid",
+        help="Process only the specified content uid (same as sha256 in 001).",
+    ),
+    limit: int | None = typer.Option(
+        None,
+        "--limit",
+        help="Maximum number of in-scope image contents to parse.",
+    ),
+    engine: str = typer.Option(
+        ENGINE_AUTO,
+        "--engine",
+        help="Engine selection: auto (route by image quality), paddleocr, or vlm.",
+    ),
+    timeout: int = typer.Option(
+        DEFAULT_TIMEOUT_SECONDS,
+        "--timeout",
+        help="Per-image engine timeout in seconds.",
+    ),
+    dry_run: bool = typer.Option(
+        False,
+        "--dry-run",
+        help="Plan only; call no engine and write no parsed artifacts or report.",
+    ),
+    force: bool = typer.Option(
+        False,
+        "--force",
+        help="Re-parse even when a SUCCESS parse_manifest.json already exists.",
+    ),
+    register: bool = typer.Option(
+        False,
+        "--register/--no-register",
+        help="Register the batch report via ParseRegistryService (ignored in dry-run).",
+    ),
+) -> None:
+    """015：把 `route_type=IMAGE` 的内容解析为 parsed 三件套（引擎依赖全 optional）。"""
+
+    engine = str(engine).strip().lower()
+    if engine not in SUPPORTED_ENGINES:
+        console.print(f"ERROR: --engine must be one of {sorted(SUPPORTED_ENGINES)}")
+        raise typer.Exit(code=1)
+    if limit is not None and limit < 1:
+        console.print("ERROR: --limit must be >= 1")
+        raise typer.Exit(code=1)
+    if timeout < 1:
+        console.print("ERROR: --timeout must be >= 1")
+        raise typer.Exit(code=1)
+
+    # A015-03：显式 paddleocr + 依赖缺失 → 非 dry-run 立即 exit 1。
+    # 该守卫刻意排在「入参选择器」校验之前：缺依赖必须原样暴露（DEPENDENCY_MISSING），
+    # 绝不能被参数校验掩盖，更不允许静默降级到 mock VLM 落盘。
+    if engine == ENGINE_PADDLEOCR and not dry_run:
+        try:
+            check_paddleocr_available()
+        except EngineDependencyMissing as exc:
+            console.print(f"ERROR: {exc}")
+            raise typer.Exit(code=1) from exc
+
+    if not sha256 and not content_uid and limit is None:
+        console.print(
+            "ERROR: must provide at least one of --sha256, --content-uid, or --limit"
+        )
+        raise typer.Exit(code=1)
+
+    config_path = config or DEFAULT_CONFIG_PATH
+    app_config = load_config(config_path)
+    service = ImageParserService(app_config)
+    result = service.parse_many(
+        sha256=sha256,
+        content_uid=content_uid,
+        limit=limit,
+        engine=engine,
+        dry_run=dry_run,
+        force=force,
+        timeout_seconds=timeout,
+        register=register and not dry_run,
+    )
+
+    console.print(f"Candidates: {result.total_candidates}")
+    console.print(f"In-scope candidates: {result.in_scope_candidates}")
+    console.print(f"Parsed: {result.parsed_count}")
+    console.print(f"Skipped: {result.skipped_count}")
+    console.print(f"Unsupported: {result.unsupported_count}")
+    console.print(f"Empty: {result.empty_count}")
+    console.print(f"Failed: {result.failed_count}")
+    console.print(f"Errors: {len(result.errors)}")
+    console.print(f"Engine: {engine}")
+    if result.dry_run:
+        for plan in result.plans:
+            console.print(
+                f"Plan: {plan.content_uid} {plan.route_type} "
+                f"{plan.decision} ({plan.status})"
+            )
+        console.print("Dry run: no parsed artifacts or batch report written")
+    if result.report_path is not None:
+        console.print(f"Parse image report: {result.report_path}")
+
+
 if __name__ == "__main__":
     app()
