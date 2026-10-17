@@ -95,8 +95,8 @@ specs/017-unified-document-ir/plan.md  spec.md  acceptance.md       # Dev 不改
 
 **允许修改范围**：`backend/tests/test_document_ir.py` / `test_ir_renderer.py` / `test_evidence_chain_ir.py` / `backend/tests/fixtures/document_ir_*/`（新增）
 
-- [ ] `content_list.json` 构造器：text/text_level、image(+img_caption)、table(+table_body 含 rowspan/colspan, +table_caption)、equation、page header/footer、**未知 type**、**缺 bbox 块** 全覆盖
-- [ ] `parsed_text.md` + `parse_manifest.json`（含 `asset_files[].sha256`）构造器；Pillow 现场生成图片资产
+- [x] `content_list.json` 构造器：text/text_level、image(+img_caption)、table(+table_body 含 rowspan/colspan, +table_caption)、equation、page header/footer、**未知 type**、**缺 bbox 块** 全覆盖
+- [x] `parsed_text.md` + `parse_manifest.json`（含 `asset_files[].sha256`）构造器；Pillow 现场生成图片资产
 - [ ] 覆盖 A017-01 ~ A017-12 全部断言（此时全红）
 - [ ] 每个 fail-closed 分叉（A017-01/02/03/06/08/10）**已写好变异复验用例骨架**（变异→FAIL、恢复→PASS）
 - [ ] 否定断言显式存在（如 `assert all(b["type"] in BLOCK_TYPES for b in blocks)`、`assert "field_value" not in produced_types`）
@@ -105,13 +105,13 @@ specs/017-unified-document-ir/plan.md  spec.md  acceptance.md       # Dev 不改
 
 ## T003 `document_ir_schema.py`：IR dataclass + 校验器
 
-- [ ] `BLOCK_TYPES = {heading, paragraph, table, figure, formula, caption, header, footer}` 封闭常量；枚举外值 → 校验失败
-- [ ] 每块必填键 `block_id/type/page_no/bbox/reading_order/confidence/content_ref` 全在（缺键失败；值为 `null` 合法）
-- [ ] `reading_order` 为 `0..len(blocks)-1` 置换（无重号/无越界/无空洞）
-- [ ] `coordinate_system.unit` 非空且 ∈ `{pdf_point, pixel}`，否则失败
-- [ ] cells 坐标无越界/无重叠/虚格不入 cells；`caption_of`/`caption_block_id` 必须指向存在块
-- [ ] asset sha256 与 manifest 不对齐 → 校验失败（fail-closed）
-- [ ] 校验器为纯函数，不写盘、不读 DB
+- [x] `BLOCK_TYPES = {heading, paragraph, table, figure, formula, caption, header, footer}` 封闭常量；枚举外值 → 校验失败
+- [x] 每块必填键 `block_id/type/page_no/bbox/reading_order/confidence/content_ref` 全在（缺键失败；值为 `null` 合法）
+- [x] `reading_order` 为 `0..len(blocks)-1` 置换（无重号/无越界/无空洞）
+- [x] `coordinate_system.unit` 非空且 ∈ `{pdf_point, pixel}`，否则失败
+- [x] cells 坐标无越界/无重叠/虚格不入 cells；`caption_of`/`caption_block_id` 必须指向存在块
+- [x] asset sha256 与 manifest 不对齐 → 校验失败（fail-closed）
+- [x] 校验器为纯函数，不写盘、不读 DB
 
 ---
 
@@ -189,7 +189,7 @@ specs/017-unified-document-ir/plan.md  spec.md  acceptance.md       # Dev 不改
 
 ## T010 `parsed_paths.py` additive 键 + CLI `build-document-ir`
 
-- [ ] `ParsedArtifactPaths` 增 `document_ir`/`rendered_md`/`ir_source` 键（additive，既有键不变）
+- [x] `ParsedArtifactPaths` 增 `document_ir`/`rendered_md`/`ir_source` 键（additive，既有键不变）
 - [ ] `cli/main.py` 注册 `build-document-ir`，选项 `--config/--content-uid/--sha256/--limit/--dry-run/--force`
 - [ ] Rich 汇总输出候选状态计数（built/skipped/failed）与 `NO_IR_SOURCE` 跳过原因
 - [ ] 报告 JSON `ensure_ascii=False`，中文无乱码；`--help` 可用
@@ -236,8 +236,8 @@ specs/017-unified-document-ir/plan.md  spec.md  acceptance.md       # Dev 不改
 | Task | 说明 | 主要文件 | 状态 |
 |------|------|----------|------|
 | T001 | 阅读 005/007/010/006 与规格 | — | [ ] |
-| T002 | 测试先行（三测试骨架 + fixture 红测） | `tests/test_document_ir.py` / `test_ir_renderer.py` / `test_evidence_chain_ir.py` + `fixtures/document_ir_*/` | [ ] |
-| T003 | IR dataclass + 校验器 | `document_ir_schema.py` | [ ] |
+| T002 | 测试先行（三测试骨架 + fixture 红测） | `tests/test_document_ir.py` / `test_ir_renderer.py` / `test_evidence_chain_ir.py` + `fixtures/document_ir_*/` | [ ]（P1 已交 fixture 构造器 + schema 对偶用例；A017-04~12 断言待 P2） |
+| T003 | IR dataclass + 校验器 | `document_ir_schema.py` | [x] |
 | T004 | MinerU content_list → IR 主映射 | `document_ir_builder.py` | [ ] |
 | T005 | MarkItDown 降级 IR + 坐标声明 | `document_ir_builder.py` | [ ] |
 | T006 | rendered.md 渲染 + 三降级路径 | `ir_renderer.py` | [ ] |
