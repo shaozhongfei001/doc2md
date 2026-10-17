@@ -34,6 +34,9 @@ logger = logging.getLogger(__name__)
 
 PARSER_NAME = "mineru"
 PARSER_PROFILE = "mineru_default_v1"
+
+#: 017 additive：需要从 staging 保留到 ``parsed_dir/ir_source/`` 的结构化中间件
+IR_SOURCE_FILENAMES: tuple[str, ...] = ("content_list.json", "middle.json")
 PARSER_ADAPTER_VERSION = "007_mvp_v1"
 MAGIC_PDF_CMD = "magic-pdf"
 
@@ -616,6 +619,9 @@ class MineruPdfParserService:
 
         text = markdown_path.read_text(encoding="utf-8")
         asset_entries, asset_warnings = self._collect_assets(staging_dir, assets_dir)
+        # 017 additive：保留 MinerU 结构化中间件（content_list / middle）供 Document IR 构建。
+        # 旧 v1 产物无上述文件 → 返回空列表，manifest 增记空数组，既有行为零变化。
+        ir_source_files = self._preserve_ir_source(staging_dir, artifacts["ir_source"])
 
         generated_at = _utc_iso()
         content_size_bytes = original_bin.stat().st_size if original_bin.is_file() else 0
@@ -676,6 +682,8 @@ class MineruPdfParserService:
         if asset_entries or assets_dir.is_dir():
             manifest_payload["assets_dir"] = assets_dir.as_posix()
             manifest_payload["asset_files"] = asset_entries
+        # 017 additive 字段：仅新增键，既有键与其语义逐字不变（A017-08/A017-09）
+        manifest_payload["ir_source_files"] = ir_source_files
         if asset_warnings:
             manifest_payload["warnings"] = asset_warnings
             manifest_payload["error"] = {
@@ -790,6 +798,37 @@ class MineruPdfParserService:
             if path.is_file():
                 return path
         return None
+
+    def _preserve_ir_source(
+        self,
+        staging_dir: Path,
+        ir_source_dir: Path,
+    ) -> list[dict[str, str]]:
+        """把 staging 中的 MinerU 结构化中间件拷入 ``parsed_dir/ir_source/``（017 additive）。
+
+        - ``content_list.json`` 必需、``middle.json`` 可选；两者都缺 → 返回空列表
+          （旧 ``mineru_default_v1`` 产物即此情形，行为与 017 之前完全一致）。
+        - 只搬运不解析：JSON 非法的判定属 017 服务层的 fail-closed 职责。
+        """
+
+        entries: list[dict[str, str]] = []
+        for name in IR_SOURCE_FILENAMES:
+            # MinerU 产物名带 PDF 前缀（如 ``rich_demo2_content_list.json``）→ 按后缀匹配，
+            # 落盘时统一归一为 ``content_list.json`` / ``middle.json``（017 契约文件名）。
+            candidates = sorted(staging_dir.rglob(f"*{name}"))
+            if not candidates:
+                continue
+            ir_source_dir.mkdir(parents=True, exist_ok=True)
+            target = ir_source_dir / name
+            shutil.copy2(candidates[0], target)
+            entries.append(
+                {
+                    "name": name,
+                    "relative_path": f"{ir_source_dir.name}/{name}",
+                    "sha256": compute_sha256(target),
+                }
+            )
+        return entries
 
     def _collect_assets(
         self,

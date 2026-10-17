@@ -1608,3 +1608,138 @@ class TestParsedPathsAdditive:
         hints = get_type_hints(ParsedArtifactPaths)
         assert {"document_ir", "rendered_md", "ir_source"} <= set(hints)
         assert {"parsed_dir", "parsed_text", "parsed_metadata", "parse_manifest"} <= set(hints)
+
+
+# ======================================================================================
+# P2：document_ir_builder（MinerU content_list → IR / MarkItDown 降级）
+# 注意：本块的辅助函数统一用 `_b_` 前缀，避免与文件既有 helper 撞名（曾因此覆盖
+# 既有 `_manifest_assets()` 并连带打红 4 个既有用例）。
+# ======================================================================================
+from app.services.document_ir_builder import (  # noqa: E402
+    build_from_markitdown_text,
+    build_from_mineru_content_list,
+)
+
+
+def _b_entries() -> list[dict[str, Any]]:
+    """与真实 mineru content_list 同形的 4 类块（无 bbox，含表格 HTML）。"""
+
+    return [
+        {"type": "text", "text": "季度复核报告", "text_level": 1, "page_idx": 0},
+        {"type": "text", "text": "本季度营收同比增长 12.4%。", "page_idx": 0},
+        {
+            "type": "table",
+            "img_path": "images/t.jpg",
+            "table_body": (
+                "<table><tr><td colspan=\"2\">指标</td><td>同比</td></tr>"
+                "<tr><td>营收</td><td>12480</td><td>+12.4%</td></tr></table>"
+            ),
+            "table_caption": ["表 1 主要指标"],
+            "page_idx": 0,
+        },
+        {"type": "image", "img_path": "images/f.jpg", "img_caption": ["图 1 趋势"], "page_idx": 0},
+    ]
+
+
+def _b_manifest() -> list[dict[str, str]]:
+    return [
+        {"relative_path": "images/f.jpg", "sha256": "a" * 64},
+        {"relative_path": "images/t.jpg", "sha256": "b" * 64},
+    ]
+
+
+def _b_build(entries=None, *, parsed_text="季度复核报告\n\n本季度营收同比增长 12.4%。"):
+    return build_from_mineru_content_list(
+        content_list=entries if entries is not None else _b_entries(),
+        parsed_text=parsed_text,
+        sha256="c" * 64,
+        content_uid="cnt-demo",
+        page_count=1,
+        manifest_assets=_b_manifest(),
+    )
+
+
+class TestBuilderMineruMapping:
+    def test_four_block_types_mapped(self) -> None:
+        payload = _b_build().to_dict()
+        assert [b["type"] for b in payload["blocks"]] == ["heading", "paragraph", "table", "figure"]
+
+    def test_block_id_is_one_based_and_reading_order_is_permutation(self) -> None:
+        """R-15：首块 b0001（1-based），reading_order 为 0..n-1 置换。"""
+
+        payload = _b_build().to_dict()
+        assert [b["block_id"] for b in payload["blocks"]] == ["b0001", "b0002", "b0003", "b0004"]
+        assert [b["reading_order"] for b in payload["blocks"]] == [0, 1, 2, 3]
+        assert payload["reading_order"] == ["b0001", "b0002", "b0003", "b0004"]
+
+    def test_missing_bbox_stays_null_and_is_counted(self) -> None:
+        """D-2：缺 bbox 一律 null，禁止估算；stats 由数据复算。"""
+
+        payload = _b_build().to_dict()
+        assert all(b["bbox"] is None for b in payload["blocks"])
+        assert payload["stats"]["blocks_without_bbox"] == len(payload["blocks"])
+
+    def test_unknown_type_falls_back_to_paragraph_with_raw_type(self) -> None:
+        entries = [{"type": "unknown_chart", "text": "未知块内容", "page_idx": 0}]
+        payload = _b_build(entries, parsed_text="未知块内容").to_dict()
+
+        assert payload["blocks"][0]["type"] == "paragraph"
+        assert payload["blocks"][0]["attrs"]["raw_type"] == "unknown_chart"
+
+    def test_table_cells_expand_and_skip_virtual_cells(self) -> None:
+        """R-05：colspan 覆盖的虚格不入 cells；展开尺寸计入 n_rows/n_cols。"""
+
+        payload = _b_build().to_dict()
+        table = payload["tables"][0]
+        # 行0：colspan=2 的「指标」+ 「同比」；行1：营收/12480/+12.4% → 5 个逻辑单元
+        assert (table["n_rows"], table["n_cols"]) == (2, 3)
+        assert len(table["cells"]) == 5
+        first = table["cells"][0]
+        assert (first["row"], first["col"], first["colspan"]) == (0, 0, 2)
+        assert all("confidence" not in cell for cell in table["cells"])
+        assert all(cell["bbox"] is None for cell in table["cells"])
+
+    def test_figure_asset_aligned_with_manifest(self) -> None:
+        payload = _b_build().to_dict()
+        figure = payload["figures"][0]
+        assert figure["asset_path"] == "assets/images/f.jpg"
+        assert figure["asset_sha256"] == "a" * 64
+        assert figure["caption"] == "图 1 趋势"
+
+
+class TestBuilderFailClosed:
+    def test_unregistered_asset_is_rejected(self) -> None:
+        """fail-closed：figure 有 asset_path 但 manifest 无法对齐 → 校验必须失败。"""
+
+        assets = [{"relative_path": "images/other.jpg", "sha256": "d" * 64}]
+        ir = build_from_mineru_content_list(
+            content_list=_b_entries(),
+            parsed_text="季度复核报告",
+            sha256="c" * 64,
+            content_uid="cnt-demo",
+            page_count=1,
+            manifest_assets=assets,
+        )
+        with pytest.raises(ir_schema.DocumentIrValidationError):
+            ir.validate(manifest_assets=assets)
+
+    def test_stats_are_recomputed_not_declared(self) -> None:
+        payload = _b_build().to_dict()
+        assert payload["stats"]["block_count"] == len(payload["blocks"])
+        assert payload["stats"]["table_count"] == len(payload["tables"])
+        assert payload["stats"]["figure_count"] == len(payload["figures"])
+
+
+class TestBuilderMarkitdown:
+    def test_degraded_ir_has_no_pages_and_no_bbox(self) -> None:
+        ir = build_from_markitdown_text(
+            text="第一段内容。\n\n第二段内容。", sha256="e" * 64, content_uid="cnt-md"
+        )
+        payload = ir.to_dict()
+
+        assert payload["page_count"] is None
+        assert all(b["bbox"] is None for b in payload["blocks"])
+        assert all(b["page_no"] is None for b in payload["blocks"])
+        assert payload["provenance"]["ir_source"] == "markitdown_text_only"
+        assert [b["content_ref"]["kind"] for b in payload["blocks"]] == ["inline_text", "inline_text"]
+        validate_document_ir(payload)

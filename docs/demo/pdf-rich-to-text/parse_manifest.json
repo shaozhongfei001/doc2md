@@ -1,0 +1,47 @@
+{
+  "content_uid": "0d4cf91aa65bf22e607ed319b2a8b6af7e223ef45a79fdef0bd6131dad2b5603",
+  "sha256": "0d4cf91aa65bf22e607ed319b2a8b6af7e223ef45a79fdef0bd6131dad2b5603",
+  "route_type": "PDF_DIGITAL",
+  "parser_name": "mineru",
+  "parser_profile": "mineru_default_v1",
+  "parser_adapter_version": "007_mvp_v1",
+  "source_vault_path": "/tmp/pdf_demo/ws3/raw_vault/by_hash/0d/0d4cf91aa65bf22e607ed319b2a8b6af7e223ef45a79fdef0bd6131dad2b5603/original.bin",
+  "parsed_text_path": "/tmp/pdf_demo/ws3/parsed/by_hash/0d/4c/0d4cf91aa65bf22e607ed319b2a8b6af7e223ef45a79fdef0bd6131dad2b5603/parsed_text.md",
+  "parsed_metadata_path": "/tmp/pdf_demo/ws3/parsed/by_hash/0d/4c/0d4cf91aa65bf22e607ed319b2a8b6af7e223ef45a79fdef0bd6131dad2b5603/parsed_metadata.json",
+  "generated_at": "2026-10-17T14:14:17.538703Z",
+  "status": "SUCCESS",
+  "content_size_bytes": 21184783,
+  "input_metadata": {
+    "file_ext": ".pdf",
+    "mime_type": "application/pdf",
+    "rule_name": "pdf_sniff_digital",
+    "vault_uid": "0d4cf91aa65bf22e607ed319b2a8b6af7e223ef45a79fdef0bd6131dad2b5603"
+  },
+  "output_size_bytes": 902,
+  "output_hash": "e9869eba0de51e82c1ac0e645bce484c88cb5e63b89038e0360f3ecefb5cb72f",
+  "assets_dir": "/tmp/pdf_demo/ws3/parsed/by_hash/0d/4c/0d4cf91aa65bf22e607ed319b2a8b6af7e223ef45a79fdef0bd6131dad2b5603/assets",
+  "asset_files": [
+    {
+      "relative_path": "images/1eae9ca41cbc812035a33738db740bddb1d72b1bbca14fe24dedee42949231fa.jpg",
+      "source_name": "1eae9ca41cbc812035a33738db740bddb1d72b1bbca14fe24dedee42949231fa.jpg",
+      "sha256": "20273eb8b10137fd3af46893e4d9d49a8bde5c2449237b493b63192205ce7242"
+    },
+    {
+      "relative_path": "images/8c00400739e1dc839d6597bf004799a59bfd0760fb1b71c2908c2440fedbc664.jpg",
+      "source_name": "8c00400739e1dc839d6597bf004799a59bfd0760fb1b71c2908c2440fedbc664.jpg",
+      "sha256": "2d40136120212bba655846d4bf1f6a2c89bd128abe33d6ae70656d443cda05a3"
+    }
+  ],
+  "ir_source_files": [
+    {
+      "name": "content_list.json",
+      "relative_path": "ir_source/content_list.json",
+      "sha256": "c26900f754e15244c81809f11eeb19d71cc6c8dbc7fd4023307a87b0dc6d8bc6"
+    },
+    {
+      "name": "middle.json",
+      "relative_path": "ir_source/middle.json",
+      "sha256": "7415deda998e860d197de19690c0565ee8d64d9e1272ba9963c417e1116fc5c0"
+    }
+  ]
+}

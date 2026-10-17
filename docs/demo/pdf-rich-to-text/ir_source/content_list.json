@@ -1,0 +1,32 @@
+[
+    {
+        "type": "text",
+        "text": "2026 Q3 供应链季度复核报告",
+        "text_level": 1,
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "本季度核心企业客户营收同比增长 12.4%， 日均存款余额 8.95 亿元， 较上季度提升 6.1%。  \n用电量同比上升 9.8%， 纳税开票金额同比上升 11.2%， 两项交叉验证支持营收增长的真实性。  \n供应链上下游集中度由 62% 降至 54%， 但单一最大供应商占比仍达 23%， 需持续监测替代可行性。",
+        "page_idx": 0
+    },
+    {
+        "type": "table",
+        "img_path": "images/8c00400739e1dc839d6597bf004799a59bfd0760fb1b71c2908c2440fedbc664.jpg",
+        "table_caption": [
+            "表 1 主要经营指标 （单位： 万元）"
+        ],
+        "table_footnote": [],
+        "table_body": "<html><body><table><tr><td>指标</td><td>本期</td><td>上期</td><td>同比</td></tr><tr><td>营业收入</td><td>12480</td><td>11104</td><td>+12.4%</td></tr><tr><td>日均存款</td><td>89500</td><td>84356</td><td>+6.1%</td></tr><tr><td>用电量(kWh)</td><td>2310000</td><td>2103900</td><td>+9.8%</td></tr></table></body></html>",
+        "page_idx": 0
+    },
+    {
+        "type": "image",
+        "img_path": "images/1eae9ca41cbc812035a33738db740bddb1d72b1bbca14fe24dedee42949231fa.jpg",
+        "img_caption": [
+            "图 1 季度营收趋势"
+        ],
+        "img_footnote": [],
+        "page_idx": 0
+    }
+]

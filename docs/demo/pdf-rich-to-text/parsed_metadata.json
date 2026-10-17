@@ -1,0 +1,11 @@
+{
+  "parser_name": "mineru",
+  "parser_profile": "mineru_default_v1",
+  "parser_adapter_version": "007_mvp_v1",
+  "route_type": "PDF_DIGITAL",
+  "content_uid": "0d4cf91aa65bf22e607ed319b2a8b6af7e223ef45a79fdef0bd6131dad2b5603",
+  "sha256": "0d4cf91aa65bf22e607ed319b2a8b6af7e223ef45a79fdef0bd6131dad2b5603",
+  "source_vault_path": "/tmp/pdf_demo/ws3/raw_vault/by_hash/0d/0d4cf91aa65bf22e607ed319b2a8b6af7e223ef45a79fdef0bd6131dad2b5603/original.bin",
+  "generated_at": "2026-10-17T14:14:17.538703Z",
+  "library_version": "magic-pdf"
+}
