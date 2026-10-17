@@ -1,0 +1,34 @@
+# 016 语义质检指标（第五类语义检查）阈值配置
+#
+# 归属：016-semantic-quality-metrics（唯一 owner，其他 Spec 不得修改）。
+# 缺文件 / 缺字段 → 代码默认值（parse_quality_checker.py 内 DEFAULT_*）。
+# 阈值非法（负数或 >1）→ ValueError 启动即失败（fail-fast，不静默降级）。
+# 判定表（哪些字符算乱码）冻结在代码里，本文件只调阈值。
+#
+# 默认值 = Owner 裁定 O-3（FROZEN，2026-10-16）。
+
+semantic_checks:
+  # 总开关。false 等价于 CLI --no-semantic：报告回落 schema_version=1.0，
+  # issue_counts 只含既有 18 键，且不出现 semantic_checks_enabled 键。
+  enabled: true
+
+  garbled:
+    # 正文短于此值 → 乱码率整体跳过（不产 issue，不是「ratio=0 通过」）。
+    min_sample_chars: 200
+    # ratio >= warn_ratio → WARNING；ratio >= error_ratio → ERROR。
+    warn_ratio: 0.02
+    error_ratio: 0.10
+
+  confidence:
+    # ocr_confidence.mean 低于此值 → OCR_LOW_CONFIDENCE（WARNING）。
+    min_mean: 0.70
+    # 仅对这些 parser 评估置信度；缺 ocr_confidence 只产 INFO，绝不产 LOW。
+    ocr_parser_names: ["image_ocr", "mineru"]
+
+  tables:
+    # Markdown pipe 表格结构检查（分隔行缺失 / 列数不一致）。
+    enabled: true
+
+  empty_text:
+    # status=SUCCESS 但正文为空且源内容非空 → EMPTY_BUT_NONZERO_PAGES（ERROR）。
+    enabled: true

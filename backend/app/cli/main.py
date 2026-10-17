@@ -647,6 +647,11 @@ def check_parse_quality(
         "--fail-on-issue",
         help="Exit with code 2 when issues are found.",
     ),
+    no_semantic: bool = typer.Option(
+        False,
+        "--no-semantic",
+        help="Disable the 016 semantic checks (008 behaviour, schema_version 1.0).",
+    ),
 ) -> None:
     if limit is not None and limit < 1:
         console.print("ERROR: --limit must be >= 1")
@@ -663,6 +668,7 @@ def check_parse_quality(
             status=status,
             limit=limit,
             output=output,
+            semantic_enabled=False if no_semantic else None,
         )
     except (FileNotFoundError, ValueError, RuntimeError) as exc:
         console.print(f"ERROR: {exc}")

@@ -13,14 +13,17 @@ from app.core.config import AppConfig
 logger = logging.getLogger(__name__)
 
 INPUT_REPORT_TYPE = "parse_quality_report"
+# 016：语义检查开启的报告为 1.1（增量键），关闭时仍为 1.0；两者都可汇总（Owner 裁定 O-4）。
 INPUT_SCHEMA_VERSION = "1.0"
+INPUT_SCHEMA_VERSIONS = frozenset({"1.0", "1.1"})
 INPUT_MODE = "check"
 
 REPORT_TYPE = "parse_quality_summary"
 SCHEMA_VERSION = "1.0"
 MODE_SUMMARIZE = "summarize"
 
-ISSUE_CODES: tuple[str, ...] = (
+# 008 既有 18 项（输入报告必须全含；语义零变更）。
+LEGACY_ISSUE_CODES: tuple[str, ...] = (
     "MISSING_RAW_VAULT_OBJECT",
     "STALE_RAW_VAULT_PATH",
     "MISSING_PARSED_DIR",
@@ -40,6 +43,17 @@ ISSUE_CODES: tuple[str, ...] = (
     "REGISTRY_EMPTY_RESULT",
     "REGISTRY_SKIPPED_RESULT",
 )
+
+# 016 第五类语义检查 code（追加在后）。
+SEMANTIC_ISSUE_CODES: tuple[str, ...] = (
+    "OCR_GARBLED_RATIO",
+    "OCR_LOW_CONFIDENCE",
+    "OCR_CONFIDENCE_UNAVAILABLE",
+    "TABLE_STRUCTURE_INCOMPLETE",
+    "EMPTY_BUT_NONZERO_PAGES",
+)
+
+ISSUE_CODES: tuple[str, ...] = LEGACY_ISSUE_CODES + SEMANTIC_ISSUE_CODES
 
 SUMMARY_REQUIRED_KEYS = (
     "checked_content_count",
@@ -66,7 +80,7 @@ REPORT_FILENAME_PATTERN = re.compile(
 )
 
 ALLOWED_SEVERITIES = frozenset({"CRITICAL", "ERROR", "WARNING", "INFO"})
-ALLOWED_PARSER_NAMES = frozenset({"markitdown", "mineru"})
+ALLOWED_PARSER_NAMES = frozenset({"markitdown", "mineru", "image_ocr"})
 
 
 @dataclass
@@ -183,9 +197,10 @@ def validate_input_report(data: dict[str, Any]) -> None:
         raise ValueError(
             f"Invalid input: report_type must be {INPUT_REPORT_TYPE!r}"
         )
-    if data.get("schema_version") != INPUT_SCHEMA_VERSION:
+    if data.get("schema_version") not in INPUT_SCHEMA_VERSIONS:
         raise ValueError(
-            f"Invalid input: schema_version must be {INPUT_SCHEMA_VERSION!r}"
+            f"Invalid input: schema_version must be one of "
+            f"{sorted(INPUT_SCHEMA_VERSIONS)}"
         )
     if data.get("mode") != INPUT_MODE:
         raise ValueError(f"Invalid input: mode must be {INPUT_MODE!r}")
@@ -211,9 +226,22 @@ def validate_input_report(data: dict[str, Any]) -> None:
         raise ValueError(
             f"Invalid input: issue_counts contains unknown keys: {sorted(unknown_keys)}"
         )
-    for code in ISSUE_CODES:
+    if data.get("schema_version") == "1.0":
+        # fail-closed：016 语义开启时 checker 产 1.1、关闭时产 1.0，
+        # 1.0 里出现语义键只可能是生产者 bug；静默接受会让版本语义失效。
+        semantic_keys = [code for code in SEMANTIC_ISSUE_CODES if code in issue_counts]
+        if semantic_keys:
+            raise ValueError(
+                "Invalid input: issue_counts must not contain semantic codes when "
+                f"schema_version='1.0': {sorted(semantic_keys)}"
+            )
+    for code in LEGACY_ISSUE_CODES:
         if code not in issue_counts:
             raise ValueError(f"Invalid input: issue_counts missing key {code!r}")
+    # 016 语义 code 属增量键：1.0 报告可以不含（增量键兼容），含则必须合法。
+    for code in ISSUE_CODES:
+        if code not in issue_counts:
+            continue
         value = issue_counts[code]
         count = _require_int(value, f"issue_counts.{code}")
         if count < 0:
@@ -243,7 +271,8 @@ def validate_input_report(data: dict[str, Any]) -> None:
 
 def _copy_issue_counts(data: dict[str, Any]) -> dict[str, int]:
     source = data["issue_counts"]
-    return {code: int(source[code]) for code in ISSUE_CODES}
+    # 016 语义 code 在 1.0 输入报告中可缺席 → 补 0（增量键兼容）。
+    return {code: int(source.get(code, 0)) for code in ISSUE_CODES}
 
 
 def _filter_issues(

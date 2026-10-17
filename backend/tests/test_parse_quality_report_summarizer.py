@@ -513,7 +513,8 @@ def test_issue_counts_unchanged_when_filtered(summarizer_env):
         output_format="json",
     )
     data = json.loads(result.summary_path.read_text(encoding="utf-8"))
-    assert data["issue_counts"] == payload["issue_counts"]
+    expected = {code: payload["issue_counts"].get(code, 0) for code in ISSUE_CODES}
+    assert data["issue_counts"] == expected
     assert result.filtered_issue_count == 1
 
 
