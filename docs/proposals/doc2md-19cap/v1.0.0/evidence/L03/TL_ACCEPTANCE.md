@@ -87,3 +87,40 @@ D-2 是本阶段最值得记录的一条：**如果直接采信回报数字写�
 `TL_ACCEPTANCE = ACCEPTED`（以第 3 节实测和 3/3 抽检变异为前提）。
 `INDEPENDENT_QA` 由 `qa-verifier` 对 `07da949` 执行，覆盖：A 复跑比对、B 复核 L01 第 2 轮三项修复、C 补 5 组作者未变异分支、D 核实 L03-DEBT-01 回填真实性、E 假成功/错误码、F 报告一致性。
 QA 若判 RETURN，本记录结论自动失效，按返回项返工。
+
+---
+
+## 9. 附记：R1/R2 最终态的落位确认（TL 追加）
+
+DEV 在 `07da949` 之后回报"R1 已实现、R2 走方案 A 并补差分测试"，同时指出其内容**已在 `07da949` 内**。TL 逐字节核对：
+
+| 文件 | HEAD blob md5(12) | 工作区 md5(12) | 一致 |
+|---|---|---|---|
+| `word/native_tables.py` | `b8b26b918575` | `b8b26b918575` | 是 |
+| `tests/test_word_tables.py` | `b95a04834971` | `b95a04834971` | 是 |
+
+`git status` 为空、无未跟踪文件 → **07da949 已包含 R1/R2 最终内容，不需要额外补提交**
+（本记录即在为此留痕；提交信息已写明 R1/R2 已落地）。§3 表格、§2 数字均无需修改。
+
+### 9.1 差分测试已抽检（非采信）
+
+| 用例 | 位置 | 断言 |
+|---|---|---|
+| `test_payload_is_identical_to_grid_to_contract_table[7 shapes]` | `test_word_tables.py:449` | 7 种形状下 `cells` 顺序 / `slots` / `omitted_slots` / `n_rows` / `n_cols` 与 `grid.to_contract_table` 逐键相等 |
+| `test_the_only_divergence_is_a_grid_wider_than_its_anchors` | `:467` | 唯一分歧被单独钉住：`to_contract_table` 推 (1,1)、交付 (1,3)，其余 9 键相等 |
+| `test_grid_module_is_the_only_matrix_builder` | `:412` | spy `build_slots` 必须被调用（单一事实源） |
+
+TL 实跑：`pytest -k "identical or divergence or only_matrix_builder or hmerge"` → **16 passed / 0 failed**。
+
+### 9.2 更正一处计数
+
+§3 写"DEV 自报 19 组（T301/302）"，DEV 本轮更新为 **30 组累计有效变异全部 CAPTURED**
+（原 19 + R2 阶段 4 + R1 阶段 3 + 复跑 4），每次 `restored=True`。TL 侧为**抽检**（W1–W3、G1–G3 共 6 组），
+不复跑其全部；差额由 `qa-verifier` 按 §8 的 C 项补覆盖。
+
+### 9.3 一处口径需要写清（避免被误读为"两份实现"）
+
+R2 之后 `native_tables` 仍保留两项 grid 不可见的 XML 事实判断：
+`w:vMerge` adjacency（continue 必须连到上一行同列区间的 restart anchor）、
+"行描述列数 < `w:tblGrid` 且无 `gridAfter` ⇒ 未解释尾列"。
+这两项**不重算矩阵**，属结构事实，与 grid 的职责边界清晰；已在 §6 `L03-DEBT-01` 记录唯一残留的尺寸回填。
