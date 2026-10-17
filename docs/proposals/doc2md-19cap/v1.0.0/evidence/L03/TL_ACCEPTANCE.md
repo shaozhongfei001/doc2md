@@ -124,3 +124,60 @@ R2 之后 `native_tables` 仍保留两项 grid 不可见的 XML 事实判断：
 `w:vMerge` adjacency（continue 必须连到上一行同列区间的 restart anchor）、
 "行描述列数 < `w:tblGrid` 且无 `gridAfter` ⇒ 未解释尾列"。
 这两项**不重算矩阵**，属结构事实，与 grid 的职责边界清晰；已在 §6 `L03-DEBT-01` 记录唯一残留的尺寸回填。
+
+---
+
+## 10. 附记二：DEV 只读自审结果与新增债务（TL 采纳）
+
+`dev-word` 在冻结前做了一次只读自审（未改文件、未提交；`git status` 为空、工作区与 `07da949` 逐字节一致），
+方法为自建 `settrace` 行覆盖 + 逐条探针。TL 采纳其结论，因为它是**主动暴露"声明与证据的落差"**，而非给出"全部通过"。
+
+### 10.1 行覆盖实测（DEV 自建 settrace，非 coverage 包）
+
+| 文件 | 覆盖 | 缺失行 |
+|---|---|---|
+| `word/__init__.py` | 6/6 = 100.0% | — |
+| `word/package.py` | 182/193 = 94.3% | 11 |
+| `word/final_view.py` | 196/213 = 92.0% | 17 |
+| `word/native_tables.py` | 323/356 = 90.7% | 33 |
+
+### 10.2 结论一：不存在"只写在回报里、代码里没有"的守卫
+
+四个生产文件逐条对过代码，未发现虚报实现。但需更正两处**TL 与 DEV 共同有过的措辞失真**：
+
+| 表述 | 代码实际 | 判定 |
+|---|---|---|
+| 本文 §1 把 "UNC" 列为独立拒绝项 | `package.py` 的 UNC 分支被前一条 absolute/backslash 判定**完全吸收**（探针 `//evil.xml` 命中 `docx member uses an absolute path`） | 行为正确（仍被拒），但**该分支是死代码**，"UNC 守卫已验证"不成立 |
+| DEV 曾称结构修订"4 类" | `STRUCTURAL_REVISIONS` 实为 **7 对**，测试只覆盖 3 对 | 表述偏小且**覆盖不全**（见 10.3） |
+
+### 10.3 结论二：声明强于证据的地方（已登记）
+
+**fail-closed 的结构修订承诺覆盖 7 对，只有 3 对能被打红**：
+已测 `cellMerge`、`trPr/del`、`tblPrChange`；**未测** `trPr/cellDel`、`trPr/trPrChange`、`tcPr/tcPrChange`、`pPr/pPrChange`。
+这不是"行为错误"，而是"该承诺对 4/7 未验证"——与本项目禁止的"断言强于证据"同类。
+
+12 类可达但未测分支（DEV 逐条给出探针结果，行为均正确）：
+`gridBefore/gridAfter` 无 `w:val` / 非整数；`gridSpan` 无 `w:val`；`vMerge` 未知值；无 `w:body`（两处）；
+`member_size()` 正常路径；成员 CRC 损坏；打开后原件被换成非 zip；`sdt` 包裹段落；XML 注释/PI；
+`noBreakHyphen`；`delText` 内的 `tab`/`br`。
+
+### 10.4 结论三：两个"仅伪造 zip 可达"的守卫，不再声称已验证
+
+- 空成员名：`zipfile.writestr("")` 直接 `IndexError`，不可达；
+- 含 NUL 的成员名：`writestr` 路径被 zip 层**静默截断**成 `a`，守卫在正常写入路径永不触发，只有伪造中央目录才能到达。
+行为上无风险（截断发生在 zip 层，读到的成员名已不含 NUL），但"该守卫已被验证"的说法**撤回**。
+
+### 10.5 新增登记
+
+| 编号 | 内容 | 处置 |
+|---|---|---|
+| `L03-DEBT-02` | 5 处死代码：UNC 分支、`_children()`、`iter_revisions()`、两条 nested-skip `elif`、continue-ownership 分支 | L05 统一清理，**前提是先证明不可达**（删错的代价是把 fail-closed 变成 fail-open） |
+| `L03-GAP-04` | 12 类可达未测分支，重点为 4 对结构修订 | 与 DEBT-02 同批 |
+| `L03-GAP-05` | 空成员名 / 含 NUL 成员名（仅伪造 zip 可达） | 不再声称已验证；是否补测按投入产出另定 |
+
+### 10.6 处置纪律
+
+DEV 已**冻结**（不再改 `word/**` 与 `test_word_*.py`），所有修复排在 `qa-verifier` 结论之后——
+理由即 D-2 教训：验收期间改动会让验收方测到移动靶、数字对不上。
+`L03-DEBT-02`/`L03-GAP-04`/`L03-GAP-05` **不纳入本轮 QA 的 RETURN 门槛**（属已声明缺口，不是假成功），
+但已要求 QA 独立确认"4 对结构修订确实无覆盖"这一条是否属实。
