@@ -144,7 +144,7 @@
 | M7（QA 追加） | `checker:32` 收回 `image_ocr` 白名单 | `1ffd85fea2d89e10153058fa2990a203` | A016-09 白名单 FAIL | **FAILED**：`test_image_ocr_parser_name_allowed`（`'MANIFEST_PARSER_NAME_INVALID' not in {...}` :1220） | `cec00d45…` match |
 | M8（QA 追加） | `:711` 删除 `result_status == "SUCCESS"` 门禁 | `4743c03fda1a3c97469ed611186aba03` | A016-05 对照 A FAIL | **FAILED**：`test_empty_status_no_issue`（`EMPTY_BUT_NONZERO_PAGES` 误入 :624） | `cec00d45…` match |
 
-结论：**10/10 变异被捕获，0 空转**；全部还原后 016 文件 `61 passed`、全量 `4 failed/498 passed/2 skipped`、
+结论：**本节 10 次变异全部被捕获，0 空转**（加上 §6b 的 M9/M10，全程序共 12 次变异 12/12 命中）；全部还原后 016 文件 `61 passed`、全量 `4 failed/498 passed/2 skipped`、
 `git status --porcelain -- backend config` 为空。（QA 期间 `specs/.../tasks.md` 出现过实现方
 异步写盘的 `M` 状态，随后由 `72078ab` 提交，与本 QA 的代码变异无关。）
 
@@ -209,10 +209,30 @@
 - O-3：`count_garbled_chars` 对 Box Drawing / Block Elements 等区块只在**连续 ≥3 字符 run** 时计入，
   单字符不误报；该容差未在 acceptance 中定义，实测不影响验收项。
 
+### 6b. TL 追加复核（qa-016，2026-10-17 追加）
+
+TL 更正基线并指定两处「请复核而非采信」。复核实测如下（锚定 md5 与 TL 清单**逐项一致**：
+checker `cec00d45…`、summarizer `7508f713…`、016 测试 `fe627f21…`、009 测试 `c9246bd4…`、
+cli `49f24462…`、yaml `d172689c…`；全量 `4 failed/498 passed/2 skipped`、016 文件 61 passed）。
+
+| # | 变异点（文件:行） | 变异态 md5 | 期望 | 实测 | 还原后 md5 |
+|---|------------------|-----------|------|------|-----------|
+| M9 | `parse_quality_checker.py:651-653` 语义关闭时**也写** `scope["semantic"]=False` | `d2fa65a09b251f0aba117e2cc316ca06` | 零差异用例 FAIL | **3 FAILED**：`test_no_semantic_payload_equals_008_reference`、`test_no_semantic_freezes_008_report`、`test_semantic_checks_disabled_by_yaml` | `cec00d45…` match |
+| M10 | `parse_quality_report_summarizer.py:231` 守卫短路为 `if False and data.get("schema_version") == "1.0":` | `1d262a465984c7291c6b098b03c4eda2` | 守卫用例 FAIL | **1 FAILED**：`test_summarizer_rejects_semantic_codes_in_1_0_report` | `7508f713…` match |
+
+- **A016-07 判据 = 零差异（不是「唯一差异是 semantic=false」）**，已独立验证：
+  008 原版模块 vs 现行 `semantic_enabled=False`，5 fixture 去 `generated_at` 后**全字段相等 True**；
+  1.0 报告 `scope` 恰 5 键、无 `semantic` 键；`test_no_semantic_payload_equals_008_reference:843-845`
+  是 `json.dumps(..., sort_keys=True)` **整串相等**而不是只比键集，M9 证明该整串比较非空转。
+- **fail-closed 加强项**计入判定：`schema_version="1.0"` 且 `issue_counts` 含语义键 → `ValueError`
+  （`summarizer:231-237`）；M6（删守卫）与 M10（短路守卫）两次变异均被
+  `test_summarizer_rejects_semantic_codes_in_1_0_report` 捕获，**断言非空转**。
+- `tests/test_parse_quality_report_summarizer.py:513-517` 的 `+2/−1` 属**授权例外**，不计越界（§4 已核）。
+
 ### 7. 最终 verdict
 
 **QA_PASS（验收通过）**：A016-01~10 全部 **PASS**（10/10，0 FAIL，0 未覆盖的硬项）；
-8 组变异（6 组指定 + 2 组 QA 追加）**变异必 FAIL、还原必 PASS**，否定断言无空转；
+10 组变异（6 组指定 + 2 组 QA 追加 + 2 组 TL 追加复核）**变异必 FAIL、还原必 PASS**，否定断言无空转；
 白名单 7 文件与授权例外完全对应；只读红线（无 SQL 写、产物 sha256 不变、OSError 隔离）实测成立；
 全量回归 `4 failed（既有 --help 基线）/ 498 passed / 2 skipped`。
 唯一建议（不阻塞）：补一条「CLI × 中文路径」用例，把本次 §3 的覆盖固化进测试集。
