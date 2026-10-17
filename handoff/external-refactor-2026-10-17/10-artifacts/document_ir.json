@@ -1,0 +1,271 @@
+{
+  "schema_version": "document-ir/1.0",
+  "document_uid": "doc_0d4cf91aa65bf22e_017_mvp_v1",
+  "content_uid": "0d4cf91aa65bf22e607ed319b2a8b6af7e223ef45a79fdef0bd6131dad2b5603",
+  "sha256": "0d4cf91aa65bf22e607ed319b2a8b6af7e223ef45a79fdef0bd6131dad2b5603",
+  "source_vault_path": "/tmp/pdf_demo/ws3/raw_vault/by_hash/0d/0d4cf91aa65bf22e607ed319b2a8b6af7e223ef45a79fdef0bd6131dad2b5603/original.bin",
+  "provenance": {
+    "parser_name": "mineru",
+    "parser_profile": "mineru_ir_v2",
+    "parser_adapter_version": "017_mvp_v1",
+    "ir_source": "mineru_content_list",
+    "generated_at": "2026-10-17T14:14:17.546824Z"
+  },
+  "page_count": 1,
+  "coordinate_system": {
+    "origin": "top_left",
+    "unit": "pixel",
+    "page_ref": "per_page"
+  },
+  "blocks": [
+    {
+      "block_id": "b0001",
+      "type": "heading",
+      "page_no": 1,
+      "bbox": null,
+      "reading_order": 0,
+      "confidence": null,
+      "content_ref": {
+        "kind": "text_span",
+        "text": "2026 Q3 供应链季度复核报告",
+        "source": "parsed_text.md",
+        "start_offset": 2,
+        "end_offset": 19
+      },
+      "attrs": {
+        "heading_level": 1
+      }
+    },
+    {
+      "block_id": "b0002",
+      "type": "paragraph",
+      "page_no": 1,
+      "bbox": null,
+      "reading_order": 1,
+      "confidence": null,
+      "content_ref": {
+        "kind": "text_span",
+        "text": "本季度核心企业客户营收同比增长 12.4%， 日均存款余额 8.95 亿元， 较上季度提升 6.1%。  \n用电量同比上升 9.8%， 纳税开票金额同比上升 11.2%， 两项交叉验证支持营收增长的真实性。  \n供应链上下游集中度由 62% 降至 54%， 但单一最大供应商占比仍达 23%， 需持续监测替代可行性。",
+        "source": "parsed_text.md",
+        "start_offset": 21,
+        "end_offset": 179
+      },
+      "attrs": {}
+    },
+    {
+      "block_id": "b0003",
+      "type": "table",
+      "page_no": 1,
+      "bbox": null,
+      "reading_order": 2,
+      "confidence": null,
+      "content_ref": {
+        "kind": "table_ref",
+        "table_id": "t001"
+      },
+      "attrs": {
+        "caption": "表 1 主要经营指标 （单位： 万元）"
+      }
+    },
+    {
+      "block_id": "b0004",
+      "type": "figure",
+      "page_no": 1,
+      "bbox": null,
+      "reading_order": 3,
+      "confidence": null,
+      "content_ref": {
+        "kind": "figure_ref",
+        "figure_id": "f001"
+      },
+      "attrs": {}
+    }
+  ],
+  "tables": [
+    {
+      "table_id": "t001",
+      "block_id": "b0003",
+      "page_no": 1,
+      "bbox": null,
+      "html": "<html><body><table><tr><td>指标</td><td>本期</td><td>上期</td><td>同比</td></tr><tr><td>营业收入</td><td>12480</td><td>11104</td><td>+12.4%</td></tr><tr><td>日均存款</td><td>89500</td><td>84356</td><td>+6.1%</td></tr><tr><td>用电量(kWh)</td><td>2310000</td><td>2103900</td><td>+9.8%</td></tr></table></body></html>",
+      "n_rows": 4,
+      "n_cols": 4,
+      "cells": [
+        {
+          "row": 0,
+          "col": 0,
+          "rowspan": 1,
+          "colspan": 1,
+          "is_header": false,
+          "text": "指标",
+          "bbox": null
+        },
+        {
+          "row": 0,
+          "col": 1,
+          "rowspan": 1,
+          "colspan": 1,
+          "is_header": false,
+          "text": "本期",
+          "bbox": null
+        },
+        {
+          "row": 0,
+          "col": 2,
+          "rowspan": 1,
+          "colspan": 1,
+          "is_header": false,
+          "text": "上期",
+          "bbox": null
+        },
+        {
+          "row": 0,
+          "col": 3,
+          "rowspan": 1,
+          "colspan": 1,
+          "is_header": false,
+          "text": "同比",
+          "bbox": null
+        },
+        {
+          "row": 1,
+          "col": 0,
+          "rowspan": 1,
+          "colspan": 1,
+          "is_header": false,
+          "text": "营业收入",
+          "bbox": null
+        },
+        {
+          "row": 1,
+          "col": 1,
+          "rowspan": 1,
+          "colspan": 1,
+          "is_header": false,
+          "text": "12480",
+          "bbox": null
+        },
+        {
+          "row": 1,
+          "col": 2,
+          "rowspan": 1,
+          "colspan": 1,
+          "is_header": false,
+          "text": "11104",
+          "bbox": null
+        },
+        {
+          "row": 1,
+          "col": 3,
+          "rowspan": 1,
+          "colspan": 1,
+          "is_header": false,
+          "text": "+12.4%",
+          "bbox": null
+        },
+        {
+          "row": 2,
+          "col": 0,
+          "rowspan": 1,
+          "colspan": 1,
+          "is_header": false,
+          "text": "日均存款",
+          "bbox": null
+        },
+        {
+          "row": 2,
+          "col": 1,
+          "rowspan": 1,
+          "colspan": 1,
+          "is_header": false,
+          "text": "89500",
+          "bbox": null
+        },
+        {
+          "row": 2,
+          "col": 2,
+          "rowspan": 1,
+          "colspan": 1,
+          "is_header": false,
+          "text": "84356",
+          "bbox": null
+        },
+        {
+          "row": 2,
+          "col": 3,
+          "rowspan": 1,
+          "colspan": 1,
+          "is_header": false,
+          "text": "+6.1%",
+          "bbox": null
+        },
+        {
+          "row": 3,
+          "col": 0,
+          "rowspan": 1,
+          "colspan": 1,
+          "is_header": false,
+          "text": "用电量(kWh)",
+          "bbox": null
+        },
+        {
+          "row": 3,
+          "col": 1,
+          "rowspan": 1,
+          "colspan": 1,
+          "is_header": false,
+          "text": "2310000",
+          "bbox": null
+        },
+        {
+          "row": 3,
+          "col": 2,
+          "rowspan": 1,
+          "colspan": 1,
+          "is_header": false,
+          "text": "2103900",
+          "bbox": null
+        },
+        {
+          "row": 3,
+          "col": 3,
+          "rowspan": 1,
+          "colspan": 1,
+          "is_header": false,
+          "text": "+9.8%",
+          "bbox": null
+        }
+      ],
+      "caption_block_id": null,
+      "confidence": null
+    }
+  ],
+  "figures": [
+    {
+      "figure_id": "f001",
+      "block_id": "b0004",
+      "page_no": 1,
+      "bbox": null,
+      "asset_path": "assets/images/1eae9ca41cbc812035a33738db740bddb1d72b1bbca14fe24dedee42949231fa.jpg",
+      "asset_sha256": "20273eb8b10137fd3af46893e4d9d49a8bde5c2449237b493b63192205ce7242",
+      "ocr_text": null,
+      "caption": "图 1 季度营收趋势",
+      "caption_block_id": null,
+      "image_quality_score": null,
+      "confidence": null
+    }
+  ],
+  "reading_order": [
+    "b0001",
+    "b0002",
+    "b0003",
+    "b0004"
+  ],
+  "stats": {
+    "block_count": 4,
+    "table_count": 1,
+    "figure_count": 1,
+    "blocks_without_bbox": 4,
+    "blocks_low_confidence": 0
+  }
+}

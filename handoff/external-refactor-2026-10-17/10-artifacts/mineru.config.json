@@ -1,0 +1,18 @@
+{
+  "models-dir": "/home/szf/magic-pdf-models/PDF-Extract-Kit-1.0/models",
+  "layoutreader-model-dir": "/home/szf/magic-pdf-models/PDF-Extract-Kit-1.0/models/ReadingOrder/layout_reader",
+  "device-mode": "cpu",
+  "layout-config": {
+    "model": "doclayout_yolo"
+  },
+  "formula-config": {
+    "mfd_model": "yolo_v8_mfd",
+    "mfr_model": "unimernet_small",
+    "enable": false
+  },
+  "table-config": {
+    "model": "rapid_table",
+    "enable": true,
+    "max_time": 400
+  }
+}

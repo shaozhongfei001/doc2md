@@ -1,0 +1,2097 @@
+{
+  "generated_at": "2026-10-17",
+  "git_head": "52a63ecf6ba852f65f848edfb1f835e7d360febd",
+  "backend": {
+    "files": [
+      {
+        "path": "app/__init__.py",
+        "loc": 0,
+        "doc": "",
+        "classes": [],
+        "functions": [],
+        "internal_imports": []
+      },
+      {
+        "path": "app/adapters/image_preprocess.py",
+        "loc": 225,
+        "doc": "图像预处理适配器（015 plan §5.3 / §8.4 D-4）。",
+        "classes": [
+          {
+            "name": "PreprocessOutput",
+            "methods": []
+          }
+        ],
+        "functions": [
+          {
+            "name": "preprocess_image",
+            "args": [
+              "image_path",
+              "staging_dir",
+              "ops"
+            ]
+          }
+        ],
+        "internal_imports": [
+          "app.adapters.image_quality.import_cv2"
+        ]
+      },
+      {
+        "path": "app/adapters/image_quality.py",
+        "loc": 161,
+        "doc": "图像质量评分适配器（015 plan §5.2 / §8.3 D-3）。",
+        "classes": [
+          {
+            "name": "_ScorerUnavailable",
+            "methods": []
+          },
+          {
+            "name": "ImageQualityResult",
+            "methods": [
+              "available"
+            ]
+          }
+        ],
+        "functions": [
+          {
+            "name": "import_cv2",
+            "args": []
+          },
+          {
+            "name": "score_image",
+            "args": [
+              "image_path",
+              "scorer"
+            ]
+          }
+        ],
+        "internal_imports": []
+      },
+      {
+        "path": "app/adapters/markitdown_adapter.py",
+        "loc": 126,
+        "doc": "",
+        "classes": [
+          {
+            "name": "MarkItDownAdapterError",
+            "methods": []
+          },
+          {
+            "name": "AdapterResult",
+            "methods": []
+          },
+          {
+            "name": "MarkItDownAdapter",
+            "methods": [
+              "check_import",
+              "convert"
+            ]
+          }
+        ],
+        "functions": [],
+        "internal_imports": [
+          "app.core.parser_routing.RouteType"
+        ]
+      },
+      {
+        "path": "app/adapters/ocr_paddle.py",
+        "loc": 115,
+        "doc": "PaddleOCR 引擎适配器（015 plan §5.1 / §6 真值表）。",
+        "classes": [
+          {
+            "name": "EngineDependencyMissing",
+            "methods": []
+          },
+          {
+            "name": "PaddleOcrClient",
+            "methods": [
+              "recognize"
+            ]
+          }
+        ],
+        "functions": [
+          {
+            "name": "import_paddleocr",
+            "args": []
+          },
+          {
+            "name": "check_paddleocr_available",
+            "args": []
+          }
+        ],
+        "internal_imports": [
+          "app.adapters.vlm_adapter.OcrResult"
+        ]
+      },
+      {
+        "path": "app/adapters/vlm_adapter.py",
+        "loc": 109,
+        "doc": "VLM 适配器（015 plan §8.2 D-2 / O-3）。",
+        "classes": [
+          {
+            "name": "OcrResult",
+            "methods": []
+          },
+          {
+            "name": "VlmClient",
+            "methods": [
+              "recognize"
+            ]
+          },
+          {
+            "name": "MockVlmClient",
+            "methods": [
+              "recognize"
+            ]
+          }
+        ],
+        "functions": [
+          {
+            "name": "build_vlm_client",
+            "args": [
+              "vlm_config"
+            ]
+          },
+          {
+            "name": "client_is_mock",
+            "args": [
+              "client"
+            ]
+          }
+        ],
+        "internal_imports": []
+      },
+      {
+        "path": "app/api/__init__.py",
+        "loc": 0,
+        "doc": "",
+        "classes": [],
+        "functions": [],
+        "internal_imports": []
+      },
+      {
+        "path": "app/cli/__init__.py",
+        "loc": 0,
+        "doc": "",
+        "classes": [],
+        "functions": [],
+        "internal_imports": []
+      },
+      {
+        "path": "app/cli/main.py",
+        "loc": 1216,
+        "doc": "",
+        "classes": [],
+        "functions": [
+          {
+            "name": "scan",
+            "args": [
+              "path",
+              "config",
+              "source_root"
+            ]
+          },
+          {
+            "name": "copy_to_vault",
+            "args": [
+              "config",
+              "limit",
+              "sha256",
+              "content_uid",
+              "refresh_metadata_only"
+            ]
+          },
+          {
+            "name": "govern_duplicates",
+            "args": [
+              "config",
+              "limit",
+              "sha256",
+              "content_uid"
+            ]
+          },
+          {
+            "name": "route_parsers",
+            "args": [
+              "config",
+              "limit",
+              "sha256",
+              "content_uid",
+              "rules_version",
+              "sniff_cache",
+              "dry_run"
+            ]
+          },
+          {
+            "name": "parse_markitdown",
+            "args": [
+              "config",
+              "sha256",
+              "content_uid",
+              "limit",
+              "dry_run"
+            ]
+          },
+          {
+            "name": "parse_mineru_pdf",
+            "args": [
+              "config",
+              "sha256",
+              "content_uid",
+              "limit",
+              "dry_run",
+              "force",
+              "timeout",
+              "register"
+            ]
+          },
+          {
+            "name": "register_parse_report",
+            "args": [
+              "report_path",
+              "config",
+              "dry_run"
+            ]
+          },
+          {
+            "name": "list_parse_jobs",
+            "args": [
+              "config",
+              "limit",
+              "status",
+              "parser_name"
+            ]
+          },
+          {
+            "name": "show_parse_job",
+            "args": [
+              "run_uid",
+              "config",
+              "include_results",
+              "include_artifacts"
+            ]
+          },
+          {
+            "name": "list_parse_results_cmd",
+            "args": [
+              "config",
+              "run_uid",
+              "content_uid",
+              "sha256",
+              "status",
+              "limit"
+            ]
+          },
+          {
+            "name": "list_parsed_artifacts_cmd",
+            "args": [
+              "config",
+              "content_uid",
+              "sha256",
+              "artifact_type",
+              "limit"
+            ]
+          },
+          {
+            "name": "reconcile_parsed_artifacts_cmd",
+            "args": [
+              "config",
+              "sha256",
+              "content_uid",
+              "limit",
+              "dry_run"
+            ]
+          },
+          {
+            "name": "check_parse_quality",
+            "args": [
+              "config",
+              "sha256",
+              "content_uid",
+              "parser_name",
+              "status",
+              "limit",
+              "output",
+              "fail_on_issue",
+              "no_semantic"
+            ]
+          },
+          {
+            "name": "summarize_parse_quality",
+            "args": [
+              "config",
+              "input_path",
+              "output",
+              "output_format",
+              "severity",
+              "issue_code",
+              "parser_name",
+              "top",
+              "fail_on_issue"
+            ]
+          },
+          {
+            "name": "build_evidence_chain",
+            "args": [
+              "config",
+              "content_uid",
+              "sha256",
+              "limit",
+              "dry_run",
+              "force",
+              "output"
+            ]
+          },
+          {
+            "name": "build_curated_project",
+            "args": [
+              "config",
+              "project_code",
+              "project_name",
+              "content_uid",
+              "manifest",
+              "limit",
+              "dry_run",
+              "force",
+              "output"
+            ]
+          },
+          {
+            "name": "search_kb",
+            "args": [
+              "config",
+              "query",
+              "scope",
+              "project_code",
+              "content_uid",
+              "document_uid",
+              "limit",
+              "offset",
+              "output_format",
+              "output"
+            ]
+          },
+          {
+            "name": "build_parse_queue",
+            "args": []
+          },
+          {
+            "name": "parse",
+            "args": [
+              "limit"
+            ]
+          },
+          {
+            "name": "parse_images",
+            "args": [
+              "config",
+              "sha256",
+              "content_uid",
+              "limit",
+              "engine",
+              "timeout",
+              "dry_run",
+              "force",
+              "register"
+            ]
+          }
+        ],
+        "internal_imports": [
+          "app.adapters.ocr_paddle.EngineDependencyMissing",
+          "app.adapters.ocr_paddle.check_paddleocr_available",
+          "app.core.config.DEFAULT_CONFIG_PATH",
+          "app.core.config.load_config",
+          "app.core.parser_routing.ROUTING_RULES_VERSION",
+          "app.core.parser_routing.ROUTING_RULES_VERSIONS",
+          "app.schemas.search.SearchQuery",
+          "app.schemas.search.SearchValidationError",
+          "app.services.curated_project_assets.CuratedProjectAssetsService",
+          "app.services.duplicate_governance.DuplicateGovernanceService",
+          "app.services.evidence_chain.EvidenceChainService",
+          "app.services.file_content_vault.FileContentVaultService",
+          "app.services.image_parser.DEFAULT_TIMEOUT_SECONDS",
+          "app.services.image_parser.ENGINE_AUTO",
+          "app.services.image_parser.ENGINE_PADDLEOCR",
+          "app.services.image_parser.ImageParserService",
+          "app.services.image_parser.SUPPORTED_ENGINES",
+          "app.services.inventory_scanner.InventoryScanner",
+          "app.services.markitdown_parser.MarkItDownParserService",
+          "app.services.markitdown_parser.PARSE_MARKITDOWN_MAX_LIMIT",
+          "app.services.mineru_pdf_parser.MineruPdfParserService",
+          "app.services.mineru_pdf_parser.PARSE_MINERU_PDF_MAX_LIMIT",
+          "app.services.mineru_pdf_parser.check_magic_pdf_available",
+          "app.services.parse_quality_checker.ParseQualityCheckerService",
+          "app.services.parse_quality_report_summarizer.ParseQualityReportSummarizerService",
+          "app.services.parse_registry.PARSE_REGISTRY_MAX_LIMIT",
+          "app.services.parse_registry.ParseRegistryError",
+          "app.services.parse_registry.ParseRegistryService",
+          "app.services.parser_router.ParserRouterService",
+          "app.services.search_service.SearchService",
+          "app.services.search_service.build_error_payload",
+          "app.services.search_service.build_success_payload"
+        ]
+      },
+      {
+        "path": "app/core/__init__.py",
+        "loc": 0,
+        "doc": "",
+        "classes": [],
+        "functions": [],
+        "internal_imports": []
+      },
+      {
+        "path": "app/core/config.py",
+        "loc": 114,
+        "doc": "",
+        "classes": [
+          {
+            "name": "StorageConfig",
+            "methods": []
+          },
+          {
+            "name": "MysqlConfig",
+            "methods": []
+          },
+          {
+            "name": "RawConfig",
+            "methods": []
+          },
+          {
+            "name": "AppConfig",
+            "methods": []
+          }
+        ],
+        "functions": [
+          {
+            "name": "load_config",
+            "args": [
+              "config_path"
+            ]
+          },
+          {
+            "name": "ensure_readonly",
+            "args": [
+              "config"
+            ]
+          }
+        ],
+        "internal_imports": []
+      },
+      {
+        "path": "app/core/database.py",
+        "loc": 42,
+        "doc": "",
+        "classes": [],
+        "functions": [
+          {
+            "name": "build_database_url",
+            "args": [
+              "mysql"
+            ]
+          },
+          {
+            "name": "create_db_engine",
+            "args": [
+              "config"
+            ]
+          },
+          {
+            "name": "create_session_factory",
+            "args": [
+              "engine"
+            ]
+          },
+          {
+            "name": "session_scope",
+            "args": [
+              "session_factory"
+            ]
+          }
+        ],
+        "internal_imports": [
+          "app.core.config.AppConfig",
+          "app.core.config.MysqlConfig"
+        ]
+      },
+      {
+        "path": "app/core/file_types.py",
+        "loc": 89,
+        "doc": "",
+        "classes": [],
+        "functions": [
+          {
+            "name": "should_skip_dir",
+            "args": [
+              "name"
+            ]
+          },
+          {
+            "name": "is_document_candidate",
+            "args": [
+              "path"
+            ]
+          },
+          {
+            "name": "guess_mime_type",
+            "args": [
+              "path"
+            ]
+          }
+        ],
+        "internal_imports": []
+      },
+      {
+        "path": "app/core/ids.py",
+        "loc": 26,
+        "doc": "",
+        "classes": [],
+        "functions": [
+          {
+            "name": "normalize_path",
+            "args": [
+              "path"
+            ]
+          },
+          {
+            "name": "compute_source_path_hash",
+            "args": [
+              "path"
+            ]
+          },
+          {
+            "name": "compute_sha256",
+            "args": [
+              "path",
+              "chunk_size"
+            ]
+          }
+        ],
+        "internal_imports": []
+      },
+      {
+        "path": "app/core/parsed_paths.py",
+        "loc": 33,
+        "doc": "",
+        "classes": [
+          {
+            "name": "ParsedArtifactPaths",
+            "methods": []
+          }
+        ],
+        "functions": [
+          {
+            "name": "build_parsed_content_dir",
+            "args": [
+              "parsed_root",
+              "sha256"
+            ]
+          },
+          {
+            "name": "build_parsed_artifact_paths",
+            "args": [
+              "parsed_dir"
+            ]
+          }
+        ],
+        "internal_imports": []
+      },
+      {
+        "path": "app/core/parser_routing.py",
+        "loc": 265,
+        "doc": "",
+        "classes": [
+          {
+            "name": "RouteType",
+            "methods": []
+          },
+          {
+            "name": "FutureParserHint",
+            "methods": []
+          }
+        ],
+        "functions": [
+          {
+            "name": "normalize_file_ext",
+            "args": [
+              "ext"
+            ]
+          },
+          {
+            "name": "ext_from_path",
+            "args": [
+              "path"
+            ]
+          },
+          {
+            "name": "match_route_type",
+            "args": []
+          },
+          {
+            "name": "pdf_sniff_reason",
+            "args": [
+              "sniff"
+            ]
+          },
+          {
+            "name": "route_pdf_with_sniff",
+            "args": [
+              "sniff"
+            ]
+          }
+        ],
+        "internal_imports": [
+          "app.core.file_types.DOCUMENT_EXTENSIONS",
+          "app.core.pdf_sniffing.PdfSniffResult",
+          "app.core.pdf_sniffing.SniffStatus"
+        ]
+      },
+      {
+        "path": "app/core/pdf_sniffing.py",
+        "loc": 335,
+        "doc": "014 PDF 内容嗅探（纯函数 + 文件缓存）。",
+        "classes": [
+          {
+            "name": "SniffStatus",
+            "methods": []
+          },
+          {
+            "name": "PdfSniffConfig",
+            "methods": []
+          },
+          {
+            "name": "PdfSniffResult",
+            "methods": [
+              "evidence",
+              "cache_payload"
+            ]
+          }
+        ],
+        "functions": [
+          {
+            "name": "load_sniff_config",
+            "args": [
+              "config_path"
+            ]
+          },
+          {
+            "name": "sniff_pdf",
+            "args": [
+              "original_bin"
+            ]
+          },
+          {
+            "name": "cache_path_for",
+            "args": [
+              "cache_root",
+              "sha256"
+            ]
+          },
+          {
+            "name": "load_sniff_cache",
+            "args": [
+              "cache_root",
+              "sha256",
+              "sniffer_version"
+            ]
+          },
+          {
+            "name": "save_sniff_cache",
+            "args": [
+              "cache_root",
+              "sha256",
+              "result"
+            ]
+          },
+          {
+            "name": "resolve_pdf_sniff",
+            "args": [
+              "original_bin",
+              "sha256"
+            ]
+          }
+        ],
+        "internal_imports": []
+      },
+      {
+        "path": "app/core/vault_paths.py",
+        "loc": 41,
+        "doc": "",
+        "classes": [
+          {
+            "name": "VaultArtifactPaths",
+            "methods": []
+          }
+        ],
+        "functions": [
+          {
+            "name": "vault_uid_for",
+            "args": [
+              "sha256"
+            ]
+          },
+          {
+            "name": "build_vault_dir",
+            "args": [
+              "raw_vault_root",
+              "sha256"
+            ]
+          },
+          {
+            "name": "build_vault_artifact_paths",
+            "args": [
+              "vault_dir"
+            ]
+          }
+        ],
+        "internal_imports": []
+      },
+      {
+        "path": "app/main.py",
+        "loc": 11,
+        "doc": "",
+        "classes": [],
+        "functions": [
+          {
+            "name": "health",
+            "args": []
+          }
+        ],
+        "internal_imports": []
+      },
+      {
+        "path": "app/models/__init__.py",
+        "loc": 0,
+        "doc": "",
+        "classes": [],
+        "functions": [],
+        "internal_imports": []
+      },
+      {
+        "path": "app/models/document.py",
+        "loc": 49,
+        "doc": "",
+        "classes": [
+          {
+            "name": "KbDocument",
+            "methods": []
+          }
+        ],
+        "functions": [],
+        "internal_imports": [
+          "app.models.file.Base"
+        ]
+      },
+      {
+        "path": "app/models/duplicate.py",
+        "loc": 30,
+        "doc": "",
+        "classes": [
+          {
+            "name": "KbDuplicateGroup",
+            "methods": []
+          }
+        ],
+        "functions": [],
+        "internal_imports": [
+          "app.models.file.Base"
+        ]
+      },
+      {
+        "path": "app/models/evidence.py",
+        "loc": 68,
+        "doc": "",
+        "classes": [
+          {
+            "name": "KbDocumentChunk",
+            "methods": []
+          },
+          {
+            "name": "KbEvidence",
+            "methods": []
+          }
+        ],
+        "functions": [],
+        "internal_imports": [
+          "app.models.file.Base"
+        ]
+      },
+      {
+        "path": "app/models/file.py",
+        "loc": 78,
+        "doc": "",
+        "classes": [
+          {
+            "name": "Base",
+            "methods": []
+          },
+          {
+            "name": "KbFileInstance",
+            "methods": []
+          },
+          {
+            "name": "KbFileContent",
+            "methods": []
+          }
+        ],
+        "functions": [],
+        "internal_imports": []
+      },
+      {
+        "path": "app/models/parse_registry.py",
+        "loc": 140,
+        "doc": "",
+        "classes": [
+          {
+            "name": "KbParseRun",
+            "methods": []
+          },
+          {
+            "name": "KbParseResult",
+            "methods": []
+          },
+          {
+            "name": "KbParsedArtifact",
+            "methods": []
+          }
+        ],
+        "functions": [],
+        "internal_imports": [
+          "app.models.file.Base"
+        ]
+      },
+      {
+        "path": "app/models/project.py",
+        "loc": 94,
+        "doc": "",
+        "classes": [
+          {
+            "name": "KbProject",
+            "methods": []
+          },
+          {
+            "name": "KbProjectDocument",
+            "methods": []
+          },
+          {
+            "name": "KbCuratedAsset",
+            "methods": []
+          }
+        ],
+        "functions": [],
+        "internal_imports": [
+          "app.models.file.Base"
+        ]
+      },
+      {
+        "path": "app/models/vault.py",
+        "loc": 33,
+        "doc": "",
+        "classes": [
+          {
+            "name": "KbRawVaultObject",
+            "methods": []
+          }
+        ],
+        "functions": [],
+        "internal_imports": [
+          "app.models.file.Base"
+        ]
+      },
+      {
+        "path": "app/schemas/__init__.py",
+        "loc": 0,
+        "doc": "",
+        "classes": [],
+        "functions": [],
+        "internal_imports": []
+      },
+      {
+        "path": "app/schemas/search.py",
+        "loc": 108,
+        "doc": "",
+        "classes": [
+          {
+            "name": "SearchValidationError",
+            "methods": []
+          },
+          {
+            "name": "SearchProjectNotFoundError",
+            "methods": []
+          },
+          {
+            "name": "SearchQuery",
+            "methods": [
+              "validate_and_build"
+            ]
+          },
+          {
+            "name": "SearchHit",
+            "methods": []
+          },
+          {
+            "name": "SearchResponse",
+            "methods": []
+          }
+        ],
+        "functions": [],
+        "internal_imports": []
+      },
+      {
+        "path": "app/services/__init__.py",
+        "loc": 0,
+        "doc": "",
+        "classes": [],
+        "functions": [],
+        "internal_imports": []
+      },
+      {
+        "path": "app/services/curated_project_assets.py",
+        "loc": 745,
+        "doc": "",
+        "classes": [
+          {
+            "name": "DocumentMapping",
+            "methods": []
+          },
+          {
+            "name": "PlannedAsset",
+            "methods": []
+          },
+          {
+            "name": "CuratedProjectBuildResult",
+            "methods": []
+          },
+          {
+            "name": "CuratedProjectAssetsService",
+            "methods": [
+              "build"
+            ]
+          }
+        ],
+        "functions": [
+          {
+            "name": "normalize_project_code",
+            "args": [
+              "project_code"
+            ]
+          },
+          {
+            "name": "project_uid_for",
+            "args": [
+              "project_code"
+            ]
+          },
+          {
+            "name": "curated_uid_for",
+            "args": [
+              "project_code",
+              "asset_type",
+              "version_no"
+            ]
+          }
+        ],
+        "internal_imports": [
+          "app.core.config.AppConfig",
+          "app.core.database.create_db_engine",
+          "app.core.database.create_session_factory",
+          "app.models.document.KbDocument",
+          "app.models.evidence.KbEvidence",
+          "app.models.project.KbCuratedAsset",
+          "app.models.project.KbProject",
+          "app.models.project.KbProjectDocument"
+        ]
+      },
+      {
+        "path": "app/services/document_ir_builder.py",
+        "loc": 500,
+        "doc": "017 P2：把解析产物装配为 Document IR（`document_ir.json` 的纯数据层）。",
+        "classes": [
+          {
+            "name": "_CellSeed",
+            "methods": []
+          },
+          {
+            "name": "_PipeTableParser",
+            "methods": [
+              "handle_starttag",
+              "handle_data",
+              "handle_endtag"
+            ]
+          }
+        ],
+        "functions": [
+          {
+            "name": "build_from_mineru_content_list",
+            "args": []
+          },
+          {
+            "name": "build_from_markitdown_text",
+            "args": []
+          },
+          {
+            "name": "load_content_list",
+            "args": [
+              "path"
+            ]
+          }
+        ],
+        "internal_imports": [
+          "app.services.document_ir_schema.BBox",
+          "app.services.document_ir_schema.Block",
+          "app.services.document_ir_schema.ContentRef",
+          "app.services.document_ir_schema.CoordinateSystem",
+          "app.services.document_ir_schema.DocumentIr",
+          "app.services.document_ir_schema.DocumentStats",
+          "app.services.document_ir_schema.IrFigure",
+          "app.services.document_ir_schema.IrTable",
+          "app.services.document_ir_schema.TableCell",
+          "app.services.document_ir_schema.asset_path_from_relative_path",
+          "app.services.document_ir_schema.derive_stats"
+        ]
+      },
+      {
+        "path": "app/services/document_ir_schema.py",
+        "loc": 1616,
+        "doc": "017 Document IR（统一文档中间表示）schema 常量、纯数据结构与校验器。",
+        "classes": [
+          {
+            "name": "DocumentIrValidationError",
+            "methods": []
+          },
+          {
+            "name": "BBox",
+            "methods": [
+              "to_dict",
+              "from_dict"
+            ]
+          },
+          {
+            "name": "ContentRef",
+            "methods": [
+              "to_dict"
+            ]
+          },
+          {
+            "name": "Block",
+            "methods": [
+              "to_dict"
+            ]
+          },
+          {
+            "name": "TableCell",
+            "methods": [
+              "to_dict"
+            ]
+          },
+          {
+            "name": "IrTable",
+            "methods": [
+              "to_dict"
+            ]
+          },
+          {
+            "name": "IrFigure",
+            "methods": [
+              "to_dict"
+            ]
+          },
+          {
+            "name": "CoordinateSystem",
+            "methods": [
+              "to_dict"
+            ]
+          },
+          {
+            "name": "DocumentStats",
+            "methods": [
+              "to_dict",
+              "from_dict"
+            ]
+          },
+          {
+            "name": "DocumentIr",
+            "methods": [
+              "document_uid",
+              "reading_order_ids",
+              "to_dict",
+              "validate"
+            ]
+          }
+        ],
+        "functions": [
+          {
+            "name": "validate_bbox",
+            "args": [
+              "value",
+              "path",
+              "code"
+            ]
+          },
+          {
+            "name": "document_uid_for",
+            "args": [
+              "sha256",
+              "parser_adapter_version"
+            ]
+          },
+          {
+            "name": "validate_top_level",
+            "args": [
+              "payload"
+            ]
+          },
+          {
+            "name": "validate_block_required_keys",
+            "args": [
+              "payload"
+            ]
+          },
+          {
+            "name": "validate_block_ids",
+            "args": [
+              "payload"
+            ]
+          },
+          {
+            "name": "validate_block_types",
+            "args": [
+              "payload"
+            ]
+          },
+          {
+            "name": "validate_block_field_ranges",
+            "args": [
+              "payload"
+            ]
+          },
+          {
+            "name": "validate_reading_order",
+            "args": [
+              "payload"
+            ]
+          },
+          {
+            "name": "validate_coordinate_system",
+            "args": [
+              "payload"
+            ]
+          },
+          {
+            "name": "validate_content_refs",
+            "args": [
+              "payload"
+            ]
+          },
+          {
+            "name": "validate_tables",
+            "args": [
+              "payload"
+            ]
+          },
+          {
+            "name": "validate_figures",
+            "args": [
+              "payload"
+            ]
+          },
+          {
+            "name": "validate_caption_links",
+            "args": [
+              "payload"
+            ]
+          },
+          {
+            "name": "validate_figure_caption_targets",
+            "args": [
+              "payload"
+            ]
+          },
+          {
+            "name": "asset_path_from_relative_path",
+            "args": [
+              "relative_path"
+            ]
+          },
+          {
+            "name": "validate_asset_alignment",
+            "args": [
+              "payload",
+              "manifest_assets"
+            ]
+          },
+          {
+            "name": "derive_stats",
+            "args": [
+              "blocks",
+              "tables",
+              "figures"
+            ]
+          },
+          {
+            "name": "validate_stats",
+            "args": [
+              "payload"
+            ]
+          },
+          {
+            "name": "validate_document_ir",
+            "args": [
+              "payload"
+            ]
+          }
+        ],
+        "internal_imports": []
+      },
+      {
+        "path": "app/services/duplicate_governance.py",
+        "loc": 464,
+        "doc": "",
+        "classes": [
+          {
+            "name": "GovernError",
+            "methods": []
+          },
+          {
+            "name": "DuplicateGovernanceResult",
+            "methods": [
+              "to_dict"
+            ]
+          },
+          {
+            "name": "DuplicateGovernanceService",
+            "methods": [
+              "govern_duplicates"
+            ]
+          }
+        ],
+        "functions": [
+          {
+            "name": "is_copy_like_filename",
+            "args": [
+              "file_name"
+            ]
+          },
+          {
+            "name": "select_master_candidate",
+            "args": [
+              "instances"
+            ]
+          },
+          {
+            "name": "build_cleanup_suggestions",
+            "args": [
+              "duplicate_group_uid",
+              "sha256",
+              "content_uid",
+              "master",
+              "instances",
+              "vault_path",
+              "content_master_file_instance_uid"
+            ]
+          }
+        ],
+        "internal_imports": [
+          "app.core.config.AppConfig",
+          "app.core.config.ensure_readonly",
+          "app.core.database.create_db_engine",
+          "app.core.database.create_session_factory",
+          "app.models.duplicate.KbDuplicateGroup",
+          "app.models.file.KbFileContent",
+          "app.models.file.KbFileInstance",
+          "app.models.vault.KbRawVaultObject"
+        ]
+      },
+      {
+        "path": "app/services/evidence_chain.py",
+        "loc": 744,
+        "doc": "",
+        "classes": [
+          {
+            "name": "EvidenceCandidate",
+            "methods": []
+          },
+          {
+            "name": "PlannedChunk",
+            "methods": []
+          },
+          {
+            "name": "PlannedEvidence",
+            "methods": []
+          },
+          {
+            "name": "EvidenceChainBuildResult",
+            "methods": []
+          },
+          {
+            "name": "EvidenceChainService",
+            "methods": [
+              "build"
+            ]
+          }
+        ],
+        "functions": [],
+        "internal_imports": [
+          "app.core.config.AppConfig",
+          "app.core.database.create_db_engine",
+          "app.core.database.create_session_factory",
+          "app.core.parsed_paths.build_parsed_artifact_paths",
+          "app.core.parsed_paths.build_parsed_content_dir",
+          "app.models.document.KbDocument",
+          "app.models.evidence.KbDocumentChunk",
+          "app.models.evidence.KbEvidence",
+          "app.models.parse_registry.KbParseResult"
+        ]
+      },
+      {
+        "path": "app/services/file_content_vault.py",
+        "loc": 407,
+        "doc": "",
+        "classes": [
+          {
+            "name": "VaultCopyError",
+            "methods": []
+          },
+          {
+            "name": "VaultCopyResult",
+            "methods": [
+              "to_dict"
+            ]
+          },
+          {
+            "name": "FileContentVaultService",
+            "methods": [
+              "copy_to_vault"
+            ]
+          }
+        ],
+        "functions": [],
+        "internal_imports": [
+          "app.core.config.AppConfig",
+          "app.core.config.ensure_readonly",
+          "app.core.database.create_db_engine",
+          "app.core.database.create_session_factory",
+          "app.core.ids.compute_sha256",
+          "app.core.ids.normalize_path",
+          "app.core.vault_paths.CHUNK_SIZE",
+          "app.core.vault_paths.COPY_COPIED",
+          "app.core.vault_paths.COPY_ERROR",
+          "app.core.vault_paths.VAULT_COPIED",
+          "app.core.vault_paths.VAULT_COPY_ERROR",
+          "app.core.vault_paths.VAULT_NOT_COPIED",
+          "app.core.vault_paths.build_vault_artifact_paths",
+          "app.core.vault_paths.build_vault_dir",
+          "app.core.vault_paths.vault_uid_for",
+          "app.models.file.KbFileContent",
+          "app.models.file.KbFileInstance",
+          "app.models.vault.KbRawVaultObject"
+        ]
+      },
+      {
+        "path": "app/services/image_parser.py",
+        "loc": 1196,
+        "doc": "015 图片解析流水线（image parse pipeline）服务。",
+        "classes": [
+          {
+            "name": "ImageParseConfig",
+            "methods": []
+          },
+          {
+            "name": "ImageParsedPaths",
+            "methods": []
+          },
+          {
+            "name": "ParseCandidate",
+            "methods": []
+          },
+          {
+            "name": "EngineRoute",
+            "methods": []
+          },
+          {
+            "name": "ImageParsePlan",
+            "methods": [
+              "to_dict"
+            ]
+          },
+          {
+            "name": "ImageParseItem",
+            "methods": [
+              "to_dict"
+            ]
+          },
+          {
+            "name": "ImageParseError",
+            "methods": [
+              "to_dict"
+            ]
+          },
+          {
+            "name": "ImageParseManyResult",
+            "methods": [
+              "to_dict"
+            ]
+          },
+          {
+            "name": "_EngineTimeout",
+            "methods": []
+          },
+          {
+            "name": "ImageParserService",
+            "methods": [
+              "parse_many"
+            ]
+          }
+        ],
+        "functions": [
+          {
+            "name": "load_image_parse_config",
+            "args": [
+              "path"
+            ]
+          },
+          {
+            "name": "build_image_parsed_paths",
+            "args": [
+              "parsed_root",
+              "sha256"
+            ]
+          },
+          {
+            "name": "resolve_engine_route",
+            "args": []
+          }
+        ],
+        "internal_imports": [
+          "app.adapters.image_preprocess.PreprocessOutput",
+          "app.adapters.image_preprocess.preprocess_image",
+          "app.adapters.image_quality.ImageQualityResult",
+          "app.adapters.image_quality.score_image",
+          "app.adapters.ocr_paddle.EngineDependencyMissing",
+          "app.adapters.ocr_paddle.PaddleOcrClient",
+          "app.adapters.ocr_paddle.check_paddleocr_available",
+          "app.adapters.vlm_adapter",
+          "app.adapters.vlm_adapter.OcrResult",
+          "app.adapters.vlm_adapter.VlmClient",
+          "app.adapters.vlm_adapter.build_vlm_client",
+          "app.core.config.AppConfig",
+          "app.core.config.ensure_readonly",
+          "app.core.database.create_db_engine",
+          "app.core.database.create_session_factory",
+          "app.core.ids.compute_sha256",
+          "app.core.parsed_paths.build_parsed_artifact_paths",
+          "app.core.parsed_paths.build_parsed_content_dir",
+          "app.core.parser_routing.DECISION_ROUTE",
+          "app.core.parser_routing.RouteType",
+          "app.core.parser_routing.ext_from_path",
+          "app.core.parser_routing.match_route_type",
+          "app.core.parser_routing.normalize_file_ext",
+          "app.core.vault_paths.VAULT_COPIED",
+          "app.core.vault_paths.build_vault_artifact_paths",
+          "app.core.vault_paths.build_vault_dir",
+          "app.models.file.KbFileContent",
+          "app.models.file.KbFileInstance",
+          "app.models.vault.KbRawVaultObject"
+        ]
+      },
+      {
+        "path": "app/services/inventory_scanner.py",
+        "loc": 334,
+        "doc": "",
+        "classes": [
+          {
+            "name": "ScanError",
+            "methods": []
+          },
+          {
+            "name": "ScanResult",
+            "methods": [
+              "to_dict"
+            ]
+          },
+          {
+            "name": "InventoryScanner",
+            "methods": [
+              "scan"
+            ]
+          }
+        ],
+        "functions": [],
+        "internal_imports": [
+          "app.core.config.AppConfig",
+          "app.core.config.ensure_readonly",
+          "app.core.database.create_db_engine",
+          "app.core.database.create_session_factory",
+          "app.core.file_types.guess_mime_type",
+          "app.core.file_types.is_document_candidate",
+          "app.core.file_types.should_skip_dir",
+          "app.core.ids.compute_sha256",
+          "app.core.ids.compute_source_path_hash",
+          "app.core.ids.normalize_path",
+          "app.models.file.KbFileContent",
+          "app.models.file.KbFileInstance"
+        ]
+      },
+      {
+        "path": "app/services/markitdown_parser.py",
+        "loc": 603,
+        "doc": "",
+        "classes": [
+          {
+            "name": "ParseMarkitdownError",
+            "methods": [
+              "to_dict"
+            ]
+          },
+          {
+            "name": "ParseMarkitdownItem",
+            "methods": [
+              "to_dict"
+            ]
+          },
+          {
+            "name": "ParseMarkitdownResult",
+            "methods": [
+              "to_dict"
+            ]
+          },
+          {
+            "name": "MarkItDownParserService",
+            "methods": [
+              "parse_markitdown"
+            ]
+          }
+        ],
+        "functions": [],
+        "internal_imports": [
+          "app.adapters.markitdown_adapter.ERROR_PARSER_RUNTIME",
+          "app.adapters.markitdown_adapter.MarkItDownAdapter",
+          "app.adapters.markitdown_adapter.MarkItDownAdapterError",
+          "app.adapters.markitdown_adapter.PARSER_ADAPTER_VERSION",
+          "app.adapters.markitdown_adapter.PARSER_NAME",
+          "app.core.config.AppConfig",
+          "app.core.config.ensure_readonly",
+          "app.core.database.create_db_engine",
+          "app.core.database.create_session_factory",
+          "app.core.ids.compute_sha256",
+          "app.core.parsed_paths.build_parsed_artifact_paths",
+          "app.core.parsed_paths.build_parsed_content_dir",
+          "app.core.parser_routing.DECISION_ROUTE",
+          "app.core.parser_routing.RouteType",
+          "app.core.parser_routing.ext_from_path",
+          "app.core.parser_routing.match_route_type",
+          "app.core.parser_routing.normalize_file_ext",
+          "app.core.vault_paths.VAULT_COPIED",
+          "app.core.vault_paths.build_vault_artifact_paths",
+          "app.core.vault_paths.build_vault_dir",
+          "app.models.file.KbFileContent",
+          "app.models.file.KbFileInstance",
+          "app.models.vault.KbRawVaultObject"
+        ]
+      },
+      {
+        "path": "app/services/mineru_pdf_parser.py",
+        "loc": 1019,
+        "doc": "",
+        "classes": [
+          {
+            "name": "SubprocessRunner",
+            "methods": []
+          },
+          {
+            "name": "MagicPdfRunResult",
+            "methods": []
+          },
+          {
+            "name": "MineruParseError",
+            "methods": [
+              "to_dict"
+            ]
+          },
+          {
+            "name": "MineruParsePlan",
+            "methods": [
+              "to_dict"
+            ]
+          },
+          {
+            "name": "MineruParseItem",
+            "methods": [
+              "to_dict"
+            ]
+          },
+          {
+            "name": "MineruParseManyResult",
+            "methods": [
+              "to_dict"
+            ]
+          },
+          {
+            "name": "MineruPdfParserService",
+            "methods": [
+              "plan_one",
+              "parse_one",
+              "parse_many"
+            ]
+          }
+        ],
+        "functions": [
+          {
+            "name": "check_magic_pdf_available",
+            "args": []
+          }
+        ],
+        "internal_imports": [
+          "app.core.config.AppConfig",
+          "app.core.config.ensure_readonly",
+          "app.core.database.create_db_engine",
+          "app.core.database.create_session_factory",
+          "app.core.ids.compute_sha256",
+          "app.core.parsed_paths.build_parsed_artifact_paths",
+          "app.core.parsed_paths.build_parsed_content_dir",
+          "app.core.parser_routing.DECISION_ROUTE",
+          "app.core.parser_routing.RouteType",
+          "app.core.parser_routing.ext_from_path",
+          "app.core.parser_routing.match_route_type",
+          "app.core.parser_routing.normalize_file_ext",
+          "app.core.parser_routing.route_pdf_with_sniff",
+          "app.core.pdf_sniffing.REASON_SNIFF_SKIPPED",
+          "app.core.pdf_sniffing.load_sniff_config",
+          "app.core.pdf_sniffing.resolve_pdf_sniff",
+          "app.core.vault_paths.VAULT_COPIED",
+          "app.core.vault_paths.build_vault_artifact_paths",
+          "app.core.vault_paths.build_vault_dir",
+          "app.models.file.KbFileContent",
+          "app.models.file.KbFileInstance",
+          "app.models.vault.KbRawVaultObject"
+        ]
+      },
+      {
+        "path": "app/services/parse_quality_checker.py",
+        "loc": 1733,
+        "doc": "",
+        "classes": [
+          {
+            "name": "SemanticCheckConfig",
+            "methods": []
+          },
+          {
+            "name": "ParseQualityCandidate",
+            "methods": []
+          },
+          {
+            "name": "ParseQualityIssue",
+            "methods": [
+              "to_dict"
+            ]
+          },
+          {
+            "name": "ParseQualityReport",
+            "methods": [
+              "to_dict"
+            ]
+          },
+          {
+            "name": "ParseQualityCheckerService",
+            "methods": [
+              "check"
+            ]
+          }
+        ],
+        "functions": [
+          {
+            "name": "load_semantic_check_config",
+            "args": [
+              "path"
+            ]
+          },
+          {
+            "name": "count_garbled_chars",
+            "args": [
+              "text"
+            ]
+          },
+          {
+            "name": "split_table_cells",
+            "args": [
+              "line"
+            ]
+          },
+          {
+            "name": "analyze_markdown_tables",
+            "args": [
+              "text"
+            ]
+          },
+          {
+            "name": "extract_confidence_mean",
+            "args": [
+              "metadata"
+            ]
+          },
+          {
+            "name": "metadata_page_count",
+            "args": [
+              "metadata"
+            ]
+          }
+        ],
+        "internal_imports": [
+          "app.core.config.AppConfig",
+          "app.core.config.PROJECT_ROOT",
+          "app.core.config.ensure_readonly",
+          "app.core.database.create_db_engine",
+          "app.core.database.create_session_factory",
+          "app.core.parsed_paths.build_parsed_artifact_paths",
+          "app.core.parsed_paths.build_parsed_content_dir",
+          "app.core.vault_paths.build_vault_artifact_paths",
+          "app.models.file.KbFileContent",
+          "app.models.parse_registry.KbParseResult",
+          "app.models.parse_registry.KbParsedArtifact",
+          "app.models.vault.KbRawVaultObject"
+        ]
+      },
+      {
+        "path": "app/services/parse_quality_report_summarizer.py",
+        "loc": 628,
+        "doc": "",
+        "classes": [
+          {
+            "name": "ParseQualitySummaryResult",
+            "methods": []
+          },
+          {
+            "name": "ParseQualityReportSummarizerService",
+            "methods": [
+              "summarize"
+            ]
+          }
+        ],
+        "functions": [
+          {
+            "name": "classify_noise_bucket",
+            "args": [
+              "issue"
+            ]
+          },
+          {
+            "name": "discover_latest_input_report",
+            "args": [
+              "reports_root"
+            ]
+          },
+          {
+            "name": "validate_input_report",
+            "args": [
+              "data"
+            ]
+          }
+        ],
+        "internal_imports": [
+          "app.core.config.AppConfig"
+        ]
+      },
+      {
+        "path": "app/services/parse_registry.py",
+        "loc": 1180,
+        "doc": "",
+        "classes": [
+          {
+            "name": "ParseRegistryError",
+            "methods": []
+          },
+          {
+            "name": "RegistryErrorEntry",
+            "methods": [
+              "to_dict"
+            ]
+          },
+          {
+            "name": "RegisterReportResult",
+            "methods": []
+          },
+          {
+            "name": "ReconcileResult",
+            "methods": []
+          },
+          {
+            "name": "ParseRegistryService",
+            "methods": [
+              "register_parse_report",
+              "reconcile_parsed_artifacts",
+              "create_parse_run",
+              "finish_parse_run",
+              "fail_parse_run",
+              "record_parse_result",
+              "record_parsed_artifact",
+              "list_parse_runs",
+              "get_parse_run",
+              "list_parse_results",
+              "list_parsed_artifacts"
+            ]
+          }
+        ],
+        "functions": [
+          {
+            "name": "generate_run_uid",
+            "args": [
+              "now"
+            ]
+          },
+          {
+            "name": "generate_result_uid",
+            "args": []
+          },
+          {
+            "name": "generate_artifact_uid",
+            "args": []
+          }
+        ],
+        "internal_imports": [
+          "app.core.config.AppConfig",
+          "app.core.config.ensure_readonly",
+          "app.core.database.create_db_engine",
+          "app.core.database.create_session_factory",
+          "app.core.ids.compute_sha256",
+          "app.core.parsed_paths.build_parsed_artifact_paths",
+          "app.core.parsed_paths.build_parsed_content_dir",
+          "app.models.document.KbDocument",
+          "app.models.file.KbFileContent",
+          "app.models.parse_registry.KbParseResult",
+          "app.models.parse_registry.KbParseRun",
+          "app.models.parse_registry.KbParsedArtifact"
+        ]
+      },
+      {
+        "path": "app/services/parser_router.py",
+        "loc": 435,
+        "doc": "",
+        "classes": [
+          {
+            "name": "RouteError",
+            "methods": []
+          },
+          {
+            "name": "ParserRouteDecision",
+            "methods": [
+              "to_dict"
+            ]
+          },
+          {
+            "name": "ParserRouteResult",
+            "methods": [
+              "to_dict"
+            ]
+          },
+          {
+            "name": "ParserRouterService",
+            "methods": [
+              "route_parsers"
+            ]
+          }
+        ],
+        "functions": [],
+        "internal_imports": [
+          "app.core.config.AppConfig",
+          "app.core.config.ensure_readonly",
+          "app.core.database.create_db_engine",
+          "app.core.database.create_session_factory",
+          "app.core.parser_routing.DECISION_ROUTE",
+          "app.core.parser_routing.DECISION_UNKNOWN",
+          "app.core.parser_routing.DECISION_UNSUPPORTED",
+          "app.core.parser_routing.ROUTING_RULES_VERSION",
+          "app.core.parser_routing.ROUTING_RULES_VERSIONS",
+          "app.core.parser_routing.RouteType",
+          "app.core.parser_routing.ext_from_path",
+          "app.core.parser_routing.match_route_type",
+          "app.core.parser_routing.normalize_file_ext",
+          "app.core.parser_routing.route_pdf_with_sniff",
+          "app.core.pdf_sniffing.PdfSniffConfig",
+          "app.core.pdf_sniffing.PdfSniffResult",
+          "app.core.pdf_sniffing.REASON_SNIFF_SKIPPED",
+          "app.core.pdf_sniffing.load_sniff_config",
+          "app.core.pdf_sniffing.resolve_pdf_sniff",
+          "app.core.vault_paths.VAULT_COPIED",
+          "app.core.vault_paths.build_vault_artifact_paths",
+          "app.core.vault_paths.build_vault_dir",
+          "app.models.file.KbFileContent",
+          "app.models.file.KbFileInstance",
+          "app.models.vault.KbRawVaultObject"
+        ]
+      },
+      {
+        "path": "app/services/search_service.py",
+        "loc": 642,
+        "doc": "",
+        "classes": [
+          {
+            "name": "SearchService",
+            "methods": [
+              "search"
+            ]
+          }
+        ],
+        "functions": [
+          {
+            "name": "hit_to_dict",
+            "args": [
+              "hit"
+            ]
+          },
+          {
+            "name": "build_success_payload",
+            "args": [
+              "config",
+              "response",
+              "generated_at"
+            ]
+          },
+          {
+            "name": "build_error_payload",
+            "args": [
+              "config",
+              "error_code",
+              "message",
+              "query_text",
+              "scope",
+              "project_code",
+              "generated_at"
+            ]
+          }
+        ],
+        "internal_imports": [
+          "app.core.config.AppConfig",
+          "app.core.database.create_db_engine",
+          "app.core.database.create_session_factory",
+          "app.schemas.search.HIT_TYPE_RANK",
+          "app.schemas.search.SCOPE_ORDER",
+          "app.schemas.search.SearchHit",
+          "app.schemas.search.SearchProjectNotFoundError",
+          "app.schemas.search.SearchQuery",
+          "app.schemas.search.SearchResponse",
+          "app.schemas.search.SearchValidationError"
+        ]
+      },
+      {
+        "path": "app/workers/__init__.py",
+        "loc": 0,
+        "doc": "",
+        "classes": [],
+        "functions": [],
+        "internal_imports": []
+      }
+    ],
+    "total_loc": 15754
+  },
+  "tests": [
+    {
+      "file": "tests/test_curated_project_assets.py",
+      "cases": 18,
+      "loc": 875
+    },
+    {
+      "file": "tests/test_document_ir.py",
+      "cases": 115,
+      "loc": 1745
+    },
+    {
+      "file": "tests/test_duplicate_governance.py",
+      "cases": 9,
+      "loc": 511
+    },
+    {
+      "file": "tests/test_evidence_chain.py",
+      "cases": 16,
+      "loc": 813
+    },
+    {
+      "file": "tests/test_file_content_vault.py",
+      "cases": 7,
+      "loc": 315
+    },
+    {
+      "file": "tests/test_image_parser.py",
+      "cases": 55,
+      "loc": 1145
+    },
+    {
+      "file": "tests/test_inventory_scanner.py",
+      "cases": 7,
+      "loc": 296
+    },
+    {
+      "file": "tests/test_markitdown_parser.py",
+      "cases": 34,
+      "loc": 882
+    },
+    {
+      "file": "tests/test_mineru_pdf_parser.py",
+      "cases": 33,
+      "loc": 1132
+    },
+    {
+      "file": "tests/test_parse_job_registry.py",
+      "cases": 36,
+      "loc": 1233
+    },
+    {
+      "file": "tests/test_parse_quality_checker.py",
+      "cases": 30,
+      "loc": 1035
+    },
+    {
+      "file": "tests/test_parse_quality_checker_semantic.py",
+      "cases": 60,
+      "loc": 1368
+    },
+    {
+      "file": "tests/test_parse_quality_report_summarizer.py",
+      "cases": 31,
+      "loc": 592
+    },
+    {
+      "file": "tests/test_parser_router.py",
+      "cases": 19,
+      "loc": 546
+    },
+    {
+      "file": "tests/test_parser_router_v2.py",
+      "cases": 28,
+      "loc": 1129
+    },
+    {
+      "file": "tests/test_pdf_sniffing.py",
+      "cases": 21,
+      "loc": 719
+    },
+    {
+      "file": "tests/test_project_safety_placeholder.py",
+      "cases": 1,
+      "loc": 8
+    },
+    {
+      "file": "tests/test_sample_dataset.py",
+      "cases": 21,
+      "loc": 430
+    },
+    {
+      "file": "tests/test_search_service.py",
+      "cases": 32,
+      "loc": 1020
+    },
+    {
+      "file": "tests/test_streamlit_admin_lib.py",
+      "cases": 14,
+      "loc": 271
+    }
+  ],
+  "test_case_total": 587,
+  "dirs": {
+    "backend/app": {
+      "files": 46,
+      "loc": 15754
+    },
+    "backend/tests": {
+      "files": 20,
+      "loc": 16065
+    }
+  }
+}
