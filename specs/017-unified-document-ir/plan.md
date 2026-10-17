@@ -213,6 +213,9 @@ parsed_text.md / parsed_metadata.json 既有语义（只读消费）
 | Q8 | sql 迁移 | 零迁移；P2 发现必要项 → STOP 报 Owner |
 | Q9 | parsed_text.md | 不动原文语义，渲染落 rendered.md（OQ-5） |
 | Q10 | bbox 单位 | 抽 3 篇实测后冻结声明（OQ-7） |
+| Q11 | `--force` 清理范围 | `_clear_parsed_outputs` **additive** 追加 unlink `document_ir.json` / `rendered.md` / `ir_source/`；v1 无此三产物 → no-op，既有行逐行不动（QA_PREP §六 M7 裁定，TL 2026-10-17 补入本表） |
+| Q12 | 校验器职责边界 | **只读校验**：允许读 parsed_dir / assets / manifest 做 sha256 对齐，**禁写盘、禁 DB**（QA_PREP Q-A 定稿） |
+| Q13 | dry-run 输出形态 | **4 态**：`would_build` / `would_skip(no_ir_source)` / `would_fail` / `already_built`，QA 的 G-04 即以此 4 态可区分为准（QA_PREP Q-B 定稿） |
 
 ## 9. Acceptance Criteria 摘要
 

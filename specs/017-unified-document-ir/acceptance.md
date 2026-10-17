@@ -23,14 +23,14 @@
 
 ## A017-03 content_ref span 回引 parsed_text.md 正确性
 
-- 逐块 `content_ref`：`offset_start/offset_end` 指向 `parsed_text.md` 内实际字符区间；用 `text[offset_start:offset_end]` 与块文本比对，一致性阈值断言必须存在且为真。
+- 逐块 `content_ref`：`start_offset/end_offset`（半开区间 `[start, end)`，与 010 chunk offset 体系一致）指向 `parsed_text.md` 内实际字符区间；用 `text[start_offset:end_offset]` 与块文本比对，一致性阈值断言必须存在且为真。
 - `content_ref` 优先 span，退化为 block 引用时须显式标记（不得静默降级为"无引用"）。
-- **否定断言**：越界 offset（`offset_end > len(text)`）必须被校验器拒绝；构造一个 offset 偏移 1 位的变异 → 回引一致性断言必须 **FAIL**。
+- **否定断言**：越界 offset（`end_offset > len(text)` 或 `start_offset < 0` 或 `start_offset > end_offset`）必须被校验器拒绝；构造一个 offset 偏移 1 位的变异 → 回引一致性断言必须 **FAIL**。
 
 ## A017-04 tables[] cells 矩阵与 html 一致性
 
 - `rowspan/colspan` 表 fixture：`cells[]` 矩阵合法——坐标无越界、无重叠、虚格（被 rowspan/colspan 覆盖位）**不入 cells**；`html ↔ cells` 双向可重建（cells → 重建 HTML 与原 `html` 语义等价）。
-- `caption_block_id` 指向存在的 caption 块（`table_caption` 关联生效）；表级 `confidence` 为 null 时不产格级 `confidence` 键（OQ-3=A 不建模单元格置信度）。
+- `caption_block_id` 指向存在的 caption 块（`table_caption` 关联生效）；`cells[]` 元素**任何情况下都不得出现 `confidence` 键**（OQ-3=A 不建模单元格置信度；TL 2026-10-17 裁定：由「表级为 null 时不得出现」收紧为**无条件禁止**，否则表级非 null 时产格级键的变异无法被捕获）。
 - **否定断言**：`table_body` HTML 解析失败 → 该表降级为 `cells=[]` + `html` 原样保留 + `stats` 计数，**不得**中断文档、**不得**伪造 cells。
 - **对照**：无表格文档 → `tables[]` 为空数组，零 issue。
 
@@ -44,7 +44,7 @@
 
 - `rendered.md` 由 IR 确定性渲染（纯函数）；`table_format="html_prefer"` 时首选 `table.html`。
 - **降级路径 1**：`table.html` 缺失但 cells 完整 → 由 cells → MD pipe 降级渲染，表格内容不丢失。
-- **降级路径 2**：`asset` 缺失 / `caption=null` → 用 `figure_id` 占位不产空链接（`![figure_id](...)` 形式可预测）。
+- **降级路径 2**：`asset` 缺失 / `caption=null` → 渲染为占位文本 `[图像 {figure_id}: {caption 或 ocr_text 截断}]`（以 `docs/architecture/DOCUMENT_IR_DESIGN_V1.md` §5 渲染表为准，TL 2026-10-17 裁定）；**不得**产出指向缺失资产的 Markdown 图片链接——否定断言：该 figure 在 `rendered.md` 中不出现 `![` 形式。
 - **降级路径 3**：`image_quality_score < image_quality_threshold` → 渲染轨降级为 caption-only 占位（不嵌图）。
 - **否定断言**：`rendered.md` 不写 `parsed_text.md`（OQ-5=B）；`parsed_text.md` 内容与 hash 在执行前后**完全不变**。
 

@@ -19,9 +19,9 @@
 | **TC017-05** | A017-02 | block_id 跨重跑稳定 | 同 `content_list.json` 连续构建两次 | 两次 `block_id` 集合与映射逐字节一致（`b0001`… 按 reading_order）；除时间戳外 IR 确定 |
 | **TC017-06** | A017-02 | reading_order 一致性 | 同上产物 | `reading_order` 为 `0..len(blocks)-1` 置换：无重号 / 无越界 / 无空洞 |
 | **TC017-07** | A017-02 | **变异**：随机 UUID 分配 | 变异 builder 用 `uuid4()` 生成 block_id | 稳定性断言 **FAIL**；渲染轨/证据链 block_id 引用失配被捕获；恢复后 PASS |
-| **TC017-08** | A017-03 | span 回引正确 | 块文本 + `parsed_text.md` | `text[offset_start:offset_end]` 与块文本一致（一致性阈值断言为真） |
-| **TC017-09** | A017-03 | 越界 offset 拒绝 | 构造 `offset_end > len(text)` 的 IR | 校验器拒绝；**否定**：不得静默通过 |
-| **TC017-10** | A017-03 | **变异**：offset 偏移 1 位 | 变异 builder 令 `offset_start += 1` | 回引一致性断言 **FAIL**；恢复后 PASS |
+| **TC017-08** | A017-03 | span 回引正确 | 块文本 + `parsed_text.md` | `text[start_offset:end_offset]` 与块文本一致（一致性阈值断言为真） |
+| **TC017-09** | A017-03 | 越界 offset 拒绝 | 构造 `end_offset > len(text)` 的 IR | 校验器拒绝；**否定**：不得静默通过 |
+| **TC017-10** | A017-03 | **变异**：offset 偏移 1 位 | 变异 builder 令 `start_offset += 1` | 回引一致性断言 **FAIL**；恢复后 PASS |
 | **TC017-11** | A017-04 | cells 矩阵合法 | rowspan/colspan 表 fixture | cells 坐标无越界；无重叠；虚格（被覆盖位）**不入 cells** |
 | **TC017-12** | A017-04 | html ↔ cells 双向重建 | 同表 | cells → 重建 HTML 与原 `html` 语义等价（行列与合并关系一致） |
 | **TC017-13** | A017-04 | caption 关联 + 格级置信度不建模 | 含 `table_caption` 表；表级 confidence=null | `caption_block_id` 指向存在 caption 块；表级 confidence=null 时**不产**格级 `confidence` 键（OQ-3=A） |
