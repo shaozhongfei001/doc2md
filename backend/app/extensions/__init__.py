@@ -106,6 +106,14 @@ _CODE_BUCKET: dict[str, str] = {
     "E_CONSUMER_NOT_CONNECTED": "needs-review-or-not-requested-release-state",
     "E_COMMIT_INCOMPLETE": "failed-item-or-batch",
     "E_EVIDENCE_MISMATCH": "failed-item-or-batch",
+    # Structural / final-state uncertainty is a *review* outcome, not a batch failure:
+    # SDD §14 routes these to "定位原XML并转复核" rather than "retry or drop".
+    "E_DOCX_MERGE_INVALID": "needs-review-or-not-requested-release-state",
+    "E_DOCX_REVISION_UNRESOLVED": "needs-review-or-not-requested-release-state",
+    "E_TABLE_SPAN_INVALID": "needs-review-or-not-requested-release-state",
+    "E_TABLE_ALIGNMENT_AMBIGUOUS": "needs-review-or-not-requested-release-state",
+    "E_GEOMETRY_UNVERIFIED": "needs-review-or-not-requested-release-state",
+    "E_GEOMETRY_NONINVERTIBLE": "input-error",
     "E_LOCK_BUSY": "failed-item-or-batch",
     "E_DRY_RUN_WRITE_BLOCKED": "failed-item-or-batch",
 }

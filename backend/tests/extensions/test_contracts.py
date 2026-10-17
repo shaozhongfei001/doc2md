@@ -672,3 +672,43 @@ def test_extension_layer_declares_no_network_client():
         source = path.read_text(encoding="utf-8")
         for token in forbidden:
             assert token not in source, f"{path.name} must not open network access ({token!r})"
+
+
+# --------------------------------------------- exit-code contract (TL decision)
+# SDD §14 routes structural uncertainty to "locate the XML and escalate to review",
+# which is exit 4, not exit 6 (a failed batch item) and not exit 2 (bad input).
+STRUCTURAL_REVIEW_CODES = (
+    "E_DOCX_MERGE_INVALID",
+    "E_DOCX_REVISION_UNRESOLVED",
+    "E_TABLE_SPAN_INVALID",
+    "E_TABLE_ALIGNMENT_AMBIGUOUS",
+    "E_GEOMETRY_UNVERIFIED",
+)
+
+
+def test_structural_uncertainty_maps_to_needs_review_exit_code():
+    from app.extensions import EXIT_CODES, exit_code_for
+
+    for code in STRUCTURAL_REVIEW_CODES:
+        assert exit_code_for(code) == EXIT_CODES["needs-review-or-not-requested-release-state"], code
+
+
+def test_unusable_input_maps_to_input_error_exit_code():
+    from app.extensions import EXIT_CODES, exit_code_for
+
+    # Both codes appear in SDD §14's error table; E_DOCX_PACKAGE_UNSAFE was
+    # deliberately dropped because the contract does not define it (no invented codes).
+    for code in ("E_GEOMETRY_NONINVERTIBLE", "E_INPUT_INVALID"):
+        assert exit_code_for(code) == EXIT_CODES["input-error"], code
+
+
+def test_evidence_mismatch_stays_a_failed_item():
+    from app.extensions import EXIT_CODES, exit_code_for
+
+    assert exit_code_for("E_EVIDENCE_MISMATCH") == EXIT_CODES["failed-item-or-batch"]
+
+
+def test_unknown_codes_never_resolve_to_success():
+    from app.extensions import exit_code_for
+
+    assert exit_code_for("E_SOMETHING_NEW") != 0
