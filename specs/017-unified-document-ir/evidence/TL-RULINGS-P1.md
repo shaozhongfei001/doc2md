@@ -45,3 +45,25 @@
 | GAP-01 / 06 / 10 / 13 文档收口 | **已完成**（`acceptance.md` / `test_cases.md` / `plan.md §8`） |
 | GAP-02/03/04/05/07/08/09/11/12 约束 | **本表即契约**，由 P1~P5 实现与 P6 验收共同遵循 |
 | 是否需 Owner 裁定 | **否**（13 项均可在既有 OQ/决策表框架内闭合；无扩大试点范围或语义变更） |
+
+---
+
+## 四、追加裁定 R-15 ~ R-18（P1 实现者提出，2026-10-17 补）
+
+| # | 歧义 | 裁定 | 落地 |
+|---|---|---|---|
+| **R-15** | `block_id` 基数：`acceptance.md` A017-02 写「`b0001`…」→ 1-based；design §3.2 示例 `b0007` 配 `reading_order: 7` → 0-based | **1-based**：`block_id = "b" + f"{reading_order + 1:04d}"`，首块 `b0001` ↔ `reading_order=0`；超 9999 自然进位（`b10000`）。design 示例为旧笔误，以 acceptance 为准 | P2 builder 生成规则；schema 只校 `^b\d{4,}$` + 唯一 + 随 reading_order 严格递增（对基数不表态，故 P1 无需改动） |
+| **R-16** | R-03「13 键值可 null」的范围 | 收窄：仅 `page_count` / `source_vault_path` / `provenance` 可 `null`；`document_uid` / `content_uid` / `sha256` / `schema_version` / `coordinate_system` / `blocks` / `tables` / `figures` / `reading_order` / `stats` **必须非 null**（否则 uid 确定性与结构校验失去意义） | 已由 P1 校验器实现（`97819aca…`） |
+| **R-17** | R-08 只允许 `assets/images/` 会拒掉 VLM 整页图 | `asset_path` 允许**两个扁平目录**：`assets/images/<basename>`（MinerU 抽图）与 `assets/pages/<basename>`（VLM 整页渲染）。均**禁嵌套子目录**；新增目录须先报 TL | P2/P5；P1 校验器已按 images 严格校，P5 前需补 pages 白名单（在 P5 阶段改，属 R-08 修订而非新开口） |
+| **R-18** | 空表降级时 `n_rows/n_cols` 取值 | `cells=[]` 且 `n_rows=n_cols=0` **合法**（对应 A017-04「html 解析失败 → cells=[] + html 原样 + stats 计数」）；**不得**改 null、**不得**猜测尺寸 | P2 builder 降级路径 |
+
+### 附：已知测试隔离债（非 017 引入，登记待收口）
+
+P1 验收期间出现两次**瞬时多失败**，复跑即消失：
+- TL 侧：全量 5 failed，多出 `test_markitdown_parser.py::test_chinese_path_integration`（`StaleDataError: UPDATE kb_file_content expected 1 row`）；
+- 实现者侧：全量 10 failed，多出 `test_mineru_pdf_parser.py` 6 个。
+
+共同点：都依赖**共享测试库**中的既有行，跨文件执行顺序/残留会互相破坏（单跑或复跑即恢复）。结论：
+① 非 017 改动引入（新测试文件对 DB 零写入，已用 `--ignore` 对照验证）；
+② 记为**测试隔离债**，登记到 P7 收口清单（不在当前阶段修复，避免扩大改动面）；
+③ 后续阶段凡写 DB 的用例，须按 sha256 前缀自带清理，不得依赖执行顺序。
