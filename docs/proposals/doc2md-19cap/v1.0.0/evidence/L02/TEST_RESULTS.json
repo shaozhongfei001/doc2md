@@ -1,0 +1,73 @@
+{
+  "schema_version": "doc2md-19cap-l02-test-results/1.0",
+  "workflow": "DOC2MD-19CAP",
+  "loop": "L02",
+  "recorded_at_local": "2026-10-18 (Asia/Shanghai)",
+  "entry_commit": "71e4c72c7c3ac24ad3fef16006d51c6fad7b46a9",
+  "code_commit": "39eeb3699b67b83726975feb90a745319b362542",
+  "environment": {
+    "interpreter": "/tmp/doc2md-l00-venv/bin/python",
+    "python": "3.11.7",
+    "mysql": "NOT_AVAILABLE",
+    "engines": "NOT_AVAILABLE (no bank connector, no OCR/VLM)"
+  },
+  "commands": [
+    {
+      "id": "L02-FULL",
+      "command": "cd backend && PYTHONPATH=. /tmp/doc2md-l00-venv/bin/python -m pytest -q",
+      "exit_code": 0,
+      "result": "715 passed, 133 skipped in 11.66s"
+    },
+    {
+      "id": "L02-EXT",
+      "command": "PYTHONPATH=. /tmp/doc2md-l00-venv/bin/python -m pytest -q tests/extensions",
+      "exit_code": 0,
+      "result": "229 passed"
+    },
+    {
+      "id": "L02-BASELINE",
+      "command": "check_baseline.py --repo <repo> --allow-index-append",
+      "exit_code": 0,
+      "result": "passed=true, 322 files, errors=[]"
+    },
+    {
+      "id": "L02-SCOPE",
+      "command": "check_loop_diff.py --loop L02 --base-commit 71e4c72",
+      "exit_code": 0,
+      "result": "passed=true, allowed_changed_paths=12, errors=[]"
+    }
+  ],
+  "comparison": {
+    "before_passed": 641,
+    "after_passed": 715,
+    "delta": 74,
+    "failed_before": 0,
+    "failed_after": 0,
+    "skipped_before": 133,
+    "skipped_after": 133
+  },
+  "new_tests": {
+    "test_source_adapter.py": 21,
+    "test_source_versioning.py": 20,
+    "test_source_sync.py": 20,
+    "test_source_reconcile.py": 13
+  },
+  "scope_incident": {
+    "id": "L02-SCOPE-01",
+    "description": "First draft added four error codes to the shared backend/app/extensions/__init__.py, which is outside the L02 whitelist.",
+    "detected_by": "check_loop_diff.py --loop L02",
+    "resolution": "Reverted that file and reused L01-registered codes instead; no whitelist exception requested, no shared file changed.",
+    "final_state": "passed=true with 12 files"
+  },
+  "status": {
+    "dev_self_test": "DONE",
+    "db_review": "PENDING",
+    "independent_qa": "PENDING",
+    "e2e": "NOT_RUN"
+  },
+  "not_run": [
+    "Real bank incremental sync / revocation / reconciliation (OI02)",
+    "MySQL-bound legacy cases (131)",
+    "All L03+ engines"
+  ]
+}
