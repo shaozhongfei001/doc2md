@@ -221,7 +221,7 @@ specs/016-semantic-quality-metrics/plan.md  # Dev 不改 Plan
 - [x] 单候选读取 OSError → 该候选跳过语义检查，其余正常，批处理不中断
 - [x] `中文路径` 下产物全链路通过，报告 `ensure_ascii=False` 无乱码
 - [x] `test_parse_quality_checker.py` 零修改全过（30 项）；`test_parse_quality_report_summarizer.py` 全过（31 项，含 T009 的 1 处裁定改动）；
-  001–013 全量回归：`4 failed（既有 --help 基线）/ 496 passed / 2 skipped`
+  001–013 全量回归：`4 failed（既有 --help 基线）/ 498 passed / 2 skipped`
 - [x] Dev 输出：修改文件清单、pytest 命令、CLI 命令、遗留问题 → STOP → P2 DB Review → QA → E2E → TL Final Review
 
 ---
@@ -253,18 +253,18 @@ specs/016-semantic-quality-metrics/plan.md  # Dev 不改 Plan
 | 文件 | 操作 | md5 |
 |------|------|-----|
 | `backend/app/services/parse_quality_checker.py` | 修改（+721/−23） | `cec00d45c3cc87521c5acbbc22ac6283` |
-| `backend/app/services/parse_quality_report_summarizer.py` | 修改（+26/−6） | `7577f54a16cf29ae65c761f807215150` |
+| `backend/app/services/parse_quality_report_summarizer.py` | 修改（+35/−8） | `7508f7136d53282c3aff69e9737ff018` |
 | `backend/app/cli/main.py` | 修改（+6/−0，纯追加） | `49f2446293f88ee67177be5126d4e3ea` |
 | `config/quality_semantics.yaml` | 新增 | `d172689c00923ee0106c2a07e2bbc1e4` |
-| `backend/tests/test_parse_quality_checker_semantic.py` | 新增（59 用例） | `4482e85e0f72b0b7037bca182b2dbeaf` |
+| `backend/tests/test_parse_quality_checker_semantic.py` | 新增（61 用例） | `fe627f21f1633cebb7441d8107c10a67` |
 | `backend/tests/test_parse_quality_report_summarizer.py` | 改（+2/−1，**白名单例外**，TL 裁定 A） | `c9246bd4205282312cc4408f48e7c3e7`（改前 `b77429121f2b29da3ffdd17c8243c9c3`） |
 
 ### 实测成绩
 
-- 新测试文件：`59 passed`
+- 新测试文件：`61 passed`
 - `test_parse_quality_checker.py`（008，零修改）：`30 passed`
 - `test_parse_quality_report_summarizer.py`（009）：`31 passed`（含裁定 A 的 1 处等价化）
-- 全量：`4 failed（既有 --help 基线）/ 496 passed / 2 skipped`（437 基线 + 59 新增）
+- 全量：`4 failed（既有 --help 基线）/ 498 passed / 2 skipped`（437 基线 + 61 新增）
 
 ### 变异复验（证明断言非空转）
 
@@ -276,15 +276,16 @@ specs/016-semantic-quality-metrics/plan.md  # Dev 不改 Plan
 | M4 | 缺置信度时改产 `OCR_LOW_CONFIDENCE` | 3 项 FAILED（反编造） |
 | M5 | 删除 `total_chars < min_sample_chars` 跳过 | `test_garbled_skipped_when_sample_too_small` FAILED |
 | M6 | 去掉 `semantic_config.enabled` 门禁 | 3 项 FAILED（`--no-semantic` 冻结） |
+| M7 | 停用 fail-closed（`1.0` 含语义键不再 raise） | `test_summarizer_rejects_semantic_codes_in_1_0_report` FAILED（md5 `1d262a46…`）；恢复 `7508f713…` 后 PASS |
 
-全部变异均已恢复原文件（恢复后 md5 = `8077827533014f084cdd50d3618fa911`；此后按 TL 裁定 (c) 再改一处，
-现行 md5 = `cec00d45c3cc87521c5acbbc22ac6283`，与新测试全绿一致）。
+全部变异均已恢复原文件（checker 现行 md5 = `cec00d45c3cc87521c5acbbc22ac6283`、
+summarizer 现行 md5 = `7508f7136d53282c3aff69e9737ff018`，与新测试全绿一致）。
 
 ### 已报 TL 并获裁定的偏离（详见下节）
 
 1. **T009 断言互斥** → TL 裁定 **A（方案 ①）**：`:516` 一处 2 行等价化（其余断言零改动）。
-2. **summarizer 除两常量外的最小兼容改动** → **偏离批准**，附 4 条硬约束（未知版本仍 raise / legacy 18 键仍必填 /
-   009 输出 `SCHEMA_VERSION` 不动 / 分桶逻辑不动）。
+2. **summarizer 除两常量外的最小兼容改动** → **偏离批准**，附 5 条硬约束（未知版本仍 raise / legacy 18 键仍必填 /
+   009 输出 `SCHEMA_VERSION` 不动 / 分桶逻辑不动 / **TL 追加：1.0 报告含语义键 fail-closed raise**）。
 3. **`scope.semantic`** → TL 裁定 **(c)**：`--no-semantic` 时**省略**该键（验收项 A016-07 优先于 plan §4.3 设计描述），
    `--no-semantic` 输出与 008 **完全一致（零差异）**，已按此改动并用 008 原版代码逐字段对照验证。
 
@@ -335,9 +336,10 @@ assert data["issue_counts"] == expected
 | 2 | legacy 18 键仍必填；语义 5 键可缺席 | 必填循环改用 `LEGACY_ISSUE_CODES`；`ISSUE_CODES` 循环对 `not in` 跳过、present 则校验 int≥0 | `test_summarizer_still_requires_legacy_issue_codes`、`test_summarizer_semantic_keys_optional_and_zero_filled`、`test_summarizer_rejects_invalid_semantic_count` |
 | 3 | `SCHEMA_VERSION` 输出常量不动（009 仍输出 "1.0"） | 未改 | `test_summarizer_schema_version_constant_unchanged` |
 | 4 | `_classify_noise` / 分桶 / `:120-121` 一行不动 | 未改 | 009 既有分桶用例 |
+| 5 | **（TL 追加授权）fail-closed**：`schema_version="1.0"` 且 `issue_counts` 出现任一语义键 → raise | 在 unknown_keys 检查后加分支：`if schema_version == "1.0"` 且命中 `SEMANTIC_ISSUE_CODES` → `ValueError("issue_counts must not contain semantic codes when schema_version='1.0'")` | `test_summarizer_rejects_semantic_codes_in_1_0_report`（变异 M7 证明非空转） |
 
-注：约束 2 的「可选」按「语义键缺席不报错、present 则必须合法」实现；未额外加「1.0 报告不得出现语义键」
-的更强规则（现有 1.0 生产者不会产出该组合），若 QA 要求 fail-closed 可再加。
+约束 2 的「可选」按「语义键缺席不报错、present 则必须合法（int≥0）」实现；语义键只在 `1.1` 有定义，
+`1.0` 报告出现语义键按约束 5 直接 raise（生产者 bug，静默接受会让版本语义失效）。
 
 ### 冲突 3：`scope.semantic`（plan §4.3 / T010 vs spec §7.5 / A016-07）
 
@@ -352,7 +354,8 @@ assert data["issue_counts"] == expected
 
 | 验证 | 方法 | 结果 |
 |------|------|------|
-| 服务层 | `git show HEAD:backend/app/services/parse_quality_checker.py`（1035 行，md5 `b3ed5c84…` = 016 改动前 md5）导入为独立模块，同一批 4 个 fixture（中文路径 / 乱码+ragged 表 / 空正文+页数 / EMPTY / FAILED）分别跑 008 原版与现行 `semantic_enabled=False` | `to_dict()`（去 `generated_at`）**完全相等 = True**；顶层 12 键、scope 恰 5 键、schema `1.0` |
+| 服务层（对 008 原版代码） | `git show HEAD:backend/app/services/parse_quality_checker.py`（1035 行，md5 `b3ed5c84…` = 016 改动前 md5）导入为独立模块，同一批 5 个 fixture（中文路径 / 乱码+ragged 表 / 空正文+页数 / EMPTY / FAILED）分别跑 008 原版与现行 `semantic_enabled=False` | `to_dict()`（去 `generated_at`）**完全相等 = True**；顶层 12 键、scope 恰 5 键、schema `1.0` |
+| 服务层（提交内回归用例） | `test_no_semantic_payload_equals_008_reference`：对「若开启语义会产 3 类 issue」的候选，与**手写 008 参考 payload** 做 `json.dumps(sort_keys=True)` **全字段比对**（不再只比键集） | PASS：全字段相等 |
 | CLI 层 | `/tmp/p16_cli/app.yaml`（storage 全指向 `/tmp`，mysql 指向真实库只读）跑 `check-parse-quality --limit 5` 与 `--no-semantic` | 默认：schema 1.1 / 14 顶键 / 23 issue_counts / scope 6 键 / summary 10 键；`--no-semantic`：1.0 / 13 键 / 18 / 5 / 9；把默认报告的 016 增量裁掉后与 `--no-semantic` **完全相等 = True** |
 
 > 注：`parser_name="image_ocr"` 的候选**必然**与 008 有差异（008 会产 `MANIFEST_PARSER_NAME_INVALID`，
@@ -364,16 +367,20 @@ assert data["issue_counts"] == expected
 `parse_quality_checker.py` / `parse_quality_report_summarizer.py` / `cli/main.py` → **0 命中**；
 对 `git diff` 的**新增行**再扫 → **0 命中**。真实库不插测试行（TL 认同）。
 
-**(e) CLI E2E**：`check-parse-quality` 的候选**只能**来自 `kb_parse_result`（无 fixture 入口），故用
-「真实库 + `/tmp` 隔离 storage」跑通全链路，再把中文乱码 fixture 落到某条 DB 行指向的 `/tmp/parsed/...` 目录：
+**(e) CLI E2E**：`check-parse-quality` 的候选**只能**来自 `kb_parse_result`（无 fixture 入口）。做法：
+`/tmp/p16_cli/app.yaml`（storage 的 parsed / reports / raw_vault / curated / quarantine 全指向 `/tmp`，
+`reports_root` 特意设成**中文目录** `/tmp/p16_cli/中文报告目录`，mysql 指向真实库**只读 SELECT**）→
+只读查最新 `kb_parse_result` 行取 `parsed_dir` → 往里落中文正文 + 5% U+FFFD fixture → 跑 CLI → 校验 → 清理。
 
-- 运行结果：`checked_semantic_count=1`，产出 `OCR_GARBLED_RATIO` WARNING，
+- 运行结果：`checked_semantic_count=4`，产出 **2 条** `OCR_GARBLED_RATIO` WARNING（两行 DB 共用同一 parsed_dir），
   evidence = `{"garbled_ratio":0.0476,"garbled_chars":40,"total_chars":840,"threshold_warn":0.02,"threshold_error":0.1,"min_sample_chars":200,"sampled":true}`
-- 报告文件 `ensure_ascii=False` 生效（全文无 `\u` 转义）
-- 同批 5 个候选中有 4 个 parsed 目录不存在 → 语义检查逐条 skip（`logger.warning`）且**批处理不中断**（A016-08 容错实证）
-- 局限：该 DB 行的 `parsed_dir` 是 `by_hash/99/99/...`（ASCII），**中文路径**只由 `test_chinese_path_semantic` 在服务层覆盖；
-  若要 CLI 层中文路径需往真实库插候选行（违反「不写 DB」），故该项记为 **NOT_COVERED（CLI×中文路径组合）**
-- 临时注入的 fixture 目录已清理；`/tmp/p16_cli/` 下保留 config 与两份报告作为证据
+- 报告写到 `/tmp/p16_cli/中文报告目录/parse_quality_report_*.json`（中文输出目录 OK）；文件 `ensure_ascii=False` 生效（**全文无 `\u` 转义**）
+- 同批 5 个候选中有 1 个 parsed 目录不存在 → 语义检查 skip（`logger.warning`）且**批处理不中断**（A016-08 容错实证）
+- 仓库零污染：`git status` 干净（016 变更已由 TL 提交为 `5821c9c`）；注入的 fixture 目录跑完即删；
+  `/tmp/p16_cli/` 保留 `app.yaml` + 4 份报告作为证据
+- **NOT_COVERED（CLI × 中文 artifact 路径）**：DB 行的 `parsed_dir` 均为 `by_hash/99/99/...`（ASCII），
+  产物名由契约固定为 `parsed_text.md`；要在 CLI 层造中文 artifact 路径必须往真实库插候选行（违反「不写 DB」）。
+  中文 artifact 路径由 `test_chinese_path_semantic` 在服务层覆盖，中文**输出**路径由本次 CLI E2E 覆盖。
 
 ### 白名单例外登记
 
