@@ -415,8 +415,14 @@ def test_storage_loader_reads_paths_from_the_legacy_config(tmp_path: Path):
     assert roots.raw_vault_root == (path.parent.parent / "raw_vault").resolve()
 
 
-def test_storage_loader_never_parses_the_mysql_section(tmp_path: Path):
-    """A plaintext password must not enter this process at all."""
+def test_storage_loader_never_retains_the_mysql_section(tmp_path: Path):
+    """A plaintext password must not be retained or exposed by this layer.
+
+    Precise scope: ``yaml.safe_load`` still materialises the whole document, so the
+    secret transits memory during the parse. What is asserted here is the property
+    that matters — it is not kept on, attached to, or serialisable from the returned
+    object. The name says "retains", not "parses", on purpose.
+    """
     from app.extensions.io.config import load_storage_roots
 
     path = _app_yaml(tmp_path, with_mysql=True, secret="UNIQUE-PASSWORD-MARKER-42")
@@ -425,6 +431,10 @@ def test_storage_loader_never_parses_the_mysql_section(tmp_path: Path):
     assert "UNIQUE-PASSWORD-MARKER-42" not in rendered
     assert not hasattr(roots, "password")
     assert not hasattr(roots, "mysql")
+    # No field of the returned dataclass may carry the mysql subtree either.
+    for name, value in vars(roots).items():
+        assert "UNIQUE-PASSWORD-MARKER-42" not in repr(value), name
+        assert not isinstance(value, dict) or "mysql" not in value, name
 
 
 def test_storage_loader_works_without_a_mysql_section(tmp_path: Path):

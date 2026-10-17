@@ -36,7 +36,15 @@ __all__ = [
     "file_ref_target",
     "is_within",
     "lexical_symlinks",
+    "DEFAULT_PROJECT_ROOT",
 ]
+
+#: Repository root derived from this file's location, used as the **default** anchor
+#: for the forbidden write roots. Defaulting it here (instead of leaving it to each
+#: caller) means a future call site that forgets the argument cannot silently fall
+#: back to the pre-fix behaviour (independent DB review, 2nd round, finding 1).
+#: ``backend/app/extensions/io/paths.py`` -> parents[4] == repository root.
+DEFAULT_PROJECT_ROOT: Path = Path(__file__).resolve().parents[4]
 
 #: Repository-relative roots the new layer must never write into.
 FORBIDDEN_WRITE_ROOTS: tuple[str, ...] = (
@@ -150,9 +158,10 @@ def resolve_extension_root(
       mentions a forbidden name, so the overlap was never detected
       (defect FAIL-2026-10-18-01, found by independent DB review).
 
-    ``project_root`` should be the repository root, derived by the caller from its
-    own location rather than from the current working directory, so the answer does
-    not depend on where the CLI was started.
+    ``project_root`` defaults to :data:`DEFAULT_PROJECT_ROOT`, derived from this
+    file's location rather than from the current working directory, so the guard is
+    **on by default** and does not depend on where the CLI was started. Passing
+    ``None`` explicitly therefore no longer disables the repository anchor.
     """
     if isinstance(value, os.PathLike):
         value = os.fspath(value)
@@ -175,10 +184,9 @@ def resolve_extension_root(
         )
 
     anchors: list[Path] = [Path(base_dir).resolve(strict=False)]
-    if project_root is not None:
-        project_resolved = Path(project_root).resolve(strict=False)
-        if project_resolved not in anchors:
-            anchors.append(project_resolved)
+    project_resolved = Path(project_root or DEFAULT_PROJECT_ROOT).resolve(strict=False)
+    if project_resolved not in anchors:
+        anchors.append(project_resolved)
 
     for anchor in anchors:
         for name in forbidden_roots:

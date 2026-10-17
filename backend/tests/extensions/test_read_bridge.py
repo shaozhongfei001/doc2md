@@ -350,6 +350,19 @@ def test_repo_root_is_refused_even_with_an_outside_base_dir(tmp_path: Path):
     assert excinfo.value.code == "E_CONFIG_ROOT_FORBIDDEN"
 
 
+def test_repo_anchor_is_on_by_default(tmp_path: Path):
+    """Omitting ``project_root`` must not silently restore the old behaviour."""
+    with pytest.raises(ExtensionError) as excinfo:
+        resolve_extension_root(str(REPO_ROOT / "sql"), base_dir=tmp_path)
+    assert excinfo.value.code == "E_CONFIG_ROOT_FORBIDDEN"
+
+
+def test_default_project_root_points_at_the_repository():
+    from app.extensions.io.paths import DEFAULT_PROJECT_ROOT
+
+    assert DEFAULT_PROJECT_ROOT == REPO_ROOT
+
+
 def test_repo_anchoring_still_allows_a_legitimate_sibling(tmp_path: Path):
     resolved = resolve_extension_root(
         str(tmp_path / "extension_data"), base_dir=tmp_path, project_root=REPO_ROOT

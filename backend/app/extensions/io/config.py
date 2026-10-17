@@ -232,12 +232,17 @@ def load_extension_config(
 
 @dataclass(frozen=True)
 class StorageRoots:
-    """Only the legacy ``storage`` section — deliberately no credentials.
+    """Only the legacy ``storage`` section — no credential is retained or exposed.
 
-    The legacy ``load_config`` parses the ``mysql`` block unconditionally, which
-    pulls a plaintext password into the process memory of a component that never
-    opens a database connection. This narrow reader keeps the boundary honest and,
-    as a side effect, removes the extension layer's only import of legacy code.
+    Scope of the claim, stated precisely: the YAML document is still parsed whole, so
+    the ``mysql`` subtree does transit memory for the duration of ``yaml.safe_load``.
+    What this reader guarantees — and what the risk actually was — is that the secret
+    is **never retained, never attached to a returned object and never serialised**
+    by this layer. Callers cannot reach it through ``StorageRoots``.
+
+    The legacy ``load_config`` additionally *kept* the password on ``AppConfig.mysql``
+    for the whole process lifetime, which is what the extension layer no longer does;
+    this also removed the extension layer's only import of legacy code.
     """
 
     source_registry_root: Path | None = None
@@ -247,13 +252,6 @@ class StorageRoots:
     quarantine_root: Path | None = None
     reports_root: Path | None = None
     config_path: Path | None = None
-
-    def to_kwargs(self) -> dict[str, Path]:
-        return {
-            "raw_vault": self.raw_vault_root,
-            "parsed": self.parsed_root,
-            "curated": self.curated_root,
-        }
 
 
 _STORAGE_KEYS = (
