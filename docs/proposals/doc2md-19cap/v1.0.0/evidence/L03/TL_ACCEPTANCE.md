@@ -181,3 +181,43 @@ DEV 已**冻结**（不再改 `word/**` 与 `test_word_*.py`），所有修复�
 理由即 D-2 教训：验收期间改动会让验收方测到移动靶、数字对不上。
 `L03-DEBT-02`/`L03-GAP-04`/`L03-GAP-05` **不纳入本轮 QA 的 RETURN 门槛**（属已声明缺口，不是假成功），
 但已要求 QA 独立确认"4 对结构修订确实无覆盖"这一条是否属实。
+
+---
+
+## 11. P1 独立验收结论（qa-verifier）与处置
+
+`QA_VERDICT = RETURN`，**阻断项只有一个且属流程/门禁，不是代码缺陷**。
+
+| 组 | 结论 |
+|---|---|
+| A 复跑 | A1 全量 869/0/133 ✓、A3 word 93 ✓、A4 baseline passed ✓；A5 在 `07da949` 上 passed=true，在当前 HEAD 因证据文档落区间而红 ✗ |
+| B L01 第 2 轮三项修复 | **全 PASS**（第三方确认，非审查方自证） |
+| C 独立变异 5/5 | **CAPTURED**：尾列未解释洞、插入文本计入 FINAL、压缩比、grid 有洞无证据、原子 rename；md5 全复原 |
+| D L03-DEBT-01 回填 | **真实生效**：自搓 OOXML，grid=5 + `gridAfter=3` → 输出 2/5 未缩表；省略证据 3↔3 一一对应；反例（无 `gridAfter` 却少列）正确报 `E_TABLE_SPAN_INVALID` |
+| E 假成功/错误码 | 无假成功：`enhance` 非 dry-run rc=3；dry-run 前后目录快照一致、无 `.locks`；错误码映射符合决定；`hMerge` 确为 fail-closed |
+| F 报告一致性 | 抽检 3 条自述数字全部复现（322 / 641+155 / 715+229）；发现 1 处提交信息行数笔误 |
+
+### 11.1 阻断项处置：ADR-19CAP-01
+
+不在机器合同里加证据路径——`check_loop_diff.py` 读的是 `PACK` 内合同（工具 11-12 行），
+改工作副本无效；改 `PACK` 会破坏 `MANIFEST` 与采用溯源（`check_delivery` 已验证仍 `passed=true`）。
+改为 A1（代码区间）+ A2（尾部逐提交归属）两条显式断言，见
+`adoption/ADR-19CAP-01-范围门禁解释与QA目标冻结.md`。
+
+### 11.2 新增登记：L03-GAP-06（跨层集成，QA 发现，MAJOR 级）
+
+`extract_tables()` 产出的 `omission_evidence_ids` 形如 `docx:gridAfter:0:2`，
+而根契约 `Enhancement.links` 要求 `table.omission_evidence_ids ⊆ {e.candidate_evidence_id}`。
+
+**当前后果**：`contracts.Table` 级校验 **ACCEPTED**，但 `validate_root("document-enhancement", …)` **REJECTED**
+（`omission evidence missing`）——即"表形状正确"在集成期会变成假绿。
+
+**根因**：本 Loop 不生产 candidate evidence（属 L05），故无法满足引用闭包。
+**处置**：L05 生产 evidence 时必须固化该命名约定，并在 L05 门禁增加一条端到端断言：
+`extract_tables → 生成 candidate evidence → validate_root(document-enhancement)` 必须整链通过。
+在此之前，任何"L03 已通过根契约"的说法均不成立（TL 此前的集成检查只到 `Table` 级，已在此更正）。
+
+### 11.3 数字更正（QA MINOR 5）
+
+`07da949` 提交信息写 `native_tables.py` 534 行、合计 2401 行；实测为 **588 行 / 合计 2455 行**。
+该数字来自 DEV 提交前快照。已采纳流程约束 P-4（数字一律现拼），并按 ADR 记录，不追改历史提交。
