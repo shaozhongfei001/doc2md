@@ -192,3 +192,133 @@
 1. 修 10 个 cv2 硬断言（改为按 `image_quality.import_cv2()` 可用性分支或 `skipif`），使 A015-12 成立；这是本次唯一的阻塞项，改动只在 `tests/test_image_parser.py`。
 2. 重校准 `quality.pillow_blur_threshold`（当前 20.0 实测把清晰图判 9.91）—— 需真实语料，建议并入 016 一起做（N-1）。
 3. D-3 / D-4 属规格措辞，建议在 spec 侧确认口径后决定是改文档还是改实现。
+
+---
+
+### QA 复验（A015-12 修复后，2026-10-17）
+
+**复验对象**：提交 `a863d02`（只改 `backend/tests/test_image_parser.py` + 本文件，`git show --stat` 确认无 `backend/app/**`、`config/**` 改动）。实盘校验：`tests/test_image_parser.py` md5 **`e0f75a07b594d70f8e6a50b54a38e438`** / 1130 行；`app/services/image_parser.py` md5 **`927b9029…`**（与首轮一模一样，实现零改动）；`adapters/vlm_adapter.py` md5 **`54078c85…`**（未动）。
+**依赖模拟方式**：自建独立 shim（`/tmp/qa015/nocv2`、`/tmp/qa015/nopaddle`，meta_path 拦截 + 清 `sys.modules`，注入即抛 `ImportError`，不卸载任何真包），并用 team-lead 提供的 `/tmp/nocv2/cv2.py`、`/tmp/nopaddle/paddleocr.py` **交叉对照，两组 shim 结果逐字一致**（`/tmp/nocv2` → 51 passed / 4 skipped；`/tmp/nocv2:/tmp/nopaddle` → 51 passed / 4 skipped，skip 位置同为 `:262` `:271` `:280` `:453`）。DB env 仍按 `config/app.yaml` 注入。
+
+#### 1. 三种组合的成绩与 skip 明细（独立实测）
+
+| 组合 | 成绩 | skip 明细（`-rs` 原文） |
+|------|------|------------------------|
+| ① 有 cv2 + 有 paddleocr | **53 passed / 2 skipped** | `:432 paddleocr installed; dependency-missing branch unreachable`、`:443 paddleocr installed` |
+| ② 无 cv2（paddleocr 包在但不可导入） | **51 passed / 4 skipped** | `:262` `:271` `:280` `:453`，理由均为「该用例校验 cv2(Laplacian 量纲 / deskew / binarize) 语义，需环境具备 opencv」 |
+| ③ 无 cv2 + 无 paddleocr | **51 passed / 4 skipped** | 与 ② 完全一致（同为 `:262` `:271` `:280` `:453`） |
+
+**必须记录的环境事实（影响矩阵口径）**：**组合 ② 与 ③ 等价，本质只有 2 个独立环境态（有/无 cv2），不是 3 个**。原因是 `paddleocr` 自身 `import cv2`：屏蔽 cv2 后 `importlib.import_module('paddleocr')` 直接 `ImportError: QA-shim: no module named 'cv2'` → `import_paddleocr()` 返回 `None` → 两个 `DEPENDENCY_MISSING` 用例在 ② 中**反而变为可执行并通过**（因此 ② 的 skip 只有 4 个而不是 6 个）。team-lead 自测的 53/2、51/4、51/4 与我独立实测**逐字一致**。
+
+#### 2. 「是否用 skip 掩盖失败」→ **否**（4 条依据，含 2 个非空转变异）
+
+| # | 核查点 | 结论与实测依据 |
+|---|--------|----------------|
+| a | 4 个 `@requires_cv2` 是否确属量纲不可比 | 其中 **3 个是**：`test_clear_image_scores_above_frozen_threshold`（断言 Laplacian 量纲 `score >= 100.0`）、`test_blurred_image_scores_below_frozen_threshold`（`< 100.0`）、`test_scorer_auto_uses_laplacian_when_cv2_available`（显式 `assert import_cv2() is not None` + `method == "laplacian"`）—— Pillow 量纲实测为 9.91/20.3 量级，硬套 100/20 阈值毫无意义。第 4 个见 (b) |
+| b | 第 4 个 `test_auto_clear_paddleocr_available_uses_paddleocr`（真值表 row1）是否也只能 skip | **不是「只能」，属可避免的覆盖损失**：我用注入 scorer 的独立脚本在**无 cv2** 环境复跑，`R1 auto/clear/avail→PARSED/paddleocr` **仍 PASS**（全部 11 组合仍全对）→ 路由 row1 本可在无 cv2 下断言。但该 skip 掩盖的只是「真实评分器在 Pillow 量纲下判不清」（即已登记的 D-2），**不是路由逻辑缺陷，也未造成假绿**（row1 在我的独立脚本中仍被覆盖）。建议后续把该用例改为注入 `scorer`（1 行级改法），两环境都能断言 |
+| c | `applied_ops == ()`（无 cv2 分支）是否恒真空转 | **否，有否决力**。变异 **M2**：把 `image_preprocess._unsupported_output` 的 `applied_ops=()` 改成 `applied_ops=tuple(ops)`（谎称已执行）→ 无 cv2 下 **3 failed**：`test_preprocess_applies_configured_ops`（`test_image_parser.py:336` `assert ('deskew','denoise','binarize') == ()`）、`test_preprocess_degrades_when_every_op_fails`（`:357` `('deskew','denoise') == ()`）、`test_preprocess_without_cv2_skips_all_ops`（`:376`）。还原 md5 `a57f413cc0043c32d9c4c07a6fb5e3b7`（=变异前）→ 3 passed |
+| d | `asset_files == []`（无 cv2 分支）是否恒真空转 | **否，有否决力**。变异 **M3**：让 `image_parser._collect_preprocess_assets` 在无资产时伪造一条索引 → 无 cv2 下 `test_assets_copied_and_indexed_in_metadata` **FAIL**（`test_image_parser.py:721` `assert [{'relative_p...': 'fake.png'}] == []`）。还原 md5 `927b9029776d4221e1113142936236de`（=变异前）→ 2 passed |
+| e | 有 cv2 路径（生产路径）的断言是否被削弱 | **没有**。逐行核对 diff：`test_preprocess_degrades_when_every_op_fails` / `test_preprocess_unreadable_source_is_marked_skipped` / `test_assets_copied_and_indexed_in_metadata` / `test_success_run_writes_spec_metadata_contract` 在 `if CV2_AVAILABLE` 分支内**保留了原断言原文**（`applied_ops==("deskew","denoise","binarize")`、`skipped_ops==()`、`warnings` 非空、`method=="laplacian"`、`asset_files` 逐条校验 64 位 sha256）；`test_auto_clear_paddleocr_missing_real_vlm_fallback` 只把 `pillow_blur_threshold` 改为 1.0（有 cv2 时 `blur_threshold=100` 不变、行为不变），属合理的前提隔离 |
+
+#### 3. A015-06 变异重做（确认测试改动**没有**削弱反假绿能力）
+
+拒绝分支经重新定位仍在 `image_parser.py:919`（实现零改动故行号未漂移，`:916-928` 原文已核对）。
+
+| 项目 | 结果 |
+|------|------|
+| 变异点 | `image_parser.py:919` `if ocr_result.mock:` → `if False and ocr_result.mock:` |
+| 变异前 md5 | `927b9029776d4221e1113142936236de` |
+| 变异态 md5 | `5da805e862c4fd6a344fa06f66d78dcd` |
+| 期望 | 目标用例必须 FAIL |
+| 实测（有 cv2） | **2 failed / 51 passed / 2 skipped**：`test_mock_result_is_never_persisted_with_forged_text`、`test_mock_paddleocr_result_is_also_rejected` |
+| 实测（无 cv2，额外加密） | **2 failed / 49 passed / 4 skipped** —— 同一对用例，说明两种环境都不依赖 cv2 才能捕获 |
+| 变异态实证 | 伪造文本确实落盘：`decision=PARSED / status=SUCCESS`、`parsed_text.md` 内容 = `'伪造的识别结果，不得落盘'` |
+| 还原 md5 | `927b9029776d4221e1113142936236de`（=变异前，`grep -n "^            if ocr_result.mock:"` 回到 `919`） |
+| 还原后实测 | 有 cv2 **53 passed / 2 skipped**；无 cv2 **51 passed / 4 skipped**（与 §1 逐字一致） |
+
+**结论：变异必 FAIL、还原必 PASS，两个环境都捕获，反假绿能力未被削弱。**
+
+#### 4. 全量回归（修复后复核）
+
+`4 failed / 437 passed / 2 skipped`（26.44s）。4 个 failed 仍是既有 Typer/Click `--help` 基线（`test_evidence_chain` / `test_markitdown_parser` / `test_parser_router` / `test_search_service`），首轮已在 015 父提交 `9b70ea0` 上复现同样 4 failed，非 015 引入。`backend/` 在复验全程 `git status` 为空（M2/M3/A015-06 三个变异均已逐字还原并通过 md5 复核）。
+
+#### 5. 遗留观察（非阻塞，不影响本次判定）
+
+- **O-1** 无 cv2 运行时，仓库用例不再覆盖真值表 row1（`auto·≥阈值·可用→paddleocr`），改由我的独立脚本覆盖；建议后续用 scorer 注入替代 `@requires_cv2`，使两环境都断言。
+- **O-2** `test_preprocess_degrades_when_every_op_fails` 的 `assert output.warnings` 被移入 cv2 分支，无 cv2 时「warnings 必须非空」不再被断言（覆盖收窄 1 条语义，非掩盖失败）。
+- **O-3** **D-2 新增实证**（仍待 016 用真实语料校准，不是 015 的修复项）：Pillow 量纲下「清晰图」得分跨阈不分 —— 900x300 单行文字实测 `9.91`、两行（含 uuid）实测 `20.3`，阈值 `20.0` 恰好落在两张**清晰图**之间。无 cv2 时我的 A015-09 场景 A 里两条「正常图」有一条被判低质 → `UNSUPPORTED_WITH_HINT`，即「清晰图能否被解析」在无 cv2 部署下是概率性行为。
+- **O-4** `test_auto_clear_paddleocr_missing_real_vlm_fallback` 用 `pillow_blur_threshold=1.0` 隔离前提：只影响 Pillow 量纲，有 cv2 时行为不变，判定为**合理的口径隔离**，不是掩盖 D-2。
+
+#### 6. 复验 verdict
+
+> **A015-12 → PASS**（三种环境组合全绿，10 个失败已消除；skip 均为环境性且经非空转变异验证）
+> **015 整体 → PASS WITH NOT_COVERED**（首轮 FAIL 的唯一阻塞项已关闭；NOT_COVERED 5 项不变，见上文 §5／N-1~N-5；D-2/D-3/D-4/D-6 仍为非阻塞遗留）
+
+复验中未修改任何 `backend/app/**`、`backend/tests/**`、`config/**`；三个变异（M2、M3、A015-06）均当场还原并通过 md5 复核；未执行 `git add` / `git commit`。
+
+---
+
+### QA 收尾确认（O-1/O-2 补丁，2026-10-17）
+
+**复验对象**：**工作区未提交改动**（`HEAD` 仍为 `a863d02`，`git status` 只显示 `M backend/tests/test_image_parser.py`），`git diff` 确认改动仅两处（`_clear_scorer` 新增 + `test_auto_clear_paddleocr_available_uses_paddleocr` 去 `@requires_cv2`；`test_preprocess_degrades_when_every_op_fails` 的 `assert output.warnings` 移到 if/else 之外）。
+**实现零改动复核**：`app/services/image_parser.py` md5 `927b9029776d4221e1113142936236de`、`app/adapters/image_preprocess.py` `a57f413cc0043c32d9c4c07a6fb5e3b7`、`app/adapters/vlm_adapter.py` `54078c850ac595aa5033a6dfad68f68d`、`config/image_parse.yaml` `8c19fd68ca0688fead91d59426fc8865` —— 与 O-1/O-2 补丁前**逐个一致**。
+
+#### 1. O-1 复核结论：**注入 scorer 只隔离评分，未绕开真实路由**（两点均有实证）
+
+| 核查 | 结论与实测 |
+|------|-----------|
+| ① 是否只替换「评分」这一步 | 是。注入点为 `_service(..., scorer=_clear_scorer)` → `ImageParserService(scorer=...)`；`_clear_scorer` 仅返回 `ImageQualityResult(999.0, "laplacian", "injected-clear")`，被 `_route_for()` 的 `self._score()` 消费（`image_parser.py:1084`），随后**照常**调用 `resolve_engine_route(requested, is_clear, quality_available, paddleocr_available, vlm_is_mock)`（`:1085`）并由 `_client_for()` 取真实 paddleocr 客户端。用例断言原样保留：`decision==PARSED`、`status==SUCCESS`、`engine_actual=="paddleocr"`、`parser_profile==image_paddleocr_v1`、**`len(ocr.calls)==1`**（`test_image_parser.py:476-480`）→ 引擎确被真实调用一次 |
+| ② 路由逻辑是否真参与（变异 M5） | 变异 `resolve_engine_route` 真值表 row1：`if paddleocr_available:` → `if False and paddleocr_available:` → 该用例 **有 cv2 与无 cv2 均 FAIL**（`test_image_parser.py:476` `assert 'UNSUPPORTED_WITH_HINT' == 'PARSED'`）；还原 md5 回 `927b9029…` → **双环境 PASS**。说明注入 scorer 无法掩盖路由回归 |
+
+→ **O-1 达成**：真值表 row1 在**无 cv2 环境也真实被断言**，不再靠 skip 损失覆盖。
+
+#### 2. O-2 复核结论：`assert output.warnings` 在无 cv2 路径**非恒真**（变异 M4）
+
+变异 `image_preprocess._unsupported_output` 的 `warnings=(warning,)` → `warnings=()`：
+
+| 环境 | 实测 |
+|------|------|
+| 无 cv2 | **1 failed**：`test_preprocess_degrades_when_every_op_fails` → `test_image_parser.py:375` `assert output.warnings` → `AssertionError: assert ()`（`PreprocessOutput(..., warnings=())`） |
+| 有 cv2 | **1 passed**（该用例的 warnings 来自 `_apply_op` 失败分支 `image_preprocess.py:198`，不是 `_unsupported_output`）→ 证明两分支的 warnings **各有真实来源**，共断言不是把一条恒真断言复制两份 |
+
+还原 md5 回 `a57f413cc0043c32d9c4c07a6fb5e3b7` → 无 cv2 三个预处理用例 **3 passed**。
+
+#### 3. 三组环境成绩与 skip 明细（独立实测，与 team-lead 自测一致）
+
+| 组合 | 成绩 | skip 明细 |
+|------|------|-----------|
+| ① 有 cv2 + 有 paddleocr | **53 passed / 2 skipped** | `:444 paddleocr installed; dependency-missing branch unreachable`、`:455 paddleocr installed` |
+| ② 无 cv2 | **52 passed / 3 skipped** | `:273` `:282` `:291`（理由「该用例校验 cv2(Laplacian 量纲 / deskew / binarize) 语义」）—— 比补丁前少 1 个 skip，减少的正是 row1 用例 |
+| ③ 无 cv2 + 无 paddleocr | **52 passed / 3 skipped** | 与 ② 完全一致 |
+
+（②③ 仍等价：`paddleocr` 自身 `import cv2`，屏蔽 cv2 后两个 `DEPENDENCY_MISSING` 用例反而可执行并通过；真正独立的环境态仍是 2 个。）
+
+#### 4. 全量回归（双环境）
+
+| 环境 | 成绩 | 说明 |
+|------|------|------|
+| 有 cv2 + 真实 DB | **4 failed / 437 passed / 2 skipped** | 4 个 failed 仍是既有 Typer/Click `--help` 基线（已在 015 父提交 `9b70ea0` 复现） |
+| 无 cv2（额外加密） | **4 failed / 436 passed / 3 skipped** | 失败集合完全相同（同 4 个 `--help` 用例）→ **015 在无 cv2 环境下也是零失败** |
+
+#### 5. 锚定指纹（本次收尾确认对应的工作区状态，**尚未入提交**）
+
+| 文件 | md5 | 行数 |
+|------|-----|------|
+| `backend/tests/test_image_parser.py` | **`9018b0f82c249b420bd1e32e8a731442`** | **1145** |
+| `backend/app/services/image_parser.py` | `927b9029776d4221e1113142936236de` | 1196 |
+| `backend/app/adapters/image_preprocess.py` | `a57f413cc0043c32d9c4c07a6fb5e3b7` | 225 |
+| `backend/app/adapters/image_quality.py` | `7686c0a204805d78f8cc302ec35704ab` | 161 |
+| `backend/app/adapters/ocr_paddle.py` | `3e74a4cb630afc67e0a4be476905a369` | 115 |
+| `backend/app/adapters/vlm_adapter.py` | `54078c850ac595aa5033a6dfad68f68d` | 109 |
+| `config/image_parse.yaml` | `8c19fd68ca0688fead91d59426fc8865` | 43 |
+
+> 提交后请以 `9018b0f8…` / 1145 行 作为 015 测试文件的收尾指纹（`git status` 当前为 `M backend/tests/test_image_parser.py` + `M specs/015-image-parse-pipeline/acceptance.md`）。
+
+#### 6. 最终 015 verdict
+
+> **PASS WITH NOT_COVERED**
+> —— A015-01~A015-12 全部 PASS；O-1（无 cv2 时 row1 覆盖损失）、O-2（`warnings` 共断言）均已关闭并留证。
+> —— NOT_COVERED 仍 5 项（N-1 真实图像语料 0 张 / N-2 真实 PaddleOCR 推理 / N-3 真实 VLM / N-4 CLI 级批内 FAILED exit 0 端到端 / N-5 GIF 首帧）。
+> —— 非阻塞遗留不变：**D-2**（Pillow 阈值 20.0 夹在两张「清晰图」的 9.91 与 20.3 之间，需 016 用真实语料重校准）、**D-3**（损坏字节在默认 mock VLM 下为 SKIPPED 而非 FAILED，规格措辞）、**D-4**（`source_vault_path` 为 vault 路径，中文原始名在 001 DB）、**D-6**（plan §8.6 GIF 首帧未实现）。
+
+本次收尾复验未修改 `backend/app/**`、`backend/tests/**`、`config/**`；两个变异（M5 路由 row1、M4 warnings）均当场还原并通过 md5 复核，`grep -rn "QA-MUTATION" backend/app/` 为 0 残留；未执行 `git add` / `git commit`。

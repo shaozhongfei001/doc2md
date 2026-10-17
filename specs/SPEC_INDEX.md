@@ -24,9 +24,9 @@
 | 011 | `specs/011-curated-project-assets/` | DONE | Curated project assets (rule/template MVP) |
 | 012 | `specs/012-search-service/` | DONE | Read-only MySQL FULLTEXT search service |
 | 013 | `specs/013-streamlit-admin/` | DONE | Read-only Streamlit admin UI |
-| 014 | `specs/014-pdf-content-sniffing/` | QA_PASS (Loop S1, 2026-10-16) | PDF 内容嗅探路由修复（PDF_SCANNED_OR_IMAGE 死枚举激活）；独立 QA verdict=PASS（ir-architect，A014-01~12 全 PASS，M1/M2 变异已恢复原 md5） |
-| 015 | `specs/015-image-parse-pipeline/` | IN_PROGRESS (Loop S1, 2026-10-16 起) | 独立图片解析管线（预处理→质量评分→PaddleOCR/VLM 路由）；实现 = pilot-014，规格收口 + 白名单校验 = spec-lead |
-| 016 | `specs/016-semantic-quality-metrics/` | ACTIVE (Loop S1) | 008 质检第五类语义检查（乱码率/置信度/表格/空正文） |
+| 014 | `specs/014-pdf-content-sniffing/` | QA_PASS (Loop S1, 2026-10-16) | PDF 内容嗅探路由修复（PDF_SCANNED_OR_IMAGE 死枚举激活）；独立 QA verdict=PASS（ir-architect，A014-01~12 全 PASS，M1/M2 变异已恢复原 md5）。**2026-10-17 增量**：`mineru_pdf_parser.py` 加失败可诊断性（`d8383fde…` → `a82a3653…`），已登记 acceptance §7 并经独立 QA 复核 **PASS WITH NOTES**（§7.1） |
+| 015 | `specs/015-image-parse-pipeline/` | **QA_PASS** (Loop S1, 2026-10-17) | 独立图片解析管线（预处理→质量评分→PaddleOCR/VLM 路由）；独立验收 qa-015：**A015-01~11 PASS、A015-12 修复后 PASS**，verdict = **PASS WITH NOT_COVERED**（5 项 NOT_COVERED：真实图像语料 0 张 / 真实 PaddleOCR / 真实 VLM / CLI 级单条 FAILED / GIF 首帧）；A015-06 两组变异均被捕获；收尾指纹 `test_image_parser.py` `9018b0f8…`/1145 行。遗留 D-2（Pillow 阈值区分度，清晰图 9.91 与 20.3 分居阈值 20.0 两侧）**移交 016 用真实语料重校准** |
+| 016 | `specs/016-semantic-quality-metrics/` | ACTIVE (Loop S1) | 008 质检第五类语义检查（乱码率/置信度/表格/空正文）；**承接 015 遗留 D-2**（Pillow 回退阈值校准） |
 | 017 | `specs/017-unified-document-ir/` | DESIGN REVIEWED (SPECS READY) | 统一文档中间表示（document_ir.json）；设计稿已评审，规格五件套齐备（spec/plan/tasks/test_cases/acceptance，OQ-1~7 全 DECIDED 2026-10-16），**实现排期在 S1 之后** |
 | 902 | `specs/902-test-dataset/` | DONE | Non-sensitive sample dataset + idempotent generator |
 

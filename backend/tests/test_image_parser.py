@@ -222,6 +222,17 @@ def _real_vlm(**kwargs: Any) -> FakeEngine:
     return FakeEngine(**kwargs)
 
 
+def _clear_scorer(_path: Path, _scorer: str) -> ImageQualityResult:
+    """注入「清晰」评分。
+
+    用于只校验**路由真值表**的用例：路由不该依赖真实评分器的量纲。缺 cv2 时真实评分会
+    回退到 Pillow 量纲，而 Pillow 阈值区分度不足（D-2：清晰图实测 9.91 / 20.3 夹在
+    阈值 20.0 两侧），若不隔离，「能否走 paddleocr」会变成概率性结果。
+    """
+
+    return ImageQualityResult(score=999.0, method="laplacian", detail="injected-clear")
+
+
 def _service(
     env: _Env,
     candidates: list[ParseCandidate],
@@ -357,10 +368,11 @@ def test_preprocess_degrades_when_every_op_fails(
     assert output.applied_ops == ()
     if CV2_AVAILABLE:
         assert set(output.skipped_ops) == {"deskew:error", "denoise:error"}
-        assert output.warnings
     else:
         # 无 cv2：在调用 _apply_op 之前即短路，理由必须是 opencv_missing（不得伪装成 op 失败）
         assert set(output.skipped_ops) == {"deskew:opencv_missing", "denoise:opencv_missing"}
+    # 两种路径都必须留下 warning：降级不得静默
+    assert output.warnings
     assert output.output_path.is_file()  # 回退到原图，管线继续
 
 
@@ -450,11 +462,14 @@ def test_paddleocr_client_recognize_without_dependency_raises() -> None:
 # ======================================================================================
 # D. 引擎路由真值表（plan §6）
 # ======================================================================================
-@requires_cv2
 def test_auto_clear_paddleocr_available_uses_paddleocr(env: _Env) -> None:
     candidate = _add_candidate(env)
     ocr = FakeEngine()
-    service = _service(env, [candidate], ocr=ocr, paddleocr_available=True)
+    # 真值表 row1：该用例校验的是「清晰 + paddleocr 可用 → 走 paddleocr」这条路由，
+    # 不是评分器本身，故注入清晰评分，使其在无 cv2 环境也能断言（否则只能 skip）。
+    service = _service(
+        env, [candidate], ocr=ocr, paddleocr_available=True, scorer=_clear_scorer
+    )
 
     item = _item(service.parse_many(engine=ENGINE_AUTO), candidate.sha256)
 
