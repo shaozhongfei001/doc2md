@@ -270,7 +270,11 @@ def load_storage_roots(app_yaml_path: str | Path) -> StorageRoots:
     * Relative values resolve against ``<config_dir>/..`` exactly like the legacy
       loader, so both readers agree on paths.
     * A missing ``storage`` section is a controlled error, not a ``KeyError``.
-    * The ``mysql`` section is never read, so no secret enters this process.
+    * The ``mysql`` section is never **retained, attached to the result or
+      serialised** by this function. Scope stated precisely (independent DB review):
+      ``yaml.safe_load`` parses the whole document, so the ``mysql`` subtree does
+      transit memory during the parse; what this reader guarantees is that no
+      credential outlives the call or becomes reachable through ``StorageRoots``.
     """
     path = Path(app_yaml_path)
     if not path.is_file():
