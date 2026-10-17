@@ -1,0 +1,21 @@
+# DOC2MD-19CAP 扩展层直接依赖（顶层输入）
+#
+# 纪律：
+# 1) 不修改 backend/requirements.txt（旧链路冻结）；新依赖只在本文件与
+#    requirements-extensions.lock 中登记，并在独立 worker/venv 中安装。
+# 2) 不向系统 Python 安装依赖。
+# 3) 生成方式（可重放）：
+#      pip-compile --generate-hashes --output-file requirements-extensions.lock \
+#                  requirements-extensions.in
+#    由 requirements-extensions.lock 头部记录实际解释器与 pip 版本。
+# 4) 引擎类重依赖（paddleocr / paddlepaddle / magic-pdf / VLM 客户端）**不在**此处：
+#    L04 起按 OI03 另行锁定 requirements-ocr-worker.in/.lock，避免污染本层。
+#
+# 版本对齐依据：backend/requirements.txt 已声明 pydantic==2.10.4、PyYAML==6.0.2；
+# 契约包 06_FRAMEWORKS.md 指定 python-docx 1.2.0、jsonpatch(RFC6902)、lxml。
+
+pydantic==2.10.4
+PyYAML==6.0.2
+python-docx==1.2.0
+lxml==4.9.3
+jsonpatch==1.32

@@ -1,0 +1,80 @@
+# DOC2MD-19CAP 扩展层配置示例（工程候选值，不是本行实测/验收值）
+#
+# 用法：
+#   cp config/doc2md_extensions.example.yaml config/doc2md_extensions.local.yaml
+#   python -m app.extensions.cli enhance --content-sha <sha> \
+#       --extension-config config/doc2md_extensions.local.yaml \
+#       --base-config config/app.yaml --dry-run --output-json
+#
+# 纪律：
+# 1) 本文件不得含真实地址、账号或密钥；引擎地址只允许引用受控配置文件。
+# 2) `extension_root` 不得指向 raw_vault/、parsed/、curated/、sql/ 或其父/子路径，
+#    也不得包含符号链接；解析结果由 app.extensions.io.paths 校验并拒绝越界。
+# 3) 未知顶层键会被拒绝（拼写错误不能静默关闭策略）。
+# 4) `numeric_chart_estimates_enabled` 与 `real_bank_cutover_enabled` 必须保持 false，
+#    开启需要单独的 Owner 决定（OI05 / DX-06 / OI08），不是改配置就能生效。
+schema_version: doc2md-extensions-config/1.0
+enabled: false
+extension_root: ./extension_data
+identity_mode: local_os_subject
+allow_external_network: false
+
+worker:
+  # 计划中的默认执行建议，非银行 SLA；L04 用受控样本校准后再锁定。
+  cpu_parallelism: 2
+  model_parallelism: 1
+  hard_timeout_seconds: 180
+  job_budget_seconds: 600
+  transport_retry_count: 2
+  roi_retry_rounds: 1
+  # 身份输入：normalizer 版本与 patchset 摘要来源。留空即视为未锁定，
+  # dry-run 会如实报告 PROFILE/PATCHSET 缺口，不会伪造 job_key。
+  normalizer_version: candidate-1.0
+  profile_ref: null
+  patchset_ref: null
+
+sources:
+  adapter: local_manifest
+  page_size: 100
+  access_lease_seconds: null  # 远程来源启用前必须填来源约定，不能无限复用授权
+
+engines:
+  structure:
+    enabled: false
+    provider: paddle_structure_v3
+    reference_paddleocr_version: 3.3.3
+    exact_environment_lock_ref: null   # 指向锁文件路径；未提供时 dry-run 报 ENGINE_LOCK_NOT_CONFIGURED
+    weights_hash_manifest_ref: null
+  chart:
+    enabled: false
+    provider: pp_chart2table
+    exact_environment_lock_ref: null
+  vision:
+    enabled: false
+    provider: approved_intranet_service
+    model_id: null
+    model_revision: null
+    endpoint_config_ref: null
+
+policy:
+  numeric_chart_estimates_enabled: false
+  require_verified_region_for_exact_visual_claim: true
+  require_manual_review_for_release: true
+  allow_bank_approved_label_with_local_identity: false
+
+thresholds:
+  # 初始工程建议，待 Gold 校准；不是本行验收指标。
+  geometry_roundtrip_epsilon_px: 1.0
+  token_to_cell_min_coverage: 0.8
+  token_to_cell_min_margin: 0.15
+
+limits:
+  max_file_bytes: 104857600
+  max_docx_expanded_bytes: 536870912
+  max_docx_members: 10000
+  max_grid_slots_per_table: 100000
+  max_image_pixels: 40000000
+
+release:
+  required_consumers: [local_candidate_export]
+  real_bank_cutover_enabled: false
