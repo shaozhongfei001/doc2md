@@ -221,3 +221,65 @@ DEV 已**冻结**（不再改 `word/**` 与 `test_word_*.py`），所有修复�
 
 `07da949` 提交信息写 `native_tables.py` 534 行、合计 2401 行；实测为 **588 行 / 合计 2455 行**。
 该数字来自 DEV 提交前快照。已采纳流程约束 P-4（数字一律现拼），并按 ADR 记录，不追改历史提交。
+
+---
+
+## 12. 最终验收结论：QA_PASS（qa-verifier 改判）
+
+`QA_VERDICT = PASS`。A5 按 `ADR-19CAP-01` 的 A1+A2 双断言重渲染，其余 B–F 结论不变
+（受审代码 md5 未漂移：`git diff --stat 07da949 HEAD -- 'word/**' 'test_word_*.py'` 为空）。
+
+| 组 | 独立结论 |
+|---|---|
+| A5-render | A1：`a783dc8..07da949` = **恰好 7 文件 / 2455 插入**，逐条命中白名单；A2：尾部 6 提交 = **5 纯文档 + 1 条 L01 归属的 docstring 修复** → **L03 DEV 越界 = 0** |
+| A1–A4 | 869/0/133、extensions 383、word 93、baseline `passed=true`（322 文件）——在 `07da949` 与当前 HEAD 两处测得一致 |
+| B | 4/4 PASS（守卫默认开启、口令零保留、`to_kwargs` 已删、`app.core` 零匹配） |
+| C | **5/5 CAPTURED**（尾列未解释洞 / `w:ins` 计入 FINAL / 压缩比 / grid 洞证据 / 原子 rename） |
+| D | 回填真实：grid=5→`n_cols=5`、grid=4→`4`，未缩表；省略证据 3↔3、4↔4 一一对应；反例正确拒绝 |
+| E | 无假成功（非 dry-run rc=3、dry-run 目录零变化、错误码 4/6 正确、hMerge 三态全拒） |
+| F | 3 条历史数字全复现（322 / 641+155 / 715+229） |
+
+### 12.1 `L03-GAP-04` 经决定性变异独立确认（比字面更精确）
+
+审查方未用 grep，而是**逐对删除** `final_view.py` 的 `STRUCTURAL_REVISIONS` 后跑全量：
+
+| 删除项 | 结果 | 判定 |
+|---|---|---|
+| `tcPr/cellMerge` | 3 failed | 已覆盖 |
+| `trPr/del` | 1 failed | 已覆盖 |
+| `tblPr/tblPrChange` | 1 failed | 已覆盖 |
+| `trPr/cellDel` | **383 passed** | **未测** |
+| `trPr/trPrChange` | **383 passed** | **未测** |
+| `tcPr/tcPrChange` | **383 passed** | **未测** |
+| `pPr/pPrChange` | **383 passed** | **未测** |
+
+→ 恰好 4 对未测，**无第五对漏网、也无"其实已覆盖"的反证**。
+补充（对我方结论有利的事实）：这 4 个分支**功能是好的**，手工注入后 `build_final_view` 均能报进
+`unresolved_structural` 并给出可复现 XML 路径（如 `…/w:tr[1]/w:trPr[1]/w:cellDel[1]`）。
+故 `L03-GAP-04` 是**覆盖率缺口、不是隐藏功能缺陷**，按"已声明缺口不算假成功"放行成立。
+
+`L03-DEBT-02` 抽验 2/5：`_children()`、`iter_revisions()` 全仓零调用点，且 `iter_revisions` 不在
+`__all__` → 与登记一致。
+
+### 12.2 审查方对 P-1 的观察（TL 采纳并修正）
+
+ADR §5 写 `QA_TARGET=6e8669e`，但此后我又提交了 `bfaac65`、`d6f59e3` 两条纯 docs → **P-1 在 ADR 落地后又被破了 2 次**。
+采纳其建议：**用 git tag 真正冻结**，而不是只在文书里写 sha。
+
+```bash
+git tag -a qa-target/L03 07da949 -m "L03 DEV code target (7 files, a783dc8..07da949)"
+git tag -a qa-pass/L03   <本记录提交>  -m "L03 QA_PASS by qa-verifier"
+```
+
+后续每个 Loop 一律：派发 QA 前打 `qa-target/<loop>`，QA PASS 后打 `qa-pass/<loop>`；**tag 之后不得再有提交**直到回报。
+
+### 12.3 仍未覆盖（如实转交下一阶段）
+
+| 项 | 状态 |
+|---|---|
+| `E_DOCX_REVISION_UNRESOLVED` 正/负例抽检 | 未做（仅确认码表=4），留 L05 |
+| `L02` 的 MB1–MB5 变异 | 未复跑（属自述），TL 已请 QA 抽 2 条，本轮未完成 |
+| MySQL 131 例 | 无凭据，`NOT_EXECUTED` |
+| `L03-DEBT-02` 其余 3 处可达性 | 未独立证明 |
+
+**结论：L03 验收闭环成立**（DEV 自测 → TL 验收 → 独立 QA PASS），可解锁 P2（L04）。
