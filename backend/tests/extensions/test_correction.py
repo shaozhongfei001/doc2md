@@ -36,8 +36,9 @@ def document_xml(body: str) -> bytes:
     ).encode("utf-8")
 
 
-def tc(text: str) -> str:
-    return f"<w:tc><w:p><w:r><w:t>{text}</w:t></w:r></w:p></w:tc>"
+def tc(text: str, *, ref: str | None = None) -> str:
+    reference = f'<w:r><w:footnoteReference w:id="{ref}"/></w:r>' if ref else ""
+    return f"<w:tc><w:p><w:r><w:t>{text}</w:t></w:r>{reference}</w:p></w:tc>"
 
 
 def tr(cells: str, *, header: bool = False) -> str:
@@ -55,10 +56,27 @@ TABLE_TWO = table(tr(tc("条目") + tc("数量"), header=True) + tr(tc("甲") + 
 TABLE_NO_HEADER = table(tr(tc("金额") + tc("比例")) + tr(tc("100") + tc("12%")))
 
 
-def build_docx(path: Path, *, body: str = TABLE_ONE + TABLE_TWO) -> Path:
+def build_docx(
+    path: Path,
+    *,
+    body: str = TABLE_ONE + TABLE_TWO,
+    footnotes: dict[str, str] | None = None,
+) -> Path:
     with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as archive:
         archive.writestr("[Content_Types].xml", CONTENT_TYPES)
         archive.writestr("word/document.xml", document_xml(body))
+        if footnotes:
+            entries = "".join(
+                f'<w:footnote w:id="{ref_id}"><w:p><w:r><w:t>{text}</w:t></w:r></w:p></w:footnote>'
+                for ref_id, text in footnotes.items()
+            )
+            archive.writestr(
+                "word/footnotes.xml",
+                (
+                    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+                    f'<w:footnotes xmlns:w="{W_NS}">{entries}</w:footnotes>'
+                ).encode("utf-8"),
+            )
     return path
 
 
@@ -435,3 +453,195 @@ def test_correcting_one_cell_writes_a_new_generation_and_leaves_the_old_one(tmp_
     new_bytes = [path.read_bytes() for path in reports if path.read_bytes() != old_bytes]
     assert new_bytes and b"150" in new_bytes[0]
     assert hashlib.sha256(doc.read_bytes()).hexdigest() == source_digest
+
+
+# ------------------------------------------------- L13: note re-binding (T1301)
+TABLE_NOTE_ONE = table(
+    tr(tc("金额") + tc("比例"), header=True) + tr(tc("100", ref="1") + tc("12%"))
+)
+TABLE_NOTE_TWO = table(
+    tr(tc("条目") + tc("数量"), header=True) + tr(tc("甲", ref="2") + tc("7"))
+)
+
+
+@pytest.fixture()
+def noted(tmp_path):
+    """Two tables, one footnote each: enough to prove re-binding is table-scoped."""
+    path = build_docx(
+        tmp_path / "noted.docx",
+        body=TABLE_NOTE_ONE + TABLE_NOTE_TWO,
+        footnotes={"1": "含外币折人民币。", "2": "含税。"},
+    )
+    return assemble_package(open_docx(path), generation_id="GEN-1"), path
+
+
+def candidates_of(path) -> list[dict]:
+    from app.extensions.word.notes_extract import read_notes
+
+    return read_notes(open_docx(path)).candidates()
+
+
+def test_supplying_candidates_rebinds_the_notes(noted):
+    assembly, path = noted
+    assert len(assembly.notes) == 2, "the fixture must actually carry two notes"
+
+    outcome = apply_correction(
+        assembly,
+        Correction(
+            object_id=first_data_cell_id(assembly),
+            path=("text",),
+            value="150",
+            reason="1601 原始凭证为 150",
+            review_decision_ref="RV-1",
+        ),
+        generation_id="GEN-2",
+        header_rows_by_table=header_rows(assembly),
+        note_candidates=candidates_of(path),
+    )
+
+    assert outcome.notes_rebound is True
+    assert outcome.assembly.stats["notes_rebound"] is True
+    assert len(outcome.assembly.notes) == 2
+    assert outcome.assembly.stats["notes"] == 2
+    codes = [issue.get("code") for issue in outcome.assembly.tables[0]["assembly_issues"]]
+    assert "NOTES_NOT_REBOUND" not in codes
+
+
+def test_without_candidates_the_flag_is_still_false(noted):
+    assembly, _ = noted
+    outcome = apply_correction(
+        assembly,
+        Correction(
+            object_id=first_data_cell_id(assembly),
+            path=("text",),
+            value="150",
+            reason="x",
+            review_decision_ref="RV-1",
+        ),
+        generation_id="GEN-2",
+        header_rows_by_table=header_rows(assembly),
+    )
+    assert outcome.notes_rebound is False
+    assert outcome.assembly.stats["notes_rebound"] is False
+    assert outcome.assembly.notes == list(assembly.notes)
+
+
+def test_rebinding_does_not_touch_the_other_table_s_notes(noted):
+    assembly, path = noted
+    before = [dict(note) for note in assembly.tables[1].get("notes") or ()]
+    outcome = apply_correction(
+        assembly,
+        Correction(
+            object_id=first_data_cell_id(assembly),
+            path=("text",),
+            value="150",
+            reason="x",
+            review_decision_ref="RV-1",
+        ),
+        generation_id="GEN-2",
+        header_rows_by_table=header_rows(assembly),
+        note_candidates=candidates_of(path),
+    )
+    after = [dict(note) for note in outcome.assembly.tables[1].get("notes") or ()]
+    assert after == before
+
+
+def test_flat_note_list_matches_table_order(noted):
+    assembly, path = noted
+    outcome = apply_correction(
+        assembly,
+        Correction(
+            object_id=first_data_cell_id(assembly),
+            path=("text",),
+            value="150",
+            reason="x",
+            review_decision_ref="RV-1",
+        ),
+        generation_id="GEN-2",
+        header_rows_by_table=header_rows(assembly),
+        note_candidates=candidates_of(path),
+    )
+    per_table = [len(table.get("notes") or ()) for table in outcome.assembly.tables]
+    assert sum(per_table) == len(outcome.assembly.notes)
+    assert per_table == [1, 1]
+
+
+def test_notes_dropped_on_rebind_are_visible(noted):
+    # An empty candidate list is a legitimate input (notes were deleted upstream),
+    # but the resulting loss must not be silent.
+    assembly, _ = noted
+    outcome = apply_correction(
+        assembly,
+        Correction(
+            object_id=first_data_cell_id(assembly),
+            path=("text",),
+            value="150",
+            reason="x",
+            review_decision_ref="RV-1",
+        ),
+        generation_id="GEN-2",
+        header_rows_by_table=header_rows(assembly),
+        note_candidates=[],
+    )
+    assert outcome.notes_rebound is True
+    issues = outcome.assembly.tables[0]["assembly_issues"]
+    dropped = [issue for issue in issues if issue.get("code") == "NOTES_DROPPED_ON_REBIND"]
+    assert dropped, "losing a footnote must produce an issue, not a quiet success"
+    assert dropped[0]["before"] and not dropped[0]["after"]
+
+
+def test_an_unattached_note_is_not_duplicated_across_tables(tmp_path):
+    """TL probe P5: one orphan footnote came out as *two* bound notes.
+
+    ``pipeline._note_candidates_for`` appends a target-less note to every table, so
+    a footnote referenced by no cell showed up once per table. The count said two
+    conditions where the document has one. Fixed here; the same defect remains in
+    ``pipeline`` and is registered as ``L13-FIND-01``.
+    """
+    path = build_docx(
+        tmp_path / "orphan.docx",
+        body=TABLE_ONE + TABLE_TWO,
+        footnotes={"9": "孤儿脚注。"},
+    )
+    assembly = assemble_package(open_docx(path), generation_id="GEN-1")
+
+    outcome = apply_correction(
+        assembly,
+        Correction(
+            object_id=first_data_cell_id(assembly),
+            path=("text",),
+            value="150",
+            reason="x",
+            review_decision_ref="RV-1",
+        ),
+        generation_id="GEN-2",
+        header_rows_by_table=header_rows(assembly),
+        note_candidates=candidates_of(path),
+    )
+
+    ids = [note["note_id"] for note in outcome.assembly.notes]
+    assert len(ids) == len(set(ids)), f"one footnote must not become several notes: {ids}"
+    assert len(ids) == 1
+
+
+def test_a_deduped_note_says_so_in_the_issues(tmp_path):
+    path = build_docx(
+        tmp_path / "orphan2.docx", body=TABLE_ONE + TABLE_TWO, footnotes={"9": "孤儿脚注。"}
+    )
+    assembly = assemble_package(open_docx(path), generation_id="GEN-1")
+    outcome = apply_correction(
+        assembly,
+        Correction(
+            object_id=first_data_cell_id(assembly),
+            path=("text",),
+            value="150",
+            reason="x",
+            review_decision_ref="RV-1",
+        ),
+        generation_id="GEN-2",
+        header_rows_by_table=header_rows(assembly),
+        note_candidates=candidates_of(path),
+    )
+    deduped = [issue for issue in outcome.assembly.issues if issue.get("code") == "DUPLICATE_NOTE_ID_DEDUPED"]
+    assert deduped, "collapsing a duplicate must be reported, not silent"
+    assert deduped[0]["note_id"] == "FN-9"

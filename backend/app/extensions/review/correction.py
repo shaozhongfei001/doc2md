@@ -33,7 +33,7 @@ from typing import Any, Mapping, Sequence
 from .. import ExtensionError
 from ..pipeline import AssemblyResult
 from ..render.review_packet import ReviewPacket, build_review_packet
-from ..tables.notes import link_cell_note_ids
+from ..tables.notes import NotesResult, bind_notes, link_cell_note_ids
 from ..tables.semantics import derive_header_paths
 from .dependencies import DependencyGraph, impact_of
 from .recompute import RebuildResult, recompute
@@ -171,6 +171,30 @@ def _find_table(tables: Sequence[Mapping[str, Any]], object_id: str) -> tuple[in
     )
 
 
+def _note_candidates_for(
+    table_index: int, table_id: str, candidates: Sequence[Mapping[str, Any]]
+) -> list[dict[str, Any]]:
+    """Which notes belong to this table.
+
+    A note with no target cannot be attributed to a table. Dropping it would turn a
+    missing footnote into an absent one, so it goes to the first table — and *only*
+    the first: ``pipeline._note_candidates_for`` appends it to every table, which
+    turns one orphan footnote into N notes and makes the same condition appear
+    twice in different packets. That defect is registered as ``L13-FIND-01`` and
+    fixed in ``pipeline`` next; here the count stays honest.
+    """
+    owned: list[dict[str, Any]] = []
+    for candidate in candidates:
+        targets = candidate.get("target_ids") or ()
+        if not targets:
+            if table_index == 0:
+                owned.append(dict(candidate))
+            continue
+        if any(str(target).startswith(f"{table_id}-") for target in targets):
+            owned.append(dict(candidate))
+    return owned
+
+
 def _evidence_candidates(table: Mapping[str, Any], notes: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
     ids: list[str] = []
     for evidence_id in table.get("omission_evidence_ids") or ():
@@ -189,8 +213,16 @@ def apply_correction(
     *,
     generation_id: str,
     header_rows_by_table: Mapping[str, Sequence[int]],
+    note_candidates: Sequence[Mapping[str, Any]] | None = None,
 ) -> CorrectionOutcome:
-    """Apply ``correction`` and rebuild only what depends on it."""
+    """Apply ``correction`` and rebuild only what depends on it.
+
+    ``note_candidates`` is the document-level list from ``read_notes(package).candidates()``.
+    Passing it makes the correction *re-bind* notes; omitting it keeps the old notes
+    and reports ``notes_rebound=False``. The list is an argument rather than
+    something this function parses itself so the module stays a pure function over
+    data it was given.
+    """
     if not isinstance(assembly, AssemblyResult):
         raise _input_error(f"assembly must be an AssemblyResult, got {type(assembly).__name__}")
     if not isinstance(correction, Correction):
@@ -284,15 +316,31 @@ def apply_correction(
     cell_semantics = list(rebuilt.get("cell_semantics") or [])
     semantics_issues = list(rebuilt.get("issues") or [])
 
-    table_notes = [dict(note) for note in table.get("notes") or ()]
+    previous_notes = [dict(note) for note in table.get("notes") or ()]
+    notes_rebound = note_candidates is not None
+    notes_issues: list[dict[str, Any]] = []
+    if notes_rebound:
+        owned = _note_candidates_for(table_index, table_id, note_candidates or ())
+        notes_result: NotesResult = (
+            bind_notes(table, owned) if owned else NotesResult(notes=[], issues=[])
+        )
+        table_notes = [dict(note) for note in notes_result.notes]
+        notes_issues = [issue.to_dict() for issue in notes_result.issues]
+    else:
+        table_notes = previous_notes
+
     linked = link_cell_note_ids(cell_semantics, table_notes)
 
     kept_issues = [
         issue
         for issue in table.get("assembly_issues") or ()
-        if issue.get("layer") not in ("semantics", "correction")
+        if issue.get("layer") not in ("semantics", "correction", "notes")
     ]
-    table_issues = kept_issues + [{"layer": "semantics", **issue} for issue in semantics_issues]
+    table_issues = (
+        kept_issues
+        + [{"layer": "semantics", **issue} for issue in semantics_issues]
+        + [{"layer": "notes", **issue} for issue in notes_issues]
+    )
     if table_notes and not rebuild.ok:
         table_issues.append(
             {
@@ -302,8 +350,22 @@ def apply_correction(
                 "moves or removes a note marker must re-run notes extraction",
             }
         )
+    if notes_rebound and len(table_notes) < len(previous_notes):
+        # Re-binding legitimately drops notes whose anchor no longer exists, but the
+        # drop must be visible: a footnote quietly disappearing from a financial table
+        # is worse than one flagged as unresolved.
+        table_issues.append(
+            {
+                "layer": "correction",
+                "code": "NOTES_DROPPED_ON_REBIND",
+                "message": "re-binding produced fewer notes than the table carried before",
+                "before": [note.get("note_id") for note in previous_notes],
+                "after": [note.get("note_id") for note in table_notes],
+            }
+        )
 
     table["cell_semantics"] = linked
+    table["notes"] = table_notes
     table["assembly_issues"] = table_issues
 
     packet: ReviewPacket = build_review_packet(
@@ -321,6 +383,40 @@ def apply_correction(
     else:  # pragma: no cover - assemble_package always emits one packet per table
         packets = [*packets, packet]
 
+    # Flatten in table order, exactly as ``assemble_package`` does, so a consumer
+    # that compares ``notes`` between generations sees the same ordering rule.
+    #
+    # Duplicates are collapsed **and reported**: ``pipeline`` currently copies an
+    # unattached footnote into every table, so one footnote arrives here twice with
+    # the same ``note_id``. Counting it twice would say the document has two
+    # conditions. Dropping it silently would hide the upstream defect, so the
+    # document-level list is de-duplicated while each table's own list is left
+    # byte-identical, and the collapse is recorded in ``issues``.
+    flat_notes: list[dict[str, Any]] = []
+    seen_note_ids: set[str] = set()
+    duplicate_ids: list[str] = []
+    for candidate in tables:
+        for note in candidate.get("notes") or ():
+            note_id = str(note.get("note_id"))
+            if note_id in seen_note_ids:
+                if note_id not in duplicate_ids:
+                    duplicate_ids.append(note_id)
+                continue
+            seen_note_ids.add(note_id)
+            flat_notes.append(dict(note))
+
+    issues = list(assembly.issues)
+    for note_id in duplicate_ids:
+        issues.append(
+            {
+                "layer": "correction",
+                "code": "DUPLICATE_NOTE_ID_DEDUPED",
+                "message": "the same note was bound to more than one table; the "
+                "document-level list keeps one entry per note id",
+                "note_id": note_id,
+            }
+        )
+
     stats = dict(assembly.stats)
     stats.update(
         {
@@ -330,7 +426,9 @@ def apply_correction(
                 {**correction.to_mapping(), "affects": [table_id]},
             ],
             "rebuild": rebuild.stats(),
-            "notes_rebound": False,
+            "notes_rebound": notes_rebound,
+            "notes": len(flat_notes),
+            "notes_publishable": sum(1 for note in flat_notes if note["state"] != "NEEDS_REVIEW"),
         }
     )
 
@@ -338,14 +436,14 @@ def apply_correction(
         generation_id=generation_id,
         source_sha256=assembly.source_sha256,
         tables=tables,
-        notes=list(assembly.notes),
+        notes=flat_notes,
         packets=packets,
-        issues=list(assembly.issues),
+        issues=issues,
         stats=stats,
     )
     return CorrectionOutcome(
         assembly=corrected,
         rebuild=rebuild,
         affected_tables=(table_id,),
-        notes_rebound=False,
+        notes_rebound=notes_rebound,
     )
