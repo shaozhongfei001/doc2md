@@ -156,7 +156,6 @@ def _structural_evidence_ids(table: Mapping[str, Any]) -> list[str]:
     values under validation, so trusting them would restore the original vacuity.
     """
     n_cols = table.get("n_cols")
-    n_rows = table.get("n_rows")
     if not isinstance(n_cols, int) or isinstance(n_cols, bool) or n_cols <= 0:
         return []
 
