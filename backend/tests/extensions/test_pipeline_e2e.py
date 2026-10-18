@@ -624,3 +624,30 @@ def test_a_merged_cell_does_not_look_like_a_hole(tmp_path):
 
     result = assemble_package(open_docx(_vmerge_docx(tmp_path)), generation_id="GEN-1")
     assert result.stats["tables"] == 1
+
+
+def test_recomputed_structure_matches_the_extractor_record(tmp_path):
+    """Cross-check two independent implementations.
+
+    ``extract_tables`` records omitted positions from ``w:trPr``; ``pipeline``
+    recomputes them from geometry. They must agree, otherwise one of them is wrong
+    about what counts as a hole — which is exactly how L25's two residuals arose.
+    """
+    import re
+
+    from app.extensions.pipeline import _structural_evidence_ids
+    from app.extensions.word.native_tables import extract_tables
+
+    fixtures = [_grid_after_docx(tmp_path), _empty_row_docx(tmp_path), _vmerge_docx(tmp_path)]
+    for path in fixtures:
+        table = extract_tables(open_docx(path))[0]
+        recomputed = {
+            (int(match.group(1)), int(match.group(2)))
+            for match in (
+                re.match(r"docx:grid(?:Before|After):(\d+):(\d+)$", item)
+                for item in _structural_evidence_ids(table)
+            )
+            if match
+        }
+        recorded = {(int(row), int(col)) for row, col in table["omitted_slots"]}
+        assert recomputed == recorded, f"{path.name}: recomputed {recomputed} vs recorded {recorded}"
