@@ -1,7 +1,9 @@
 # ADR-19CAP-02：三个上游生产者缺口与续作范围
 
-- 状态：**PROPOSED（待 Owner / TL 决定）**
+- 状态：**ACCEPTED（Owner 已决定方案 B）**
 - 提出：TL，2026-10-18
+- 决定：Owner，2026-10-18 —— 采纳**方案 B**（新开 L09「生产者接线」，独立白名单，不改已有签名）；
+  `QA-TEST-01` **单独立项**，不占用 018
 - 关联：`L05-GAP-01`、`L05-GAP-02`、`L05-GAP-03`（见 `evidence/L05/TL_ACCEPTANCE.md` 第 4 节）
 - 影响版本：会改变已封版 Loop 的白名单，属**契约版本修订**，不是路径调整
 
@@ -69,3 +71,37 @@ L05 的四个函数（表头路径、续表候选、脚注绑定、复核包）�
 | 新 Loop 的正式编号 | 项目现有规则（TL 不自行占用 018） |
 
 未获决定前，TL **不动任何 L03/L04 代码**，也不把这 3 项标为完成。
+
+---
+
+## 6. 决策记录（2026-10-18）
+
+| 项 | 决定 |
+|---|---|
+| 方案 | **B：新开 L09「生产者接线」** |
+| 白名单 | 仅新增文件 + 对应测试（见 `loop/proposals/doc2md-19cap/v1.0.1/L09_loop_addendum.json`） |
+| 不改 | L03/L04/L05 已有文件的公开签名；`parsed/`、`raw_vault/`、旧三件套、IR 1.0、`sql/**`、322 个受保护文件 |
+| `QA-TEST-01` | **单独立项**，不并入 L09，不占用 018 |
+| 018 编号 | 仍未占用；L09 为工作流内工作编号 |
+
+### 6.1 已核实的一个工具限制（必须记录）
+
+原包门禁 `check_loop_diff.py` **无法校验 L09**：
+
+```text
+$ check_loop_diff.py --repo . --loop L09 --base-commit <40位>
+check_loop_diff.py: error: unknown Loop
+```
+
+原因是该工具的 loop 列表来自 `PACK/loop/loop_contract.json`（`parents[1]` 指向 PACK），
+而 L09 不在原包 9 个 Loop 之内。
+
+**处置**：L09 的 A1 门禁用**等价自检**替代，并在证据里同时给出等价命令与其局限：
+
+```bash
+git -C <worktree> diff --name-only <entry>..HEAD   # 必须 ⊆ 白名单
+git -C <worktree> ls-files --others --exclude-standard  # 必须为空
+```
+
+同时明确写：**这不等于原包工具通过**，原包工具对 L09 根本不存在。
+不修改 PACK、不扩原白名单来"造出"一个 L09 通过。
