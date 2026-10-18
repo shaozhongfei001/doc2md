@@ -1109,3 +1109,42 @@ def test_the_stale_list_is_deterministic(assembly):
     first = _correct(assembly, candidate_evidence=candidates)
     second = _correct(assembly, candidate_evidence=candidates)
     assert first.stale_candidate_evidence == second.stale_candidate_evidence
+
+
+# ------------------------- L37: malformed candidate entries (qa-l22 M1/M6)
+def test_a_candidate_without_an_id_is_refused(assembly):
+    """M1 (qa-l22): the id check could be removed with all 1422 tests still green.
+
+    Every fixture went through ``_candidate()``, which always supplies an id — so the
+    guard never ran. Without it the caller's ``mark_stale`` list receives ``None``:
+    not a missing error, a wrong instruction.
+    """
+    cell_id = first_data_cell_id(assembly)
+    malformed = {"locator": {"cell_id": cell_id}, "observation_class": "SOURCE_CONTENT"}
+
+    with pytest.raises(ExtensionError) as excinfo:
+        _correct(assembly, candidate_evidence=[malformed])
+
+    assert excinfo.value.code == "E_INPUT_INVALID"
+    assert "candidate_evidence_id" in str(excinfo.value)
+
+
+def test_a_candidate_without_a_locator_is_reported_not_dropped(assembly):
+    """M6 (qa-l22): dropping the locator branch made evidence vanish silently.
+
+    The dangerous shape of that failure: the outcome looks exactly like "this
+    correction touches no evidence" while ``evidence_checked`` still claims the list
+    was examined. Neither validated or invalidated, just gone.
+    """
+    orphan = {"candidate_evidence_id": "EV-NOLOC", "observation_class": "SOURCE_CONTENT"}
+
+    outcome = _correct(assembly, candidate_evidence=[orphan])
+
+    assert outcome.unattributable_evidence == ("EV-NOLOC",)
+    assert outcome.stale_candidate_evidence == ()
+    assert outcome.evidence_checked is True
+    assert outcome.assembly.stats["candidate_evidence"] == {
+        "checked": True,
+        "stale": [],
+        "unattributable": ["EV-NOLOC"],
+    }
