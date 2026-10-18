@@ -1,0 +1,82 @@
+{
+  "schema_version": "1.0.0",
+  "contract_id": "DOC2MD-19CAP-V1.0.1-ADDENDUM-L38",
+  "state": "PLANNED",
+  "generated_on": "2026-10-18",
+  "parent_contract": {
+    "version": "DOC2MD-19CAP-V1.0",
+    "path": "../../v1.0.0/loop_contract.json",
+    "note": "纯追加，不修改 v1.0.0 任何 Loop。"
+  },
+  "authorization": {
+    "basis": "Owner D7：PaddleOCR 本机 GPU 部署且不替换模型；OI03 实测已拿到 3.7.0 真实响应（20 个 cell_box + 正确 HTML）。现有适配器 PADDLE_LOCK_NOTE 自述'未用真实响应确认'，且 cell_box_list 默认不绑定",
+    "evidence": "docs/proposals/doc2md-19cap/v1.0.0/evidence/OI03_PADDLE_DEPLOY.md",
+    "decided_by": "Owner",
+    "decided_on": "2026-10-18"
+  },
+  "scope_note": "把'按文档顺序绑定'升级为'用几何证明绑定'：box 与 HTML 网格必须逐格对齐，不一致就报 issue 且不绑定。禁止用列表下标当身份。",
+  "gates": {
+    "A1": {
+      "official_tool_available": false,
+      "reason": "L38 不在 PACK 的 loop 列表中",
+      "equivalent_check": [
+        "git diff --name-only loop-entry/L38..HEAD ⊆ allowed_new_or_scoped_paths",
+        "git ls-files --others --exclude-standard 为空"
+      ],
+      "honesty_rule": "不得改 PACK 或扩原白名单"
+    },
+    "B": "pytest 全量不得低于 1432 passed / 131 skipped",
+    "C": "check_baseline.py --allow-index-append 必须 passed=true",
+    "GAP": "四条判据：①真实 3.7.0 响应对齐成功且逐格 polygon 附加；②打乱 box 顺序必须报几何不一致且不绑定；③box 数量不符必须报 count mismatch；④默认 UNAVAILABLE 行为不变"
+  },
+  "loops": [
+    {
+      "loop_id": "L38",
+      "name": "Paddle 表格几何绑定",
+      "status": "PLANNED",
+      "depends_on": ["L04", "L28"],
+      "conditional_dependencies": [],
+      "requirement_ids": ["PI-F04-02"],
+      "allowed_new_or_scoped_paths": [
+        "backend/app/extensions/adapters/paddle_structure.py",
+        "backend/tests/extensions/test_layout_adapter.py",
+        "backend/tests/extensions/fixtures/ppstructure_v370_table_cjk.json"
+      ],
+      "scoped_existing_edits": [
+        "backend/app/extensions/adapters/paddle_structure.py",
+        "backend/tests/extensions/test_layout_adapter.py"
+      ],
+      "forbidden": [
+        "用列表下标当作 cell 身份（必须几何证明）",
+        "几何不一致时静默挑最近格",
+        "新增错误码（issue code 除外）"
+      ],
+      "tasks": [
+        {
+          "task_id": "T3801",
+          "description": "新增 cell_box_order='GEOMETRY'：由 box 的 x/y 聚类推网格，逐格比对后附加 polygon",
+          "output": "paddle_structure.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T3802",
+          "description": "不一致时输出 CELL_BOX_GEOMETRY_MISMATCH（含期望/实际/误差），不绑定",
+          "output": "paddle_structure.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T3803",
+          "description": "真实 3.7.0 响应入仓为 golden 夹具，四条判据各一条用例",
+          "output": "test_layout_adapter.py + fixtures",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        }
+      ],
+      "role_route": ["TL_PLAN", "DEV_SELF_TEST", "INDEPENDENT_QA", "TL_FINAL"],
+      "required_evidence": ["input_commit_and_hashes", "actual_commands_and_exit_codes", "test_case_id_results"],
+      "next_loop_permission": "四条判据同时成立才允许关闭。"
+    }
+  ]
+}
