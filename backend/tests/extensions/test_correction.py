@@ -930,3 +930,41 @@ def test_a_correction_refuses_an_omission_evidence_id_no_note_registered(assembl
 
     assert excinfo.value.code == "E_REVIEW_PACKET_INVALID"
     assert excinfo.value.detail["missing"] == ["EV-GHOST"]
+
+
+# ---------------- L25/T2504: a gridAfter table must survive the correction path too
+def test_a_grid_after_table_survives_a_correction(tmp_path):
+    """The same known-set rule runs in ``apply_correction``; L23's over-narrowing
+    refused these tables here as well (qa-l21 reproduced it on both paths)."""
+    body = (
+        "<w:tbl><w:tblGrid>"
+        '<w:gridCol w:w="2000"/><w:gridCol w:w="2000"/><w:gridCol w:w="2000"/>'
+        "</w:tblGrid>"
+        "<w:tr><w:trPr><w:tblHeader/></w:trPr>"
+        + tc("金额") + tc("比例") + tc("备注")
+        + "</w:tr>"
+        '<w:tr><w:trPr><w:gridAfter w:val="1"/></w:trPr>'
+        + tc("100") + tc("12%")
+        + "</w:tr></w:tbl>"
+    )
+    path = tmp_path / "gridafter_c.docx"
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("[Content_Types].xml", CONTENT_TYPES)
+        archive.writestr("word/document.xml", document_xml(body))
+
+    assembly = assemble_package(open_docx(path), generation_id="GEN-1")
+    outcome = apply_correction(
+        assembly,
+        Correction(
+            object_id=first_data_cell_id(assembly),
+            path=("text",),
+            value="150",
+            reason="x",
+            review_decision_ref="RV-1",
+        ),
+        generation_id="GEN-2",
+        header_rows_by_table=header_rows(assembly),
+    )
+
+    assert outcome.publishable is True
+    assert outcome.assembly.packets[0].payload["omission_evidence_ids"] == ["docx:gridAfter:1:2"]
