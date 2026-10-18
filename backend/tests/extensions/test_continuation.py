@@ -411,3 +411,30 @@ def test_a_non_blocking_reason_is_normalised_at_the_construction_site():
     assert hard.severity == "HARD"
     soft = ComparisonReason(dimension="x", code="C", message="m", blocking=True, severity="SOFT")
     assert soft.severity == "SOFT"
+
+
+@pytest.mark.parametrize(
+    "continued_caption",
+    ["Table 1 (continued)", "Table 1 (cont'd)", "Table 1 (cont.)", "Table 1 - Continued"],
+)
+def test_english_continuation_markers_are_the_same_label(continued_caption):
+    """L20-LIM-01: only Chinese markers were recognised, so an English report's
+    continuation page landed in CAPTION_CONFLICT/NEEDS_REVIEW — not a refusal, but a
+    review queue for something that is demonstrably one table."""
+    result = propose_continuation(
+        page("T1", caption="Table 1"),
+        page("T2", page_index=2, caption=continued_caption),
+        evidence_ids=EVIDENCE,
+    )
+    assert result.decision == "JOIN_CANDIDATE"
+    assert "CAPTION_CONFLICT" not in codes(result)
+
+
+def test_english_markers_are_case_insensitive_and_prefix_bounded():
+    from app.extensions.tables.continuation import _normalise_caption
+
+    assert _normalise_caption("Table 1 (CONTINUED)") == "Table1"
+    assert _normalise_caption("Table 1 (Cont'd)") == "Table1"
+    # A word that merely *starts* like the marker must survive.
+    assert _normalise_caption("Continental Bank") == "ContinentalBank"
+    assert _normalise_caption("Continued Care Holdings") == "CareHoldings"

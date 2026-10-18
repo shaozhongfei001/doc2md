@@ -140,6 +140,20 @@ class _Signature:
 _CAPTION_PREFIXES = ("续表", "续前", "（续）", "(续)")
 _CAPTION_SUFFIXES = ("（续）", "(续)")
 
+#: English reports mark continuations the same way; matching is case-insensitive
+#: because "(Continued)" / "(cont'd)" / "(CONT.)" all occur in practice.
+_CAPTION_EN_PREFIXES = ("(continued)", "(cont'd)", "(cont.)", "cont'd", "continued")
+_CAPTION_EN_SUFFIXES = (
+    "(continued)",
+    "(cont'd)",
+    "(cont.)",
+    "-continued",
+    "-cont'd",
+    "-cont.",
+    "continued",
+    "cont'd",
+)
+
 
 def _normalise_caption(value: str) -> str:
     """Drop a continuation marker so ``续表1 X`` and ``表1 X`` compare equal.
@@ -156,6 +170,17 @@ def _normalise_caption(value: str) -> str:
             break
     for marker in _CAPTION_SUFFIXES:
         if text.endswith(marker) and len(text) > len(marker):
+            text = text[: -len(marker)]
+            break
+
+    lowered = text.lower()
+    for marker in _CAPTION_EN_PREFIXES:
+        if lowered.startswith(marker) and len(text) > len(marker):
+            text = text[len(marker):]
+            break
+    lowered = text.lower()
+    for marker in _CAPTION_EN_SUFFIXES:
+        if lowered.endswith(marker) and len(text) > len(marker):
             text = text[: -len(marker)]
             break
     return text
