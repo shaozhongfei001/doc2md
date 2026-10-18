@@ -116,7 +116,8 @@ class _Signature:
 
 #: Word users mark the second half of a long table in a handful of ways. Only
 #: these *affixes* are stripped: doing ``replace("续", "")`` would mangle a caption
-#: such as "持续经营说明", which is content, not a marker.
+#: whose *content* starts with 续 (续贷/续期/续保/续存 — rollover, renewal), which is
+#: a business word, not a marker.
 #: A bare ``续`` is deliberately *not* stripped: ``续贷余额`` is a caption about
 #: rolled-over loans, not a continuation marker.
 _CAPTION_PREFIXES = ("续表", "续前", "（续）", "(续)")
@@ -348,14 +349,26 @@ def propose_continuation(
             if left == right:
                 continue
             if dimension == "caption" and _normalise_caption(left) == _normalise_caption(right):
+                # Whitespace and a continuation marker are different statements, so
+                # they get different codes: a log reader must be able to tell "same
+                # label with a marker" from "same label, differently spaced".
+                whitespace_only = "".join(left.split()) == "".join(right.split())
                 reasons.append(
                     ComparisonReason(
                         dimension="caption",
-                        code="CAPTION_CONTINUATION_MARKER",
-                        message=(
-                            f"{left!r} vs {right!r} differ only by a continuation marker; "
-                            "the labels name the same table"
+                        code=(
+                            "CAPTION_WHITESPACE_ONLY"
+                            if whitespace_only
+                            else "CAPTION_CONTINUATION_MARKER"
                         ),
+                        message=(
+                            f"{left!r} vs {right!r} differ only in whitespace; the labels "
+                            "name the same table"
+                            if whitespace_only
+                            else f"{left!r} vs {right!r} differ only by a continuation "
+                            "marker; the labels name the same table"
+                        ),
+                        severity="INFO",
                     )
                 )
                 continue
