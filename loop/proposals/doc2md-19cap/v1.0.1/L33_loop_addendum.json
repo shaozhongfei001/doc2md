@@ -1,0 +1,90 @@
+{
+  "schema_version": "1.0.0",
+  "contract_id": "DOC2MD-19CAP-V1.0.1-ADDENDUM-L33",
+  "state": "PLANNED",
+  "generated_on": "2026-10-18",
+  "parent_contract": {
+    "version": "DOC2MD-19CAP-V1.0",
+    "path": "../../v1.0.0/loop_contract.json",
+    "note": "纯追加，不修改 v1.0.0 任何 Loop。"
+  },
+  "authorization": {
+    "basis": "qa-l22 复验：A 方案下'未校准'只在拒绝时可见，放行时不可见；建议 B-lite（保留命名常量、参数无默认值）。另 FIND-C：strict 分支在门槛被删时以 IndexError 变红，形态不理想",
+    "evidence": "QA 复验报告（qa-l22，2026-10-18）第 5、6 节",
+    "decided_by": "Owner（长程任务，采纳 B-lite）",
+    "decided_on": "2026-10-18"
+  },
+  "scope_note": "把'接受未校准阈值'从隐式默认改成调用点显式动作；并让参数化用例在门槛消失时红在断言而非 IndexError。",
+  "gates": {
+    "A1": {
+      "official_tool_available": false,
+      "reason": "L33 不在 PACK 的 loop 列表中",
+      "equivalent_check": [
+        "git diff --name-only <entry>..HEAD ⊆ allowed_new_or_scoped_paths",
+        "git ls-files --others --exclude-standard 为空"
+      ],
+      "honesty_rule": "不得改 PACK 或扩原白名单"
+    },
+    "B": "pytest 全量不得低于 1413 passed / 131 skipped",
+    "C": "check_baseline.py --allow-index-append 必须 passed=true",
+    "GAP": "三条判据：①不传 confidence_threshold 必须 TypeError（无默认值）；②删掉门槛时 strict 分支红在断言而非 IndexError；③阈值语义不变（0.6 通过、0.599 降级）"
+  },
+  "loops": [
+    {
+      "loop_id": "L33",
+      "name": "阈值显式化（B-lite）与用例强度",
+      "status": "PLANNED",
+      "depends_on": ["L32"],
+      "conditional_dependencies": [],
+      "requirement_ids": ["PI-F05-01"],
+      "allowed_new_or_scoped_paths": [
+        "backend/app/extensions/vision/classify.py",
+        "backend/tests/extensions/test_vision_classify.py",
+        "docs/proposals/doc2md-19cap/v1.0.0/evidence/L32/TL_ACCEPTANCE.md"
+      ],
+      "scoped_existing_edits": [
+        "backend/app/extensions/vision/classify.py",
+        "backend/tests/extensions/test_vision_classify.py",
+        "docs/proposals/doc2md-19cap/v1.0.0/evidence/L32/TL_ACCEPTANCE.md"
+      ],
+      "forbidden": [
+        "给 confidence_threshold 留默认值",
+        "删除命名常量 DEFAULT_CONFIDENCE_THRESHOLD（它是唯一可 grep 的接受点）",
+        "把测试里的显式传参改成隐式 helper 默认（那会重新藏起接受动作）"
+      ],
+      "tasks": [
+        {
+          "task_id": "T3301",
+          "description": "route_regions 的 confidence_threshold 改为必填；测试逐处显式传 DEFAULT_CONFIDENCE_THRESHOLD",
+          "output": "classify.py、test_vision_classify.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T3302",
+          "description": "新增用例：不传阈值必须 TypeError（钉住无默认）",
+          "output": "test_vision_classify.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T3303",
+          "description": "strict 分支先断言 issue 存在再取 detail，消除 IndexError 形态",
+          "output": "test_vision_classify.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T3304",
+          "description": "L32 证据补 B-lite 说明并核对 1413",
+          "output": "evidence/L32/TL_ACCEPTANCE.md",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        }
+      ],
+      "role_route": ["TL_PLAN", "DEV_SELF_TEST", "INDEPENDENT_QA", "TL_FINAL"],
+      "required_evidence": ["input_commit_and_hashes", "actual_commands_and_exit_codes", "test_case_id_results"],
+      "next_loop_permission": "三条判据同时成立，才允许声明'未校准阈值不再能被隐式接受'。"
+    }
+  ]
+}
