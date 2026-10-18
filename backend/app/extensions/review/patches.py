@@ -34,6 +34,7 @@ from typing import Any, Callable, Mapping, Sequence
 import jsonpatch
 
 from .. import ExtensionError
+from .authority import ReviewerPolicy
 
 #: Paths a reviewer may change. Everything else is refused, including valid JSON.
 PATCHABLE_PATHS = (
@@ -162,7 +163,8 @@ def _check_context(
     expected_current_generation_id: Any,
     current_generation_id: Any,
     reviewer: Any,
-) -> None:
+    policy: ReviewerPolicy | None = None,
+) -> str:
     for name, value in (
         ("base_generation_id", base_generation_id),
         ("expected_current_generation_id", expected_current_generation_id),
@@ -177,11 +179,7 @@ def _check_context(
             expected=expected_current_generation_id,
             current=current_generation_id,
         )
-    if not isinstance(reviewer, str) or not reviewer.strip():
-        raise _input_error(
-            "reviewer must come from the local OS subject / bank auth context; it is never "
-            "read from the patch payload"
-        )
+    return (policy or ReviewerPolicy()).check(reviewer)
 
 
 def _apply(
@@ -216,6 +214,7 @@ def preview_patch(
     reason: str,
     evidence_ids: Sequence[str] = (),
     validators: Sequence[Callable[[dict[str, Any]], None]] = (),
+    policy: ReviewerPolicy | None = None,
 ) -> PatchPreview:
     """Apply on a copy and report; the input document is untouched."""
     if not isinstance(document, Mapping):
@@ -223,11 +222,12 @@ def preview_patch(
     if not isinstance(reason, str) or not reason.strip():
         raise _input_error("a review patch must record a reason")
     ops = _validate_patch(patch)
-    _check_context(
+    reviewer = _check_context(
         base_generation_id=base_generation_id,
         expected_current_generation_id=expected_current_generation_id,
         current_generation_id=current_generation_id,
         reviewer=reviewer,
+        policy=policy,
     )
     result, changed = _apply(document, ops, validators=validators)
     return PatchPreview(
@@ -236,7 +236,7 @@ def preview_patch(
         digest=patch_digest(ops),
         accepted=True,
         audit={
-            "reviewer": reviewer.strip(),
+            "reviewer": reviewer,
             "base_generation_id": base_generation_id,
             "target_generation_id": current_generation_id,
             "reason": reason.strip(),
@@ -257,6 +257,7 @@ def apply_patch(
     reason: str,
     evidence_ids: Sequence[str] = (),
     validators: Sequence[Callable[[dict[str, Any]], None]] = (),
+    policy: ReviewerPolicy | None = None,
 ) -> dict[str, Any]:
     """Return a **new** document; the input is never mutated.
 
@@ -274,4 +275,5 @@ def apply_patch(
         reason=reason,
         evidence_ids=evidence_ids,
         validators=validators,
+        policy=policy,
     ).document

@@ -18,6 +18,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from .. import ExtensionError
+from .authority import ReviewerPolicy
 
 OUTCOMES = ("LOCAL_OPERATOR", "BANK_APPROVED", "REJECTED")
 
@@ -58,6 +59,7 @@ def record_decision(
     reviewer: str,
     outcome: str,
     bank_auth_connected: bool = False,
+    policy: ReviewerPolicy | None = None,
 ) -> dict[str, Any]:
     """Record one review decision.
 
@@ -67,11 +69,7 @@ def record_decision(
     """
     if not isinstance(decision_id, str) or not decision_id.strip():
         raise _input_error(f"decision_id must be a non-empty string, got {decision_id!r}")
-    if not isinstance(reviewer, str) or not reviewer.strip():
-        raise _input_error(
-            "reviewer must come from the local OS subject / bank auth context, not from the "
-            "payload being reviewed"
-        )
+    reviewer = (policy or ReviewerPolicy()).check(reviewer)
     if outcome not in OUTCOMES:
         raise _input_error(f"outcome must be one of {list(OUTCOMES)}, got {outcome!r}")
     if not isinstance(bank_auth_connected, bool):
@@ -91,7 +89,7 @@ def record_decision(
         "base_generation_id": binding.base_generation_id,
         "access_revision": binding.access_revision,
         "scope": binding.scope,
-        "reviewer": reviewer.strip(),
+        "reviewer": reviewer,
         "outcome": outcome,
     }
 

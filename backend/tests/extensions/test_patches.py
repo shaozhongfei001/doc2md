@@ -190,3 +190,33 @@ def test_digest_is_stable_and_content_bound():
 def test_digest_is_carried_into_the_preview():
     result = preview()
     assert result.digest == patch_digest(patch())
+
+
+# ------------------------------- L39: the patch path uses the same policy
+def _preview(reviewer, *, policy=None):
+    from app.extensions.review.patches import preview_patch
+
+    return preview_patch(
+        {"tables": [{"cells": [{"text": "1"}]}]},
+        [{"op": "test", "path": "/tables/0/cells/0/text", "value": "1"},
+         {"op": "replace", "path": "/tables/0/cells/0/text", "value": "2"}],
+        base_generation_id="GEN-1",
+        expected_current_generation_id="GEN-1",
+        current_generation_id="GEN-1",
+        reviewer=reviewer,
+        reason="r",
+        policy=policy,
+    )
+
+
+def test_the_patch_path_keeps_allowing_a_placeholder_reviewer_by_default():
+    preview = _preview("---")
+    assert preview.audit["reviewer"] == "---"
+
+
+def test_the_patch_path_refuses_when_the_policy_is_restricted():
+    from app.extensions.review.authority import RESTRICTED, ReviewerPolicy
+
+    with pytest.raises(ExtensionError) as excinfo:
+        _preview("---", policy=ReviewerPolicy(mode=RESTRICTED, allowed=("E12345",)))
+    assert excinfo.value.code == "E_INPUT_INVALID"
