@@ -547,3 +547,80 @@ def test_evidence_candidates_admit_structure_and_reject_an_unfounded_claim(tmp_p
         for candidate in _evidence_candidates([], grid_table)
     ]
     assert grid_ids == ["docx:gridAfter:1:2"], "structural evidence must be recomputed"
+
+
+# ---------------- L26: structure evidence must be recomputed from slots, not cells
+def _empty_row_docx(tmp_path):
+    body = (
+        "<w:tbl><w:tblGrid>"
+        '<w:gridCol w:w="2000"/><w:gridCol w:w="2000"/><w:gridCol w:w="2000"/>'
+        "</w:tblGrid>"
+        "<w:tr><w:trPr><w:tblHeader/></w:trPr>"
+        + tc("金额") + tc("比例") + tc("备注")
+        + "</w:tr>"
+        '<w:tr><w:trPr><w:gridAfter w:val="3"/></w:trPr></w:tr>'
+        "</w:tbl>"
+    )
+    path = tmp_path / "emptyrow.docx"
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("[Content_Types].xml", CONTENT_TYPES)
+        archive.writestr("word/document.xml", document_xml(body))
+    return path
+
+
+def test_a_row_with_no_cells_still_assembles(tmp_path):
+    """qa-l21 residual 1: deriving holes from *missing cells* skipped empty rows.
+
+    ``extract_tables`` accepts this document (an empty row is expressed purely as
+    ``w:gridAfter``); refusing it at assembly made the two layers disagree.
+    """
+    result = assemble_package(open_docx(_empty_row_docx(tmp_path)), generation_id="GEN-1")
+
+    assert result.stats["tables"] == 1
+    assert result.packets[0].payload["omission_evidence_ids"] == [
+        "docx:gridAfter:1:0",
+        "docx:gridAfter:1:1",
+        "docx:gridAfter:1:2",
+    ]
+
+
+def _vmerge_docx(tmp_path):
+    def merged_cell(text, *, restart=False):
+        props = "<w:tcPr><w:vMerge w:val=\"restart\"/></w:tcPr>" if restart else (
+            "<w:tcPr><w:vMerge/></w:tcPr>"
+        )
+        return f"<w:tc>{props}<w:p><w:r><w:t>{text}</w:t></w:r></w:p></w:tc>"
+
+    body = (
+        "<w:tbl><w:tblGrid>"
+        '<w:gridCol w:w="2000"/><w:gridCol w:w="2000"/><w:gridCol w:w="2000"/>'
+        "</w:tblGrid>"
+        "<w:tr><w:trPr><w:tblHeader/></w:trPr>"
+        + tc("项目") + tc("金额") + tc("比例")
+        + "</w:tr>"
+        "<w:tr>" + merged_cell("甲", restart=True) + tc("100") + tc("12%") + "</w:tr>"
+        "<w:tr>" + merged_cell("") + tc("200") + tc("8%") + "</w:tr>"
+        "</w:tbl>"
+    )
+    path = tmp_path / "vmerge.docx"
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("[Content_Types].xml", CONTENT_TYPES)
+        archive.writestr("word/document.xml", document_xml(body))
+    return path
+
+
+def test_a_merged_cell_does_not_look_like_a_hole(tmp_path):
+    """qa-l21 residual 2: ``w:vMerge="continue"`` produces no cell, so deriving holes
+    from cells invented ``docx:gridBefore:2:0``. That made a *fabricated* id count as
+    "recomputable" — over-permissive, the opposite failure of residual 1.
+    """
+    from app.extensions.pipeline import _structural_evidence_ids
+    from app.extensions.word.native_tables import extract_tables
+
+    table = extract_tables(open_docx(_vmerge_docx(tmp_path)))[0]
+
+    assert _structural_evidence_ids(table) == []
+    assert table["omission_evidence_ids"] == []
+
+    result = assemble_package(open_docx(_vmerge_docx(tmp_path)), generation_id="GEN-1")
+    assert result.stats["tables"] == 1

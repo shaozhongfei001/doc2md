@@ -630,10 +630,12 @@ def test_the_remove_duplicate_defence_does_not_fire_in_normal_flow(tmp_path):
         tmp_path / "orphan3.docx", body=TABLE_ONE + TABLE_TWO, footnotes={"9": "孤儿脚注。"}
     )
     assembly = assemble_package(open_docx(path), generation_id="GEN-1")
+    # The second row carries no cells at all, so there is no data cell to correct.
+    header_cell = assembly.tables[0]["cells"][0]["cell_id"]
     outcome = apply_correction(
         assembly,
         Correction(
-            object_id=first_data_cell_id(assembly),
+            object_id=header_cell,
             path=("text",),
             value="150",
             reason="x",
@@ -953,10 +955,12 @@ def test_a_grid_after_table_survives_a_correction(tmp_path):
         archive.writestr("word/document.xml", document_xml(body))
 
     assembly = assemble_package(open_docx(path), generation_id="GEN-1")
+    # The second row carries no cells at all, so there is no data cell to correct.
+    header_cell = assembly.tables[0]["cells"][0]["cell_id"]
     outcome = apply_correction(
         assembly,
         Correction(
-            object_id=first_data_cell_id(assembly),
+            object_id=header_cell,
             path=("text",),
             value="150",
             reason="x",
@@ -968,3 +972,44 @@ def test_a_grid_after_table_survives_a_correction(tmp_path):
 
     assert outcome.publishable is True
     assert outcome.assembly.packets[0].payload["omission_evidence_ids"] == ["docx:gridAfter:1:2"]
+
+
+# -------------- L26/T2604: an empty-row table must survive the correction path too
+def test_an_empty_row_table_survives_a_correction(tmp_path):
+    body = (
+        "<w:tbl><w:tblGrid>"
+        '<w:gridCol w:w="2000"/><w:gridCol w:w="2000"/><w:gridCol w:w="2000"/>'
+        "</w:tblGrid>"
+        "<w:tr><w:trPr><w:tblHeader/></w:trPr>"
+        + tc("金额") + tc("比例") + tc("备注")
+        + "</w:tr>"
+        '<w:tr><w:trPr><w:gridAfter w:val="3"/></w:trPr></w:tr>'
+        "</w:tbl>"
+    )
+    path = tmp_path / "emptyrow_c.docx"
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("[Content_Types].xml", CONTENT_TYPES)
+        archive.writestr("word/document.xml", document_xml(body))
+
+    assembly = assemble_package(open_docx(path), generation_id="GEN-1")
+    # The second row carries no cells at all, so there is no data cell to correct.
+    header_cell = assembly.tables[0]["cells"][0]["cell_id"]
+    outcome = apply_correction(
+        assembly,
+        Correction(
+            object_id=header_cell,
+            path=("text",),
+            value="150",
+            reason="x",
+            review_decision_ref="RV-1",
+        ),
+        generation_id="GEN-2",
+        header_rows_by_table=header_rows(assembly),
+    )
+
+    assert outcome.publishable is True
+    assert outcome.assembly.packets[0].payload["omission_evidence_ids"] == [
+        "docx:gridAfter:1:0",
+        "docx:gridAfter:1:1",
+        "docx:gridAfter:1:2",
+    ]

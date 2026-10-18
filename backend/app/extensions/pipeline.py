@@ -136,23 +136,55 @@ def _note_candidates_for(
 
 
 def _structural_evidence_ids(table: Mapping[str, Any]) -> list[str]:
-    """Evidence ids the table's own geometry justifies, recomputed from cells.
+    """Evidence ids the table's geometry justifies, recomputed from ``slots``.
 
     ``native_tables`` emits ``docx:gridBefore|gridAfter:<row>:<col>`` for columns a
     row leaves empty, because Word writes ``w:trPr/w:gridAfter`` only for those.
-    Recomputing them here — instead of trusting ``omission_evidence_ids`` — is the
-    whole point: the declared list is what gets validated, so it cannot also be the
-    source of what counts as known.
 
-    A column with no cell in its row is a hole. Holes before the first covered
-    column are ``gridBefore`` holes, holes after the last are ``gridAfter``; a hole
-    in the middle has no Word justification and is simply not produced here (the
-    extractor rejects those documents before this point).
+    The recomputation is based on ``slots`` — the anchor-id matrix the extractor
+    builds from the grid — and **not** on ``cells``. Deriving holes from "a cell is
+    missing" was wrong in both directions (qa-l21):
+
+    * an empty row has no cells at all, so it looked like n_cols holes but was
+      skipped entirely → a legal document was refused;
+    * ``w:vMerge="continue"`` produces no cell (the anchor carries ``rowspan``), so
+      the covered column looked like a hole → a phantom id became "recomputable".
+
+    ``slots[r][c] is None`` means "no cell claims this position", which is exactly
+    a hole; a merged position points at its anchor and is therefore covered.
+    ``omitted_slots`` / ``omission_evidence_ids`` are **not** used: they are the
+    values under validation, so trusting them would restore the original vacuity.
     """
     n_cols = table.get("n_cols")
+    n_rows = table.get("n_rows")
     if not isinstance(n_cols, int) or isinstance(n_cols, bool) or n_cols <= 0:
         return []
 
+    slots = table.get("slots")
+    if isinstance(slots, Sequence) and slots:
+        ids: list[str] = []
+        for row_index, row in enumerate(slots):
+            if not isinstance(row, Sequence):
+                continue
+            holes = [col for col in range(n_cols) if col >= len(row) or row[col] is None]
+            if not holes:
+                continue
+            covered = [col for col in range(n_cols) if col < len(row) and row[col] is not None]
+            if not covered:
+                # An empty row: Word's gridBefore/After applies to the whole width,
+                # and the extractor records all of it as gridAfter.
+                ids.extend(f"docx:gridAfter:{row_index}:{col}" for col in holes)
+                continue
+            low, high = min(covered), max(covered)
+            for col in holes:
+                prefix = "gridBefore" if col < low else "gridAfter"
+                ids.append(f"docx:{prefix}:{row_index}:{col}")
+        return ids
+
+    # Degraded path: a table assembled without ``slots`` (hand-built payloads in
+    # tests). Cannot see merges or empty rows, so it is only a best effort.
+    if not isinstance(n_rows, int) or n_rows <= 0:
+        return []
     covered_by_row: dict[int, list[int]] = {}
     for cell in table.get("cells") or ():
         if not isinstance(cell, Mapping):
@@ -162,21 +194,26 @@ def _structural_evidence_ids(table: Mapping[str, Any]) -> list[str]:
         if not isinstance(row, int) or not isinstance(col, int):
             continue
         span = cell.get("colspan", 1)
+        row_span = cell.get("rowspan", 1)
         if not isinstance(span, int) or span <= 0:
             span = 1
-        covered_by_row.setdefault(row, []).extend(range(col, col + span))
+        if not isinstance(row_span, int) or row_span <= 0:
+            row_span = 1
+        for offset in range(row_span):
+            covered_by_row.setdefault(row + offset, []).extend(range(col, col + span))
 
-    ids: list[str] = []
-    for row in sorted(covered_by_row):
-        covered = covered_by_row[row]
+    ids = []
+    for row_index in range(n_rows):
+        covered = covered_by_row.get(row_index)
         if not covered:
+            ids.extend(f"docx:gridAfter:{row_index}:{col}" for col in range(n_cols))
             continue
         low, high = min(covered), max(covered)
         for col in range(n_cols):
             if col in covered:
                 continue
             prefix = "gridBefore" if col < low else "gridAfter"
-            ids.append(f"docx:{prefix}:{row}:{col}")
+            ids.append(f"docx:{prefix}:{row_index}:{col}")
     return ids
 
 
