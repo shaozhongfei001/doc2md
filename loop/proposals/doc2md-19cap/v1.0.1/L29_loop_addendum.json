@@ -1,0 +1,74 @@
+{
+  "schema_version": "1.0.0",
+  "contract_id": "DOC2MD-19CAP-V1.0.1-ADDENDUM-L29",
+  "state": "PLANNED",
+  "generated_on": "2026-10-18",
+  "parent_contract": {
+    "version": "DOC2MD-19CAP-V1.0",
+    "path": "../../v1.0.0/loop_contract.json",
+    "note": "纯追加，不修改 v1.0.0 任何 Loop。"
+  },
+  "authorization": {
+    "basis": "L20-LIM-01：续页词缀只覆盖中文四种，(cont'd)/(continued)/(cont.) 未覆盖，英文文档的续页表会被判 CAPTION_CONFLICT（NEEDS_REVIEW，虽不误拒但徒增复核）",
+    "evidence": "evidence/L20/TL_ACCEPTANCE.md 第 6 节 L20-LIM-01",
+    "decided_by": "Owner（长程任务）",
+    "decided_on": "2026-10-18"
+  },
+  "scope_note": "补英文续页词缀，大小写不敏感；仍只剥词缀，不做全局替换，避免误伤以 continued 开头的真实表名之外的内容。",
+  "gates": {
+    "A1": {
+      "official_tool_available": false,
+      "reason": "L29 不在 PACK 的 loop 列表中",
+      "equivalent_check": [
+        "git diff --name-only <entry>..HEAD ⊆ allowed_new_or_scoped_paths",
+        "git ls-files --others --exclude-standard 为空"
+      ],
+      "honesty_rule": "不得改 PACK 或扩原白名单"
+    },
+    "B": "pytest 全量不得低于 1396 passed / 131 skipped",
+    "C": "check_baseline.py --allow-index-append 必须 passed=true",
+    "GAP": "判据：Table 1 / Table 1 (continued) / Table 1 (cont'd) / Table 1 (cont.) 判 JOIN_CANDIDATE；不同英文表名仍 NEEDS_REVIEW；中文行为不变"
+  },
+  "loops": [
+    {
+      "loop_id": "L29",
+      "name": "英文续页词缀",
+      "status": "PLANNED",
+      "depends_on": ["L20"],
+      "conditional_dependencies": [],
+      "requirement_ids": ["PI-F04-07"],
+      "allowed_new_or_scoped_paths": [
+        "backend/app/extensions/tables/continuation.py",
+        "backend/tests/extensions/test_continuation.py"
+      ],
+      "scoped_existing_edits": [
+        "backend/app/extensions/tables/continuation.py",
+        "backend/tests/extensions/test_continuation.py"
+      ],
+      "forbidden": [
+        "大小写敏感匹配（英文词缀大小写混用极常见）",
+        "全局 replace 词缀（会误伤以 continued 开头的内容）",
+        "改变中文词缀行为"
+      ],
+      "tasks": [
+        {
+          "task_id": "T2901",
+          "description": "_normalise_caption 支持英文词缀 (cont'd)/(cont.)/(continued)/cont'd/continued，大小写不敏感，只剥前后缀",
+          "output": "continuation.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T2902",
+          "description": "用例：四种英文续页写法 -> JOIN_CANDIDATE；不同英文表名 -> NEEDS_REVIEW；中文用例不回归",
+          "output": "test_continuation.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        }
+      ],
+      "role_route": ["TL_PLAN", "DEV_SELF_TEST", "INDEPENDENT_QA", "TL_FINAL"],
+      "required_evidence": ["input_commit_and_hashes", "actual_commands_and_exit_codes", "test_case_id_results"],
+      "next_loop_permission": "四条英文写法全部为候选、且不同表名仍可复核，才允许关闭 L20-LIM-01。"
+    }
+  ]
+}
