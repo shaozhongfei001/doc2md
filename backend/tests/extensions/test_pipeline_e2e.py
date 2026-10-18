@@ -19,8 +19,15 @@ import pytest
 from app.extensions import ExtensionError
 from app.extensions.io.artifact_store import ArtifactStore
 from app.extensions.io.paths import Roots
-from app.extensions.pipeline import MISSING_CONTRACT_FIELDS, assemble_package, write_assembly
+from app.extensions.pipeline import (
+    MISSING_CONTRACT_FIELDS,
+    _evidence_candidates,
+    assemble_package,
+    write_assembly,
+)
 from app.extensions.runner import WriteGuard
+from app.extensions.word.native_tables import extract_tables
+from app.extensions.word.notes_extract import read_notes
 from app.extensions.word.package import open_docx
 
 W_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
@@ -406,9 +413,20 @@ def test_two_references_in_one_cell_do_not_duplicate_the_cell_evidence(tmp_path)
             footnotes_xml(note("1", "甲。") + note("2", "乙。")),
         )
 
-    result = assemble_package(open_docx(path), generation_id="GEN-1")
+    # Assert on the candidate list *before* assembling: under the de-duplication
+    # mutation the packet layer would refuse the document first, so a post-assembly
+    # assertion would never run and the test would go red on the call line instead
+    # of on the claim it is making.
+    package = open_docx(path)
+    table_payload = extract_tables(package)[0]
+    candidates = _evidence_candidates(table_payload, read_notes(package).candidates())
+    ids = [candidate["candidate_evidence_id"] for candidate in candidates]
+    cell_evidence = [item for item in ids if item.startswith("docx:footnoteReference:")]
+    assert len(cell_evidence) == 1, f"cell evidence must appear once, got {cell_evidence}"
+
+    result = assemble_package(package, generation_id="GEN-1")
 
     assert len(result.notes) == 2, "both references must still bind"
     evidence_ids = result.packets[0].payload["evidence_ids"]
     cell_ids = [item for item in evidence_ids if item.startswith("docx:footnoteReference:")]
-    assert len(cell_ids) == 1, f"cell evidence must appear once, got {cell_ids}"
+    assert len(cell_ids) == 1, f"packet evidence must appear once, got {cell_ids}"

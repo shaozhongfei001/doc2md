@@ -234,5 +234,14 @@ def test_an_unresolved_note_carries_its_own_evidence(tmp_path):
 
     table_payload = extract_tables(package)[0]
     bound = bind_notes(table_payload, [candidate])
-    codes = [issue.get("code") for issue in bound.issues]
-    assert "MISSING_EVIDENCE" not in codes, "an unresolved note must not lose its provenance"
+    assert "MISSING_EVIDENCE" not in [issue.code for issue in bound.issues], (
+        "an unresolved note must not lose its provenance"
+    )
+
+    # Control case: without it, "no MISSING_EVIDENCE" is vacuous — the detector
+    # could be broken and this test would still pass. ``NotesResult.issues`` holds
+    # ``NoteIssue`` objects, not dicts, so the first version of this line used
+    # ``.get`` and would have raised AttributeError the moment it was reached.
+    stripped = dict(candidate, evidence_ids=[])
+    reported = bind_notes(table_payload, [stripped])
+    assert "MISSING_EVIDENCE" in [issue.code for issue in reported.issues]
