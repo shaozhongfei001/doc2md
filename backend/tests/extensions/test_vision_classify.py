@@ -9,7 +9,7 @@ from __future__ import annotations
 import pytest
 
 from app.extensions import ExtensionError
-from app.extensions.vision.classify import route_regions
+from app.extensions.vision.classify import DEFAULT_CONFIDENCE_THRESHOLD, route_regions
 
 
 def region(region_id: str = "R1", polygon=None, **overrides) -> dict:
@@ -32,19 +32,19 @@ def codes(result) -> list[str]:
 
 
 def test_framework_table_routes_back_to_the_table_adapter():
-    result = route_regions([region(engine_label="table")])
+    result = route_regions([region(engine_label="table")], confidence_threshold=DEFAULT_CONFIDENCE_THRESHOLD)
     assert result.visuals[0]["classification"] == "TABLE"
     assert result.routes[0]["route"] == "TABLE_ADAPTER"
     assert result.visuals[0]["classification_state"] == "CANDIDATE"
 
 
 def test_framework_chart_routes_to_the_chart_adapter():
-    result = route_regions([region(engine_label="chart")])
+    result = route_regions([region(engine_label="chart")], confidence_threshold=DEFAULT_CONFIDENCE_THRESHOLD)
     assert result.routes[0]["route"] == "CHART_ADAPTER"
 
 
 def test_framework_image_never_proves_flow():
-    result = route_regions([region(engine_label="image")])
+    result = route_regions([region(engine_label="image")], confidence_threshold=DEFAULT_CONFIDENCE_THRESHOLD)
     visual = result.visuals[0]
     assert visual["classification"] == "UNKNOWN"
     assert visual["classification_state"] == "NEEDS_REVIEW"
@@ -56,6 +56,7 @@ def test_vlm_may_propose_flow_but_only_as_a_candidate():
     result = route_regions(
         [region(engine_label="image")],
         vlm_candidates={"R1": {"classification": "FLOW"}},
+        confidence_threshold=DEFAULT_CONFIDENCE_THRESHOLD,
     )
     visual = result.visuals[0]
     assert visual["classification"] == "FLOW"
@@ -67,6 +68,7 @@ def test_vlm_self_reported_confidence_is_not_written_as_engine_confidence():
     result = route_regions(
         [region(engine_label="image", engine_confidence=None)],
         vlm_candidates={"R1": {"classification": "FLOW", "confidence": 0.99}},
+        confidence_threshold=DEFAULT_CONFIDENCE_THRESHOLD,
     )
     assert result.visuals[0]["engine_confidence"] is None
     # L32: the model's 0.99 is not a measured probability, so it cannot lift the
@@ -75,14 +77,13 @@ def test_vlm_self_reported_confidence_is_not_written_as_engine_confidence():
 
 
 def test_engine_confidence_is_passed_through():
-    result = route_regions([region(engine_label="table", engine_confidence=0.63)])
+    result = route_regions([region(engine_label="table", engine_confidence=0.63)], confidence_threshold=DEFAULT_CONFIDENCE_THRESHOLD)
     assert result.visuals[0]["engine_confidence"] == 0.63
 
 
 def test_decorative_without_a_reason_needs_review():
     result = route_regions(
-        [region()], vlm_candidates={"R1": {"classification": "DECORATIVE"}}
-    )
+        [region()], vlm_candidates={"R1": {"classification": "DECORATIVE"}}, confidence_threshold=DEFAULT_CONFIDENCE_THRESHOLD)
     assert result.visuals[0]["classification_state"] == "NEEDS_REVIEW"
     assert "DECORATIVE_WITHOUT_REASON" in codes(result)
 
@@ -92,6 +93,7 @@ def test_decorative_keeps_the_asset_and_the_reason():
         [region()],
         vlm_candidates={"R1": {"classification": "DECORATIVE"}},
         decorative_reasons={"R1": "页眉装饰线"},
+        confidence_threshold=DEFAULT_CONFIDENCE_THRESHOLD,
     )
     route = result.routes[0]
     assert route["route"] == "FILTERED"
@@ -102,7 +104,7 @@ def test_decorative_keeps_the_asset_and_the_reason():
 def test_overlapping_regions_get_exactly_one_fact_owner():
     outer = [[0, 0], [200, 0], [200, 200], [0, 200]]
     inner = [[10, 10], [90, 10], [90, 90], [10, 90]]
-    result = route_regions([region("BIG", outer), region("SMALL", inner)])
+    result = route_regions([region("BIG", outer), region("SMALL", inner)], confidence_threshold=DEFAULT_CONFIDENCE_THRESHOLD)
     owners = {route["region_id"]: route["fact_owner"] for route in result.routes}
     assert owners == {"BIG": False, "SMALL": True}
     parent = {route["region_id"]: route["parent_region_id"] for route in result.routes}
@@ -113,25 +115,25 @@ def test_overlapping_regions_get_exactly_one_fact_owner():
 def test_equal_area_overlap_leaves_the_group_without_an_owner():
     left = [[0, 0], [100, 0], [100, 100], [0, 100]]
     right = [[0, 0], [100, 0], [100, 100], [0, 100]]
-    result = route_regions([region("A", left), region("B", right)])
+    result = route_regions([region("A", left), region("B", right)], confidence_threshold=DEFAULT_CONFIDENCE_THRESHOLD)
     assert all(route["fact_owner"] is False for route in result.routes)
     assert "OVERLAP_OWNER_UNDECIDED" in codes(result)
 
 
 def test_region_without_any_evidence_stays_unknown():
-    result = route_regions([region(engine_label=None)])
+    result = route_regions([region(engine_label=None)], confidence_threshold=DEFAULT_CONFIDENCE_THRESHOLD)
     assert result.visuals[0]["classification"] == "UNKNOWN"
     assert result.visuals[0]["classification_state"] == "NEEDS_REVIEW"
 
 
 def test_review_decision_confirms_a_candidate():
-    result = route_regions([region(engine_label="table")], review_decisions={"R1": "RV-9"})
+    result = route_regions([region(engine_label="table")], review_decisions={"R1": "RV-9"}, confidence_threshold=DEFAULT_CONFIDENCE_THRESHOLD)
     assert result.visuals[0]["classification_state"] == "CONFIRMED"
     assert result.visuals[0]["review_decision_ref"] == "RV-9"
 
 
 def test_review_decision_cannot_confirm_an_unknown_region():
-    result = route_regions([region(engine_label=None)], review_decisions={"R1": "RV-9"})
+    result = route_regions([region(engine_label=None)], review_decisions={"R1": "RV-9"}, confidence_threshold=DEFAULT_CONFIDENCE_THRESHOLD)
     assert result.visuals[0]["classification_state"] == "NEEDS_REVIEW"
     assert result.visuals[0]["review_decision_ref"] is None
     assert "REVIEW_REF_IGNORED" in codes(result)
@@ -147,19 +149,19 @@ def test_visual_payload_matches_the_published_contract():
         sys.path.insert(0, str(contract_dir))
     import contract_models
 
-    result = route_regions([region(engine_label="chart")])
+    result = route_regions([region(engine_label="chart")], confidence_threshold=DEFAULT_CONFIDENCE_THRESHOLD)
     contract_models.Visual.model_validate(result.visuals[0])
 
 
 def test_duplicate_region_ids_are_refused():
     with pytest.raises(ExtensionError):
-        route_regions([region("R1"), region("R1")])
+        route_regions([region("R1"), region("R1")], confidence_threshold=DEFAULT_CONFIDENCE_THRESHOLD)
 
 
 # ------------------- L32: low and missing confidence are not "confirmed by default"
 def test_low_confidence_downgrades_a_fact_class_to_review():
     """qa-l22 B1: 0.05 used to route exactly like 0.99 (CANDIDATE, no issue)."""
-    result = route_regions([region(engine_label="table", engine_confidence=0.05)])
+    result = route_regions([region(engine_label="table", engine_confidence=0.05)], confidence_threshold=DEFAULT_CONFIDENCE_THRESHOLD)
 
     assert result.visuals[0]["classification"] == "TABLE"
     assert result.visuals[0]["classification_state"] == "NEEDS_REVIEW"
@@ -168,7 +170,7 @@ def test_low_confidence_downgrades_a_fact_class_to_review():
 
 def test_missing_confidence_is_not_a_high_confidence():
     """qa-l22 B2: ``None`` was treated the same as a confident label."""
-    result = route_regions([region(engine_label="chart", engine_confidence=None)])
+    result = route_regions([region(engine_label="chart", engine_confidence=None)], confidence_threshold=DEFAULT_CONFIDENCE_THRESHOLD)
 
     assert result.visuals[0]["classification_state"] == "NEEDS_REVIEW"
     assert "CONFIDENCE_MISSING" in codes(result)
@@ -176,7 +178,7 @@ def test_missing_confidence_is_not_a_high_confidence():
 
 def test_high_confidence_still_reaches_candidate():
     # The gate must not become a blanket downgrade.
-    result = route_regions([region(engine_label="table", engine_confidence=0.95)])
+    result = route_regions([region(engine_label="table", engine_confidence=0.95)], confidence_threshold=DEFAULT_CONFIDENCE_THRESHOLD)
 
     assert result.visuals[0]["classification_state"] == "CANDIDATE"
     assert codes(result) == []
@@ -192,6 +194,10 @@ def test_the_threshold_is_parameterised_and_marked_uncalibrated():
     strict = route_regions(
         [region(engine_label="table", engine_confidence=0.3)], confidence_threshold=0.9
     )
+    # Assert the issue exists before indexing: otherwise deleting the whole gate
+    # shows up as IndexError (qa-l22 FIND-C), which reads like a crash rather than
+    # "the behaviour under test disappeared".
+    assert "CONFIDENCE_BELOW_THRESHOLD" in codes(strict)
     detail = [i for i in strict.issues if i["code"] == "CONFIDENCE_BELOW_THRESHOLD"][0]["detail"]
     assert detail["threshold_calibrated"] is False
 
@@ -208,10 +214,20 @@ def test_decorative_and_unknown_are_not_subject_to_the_gate():
         [region(engine_label="image", engine_confidence=0.01)],
         decorative_reasons={"R1": "logo"},
         vlm_candidates={"R1": {"classification": "DECORATIVE"}},
+        confidence_threshold=DEFAULT_CONFIDENCE_THRESHOLD,
     )
     assert decorative.visuals[0]["classification"] == "DECORATIVE"
     assert "CONFIDENCE_BELOW_THRESHOLD" not in codes(decorative)
 
-    unknown = route_regions([region(engine_confidence=None)])
+    unknown = route_regions([region(engine_confidence=None)], confidence_threshold=DEFAULT_CONFIDENCE_THRESHOLD)
     assert unknown.visuals[0]["classification"] == "UNKNOWN"
     assert "CONFIDENCE_MISSING" not in codes(unknown)
+
+
+def test_the_threshold_must_be_chosen_explicitly():
+    """B-lite (qa-l22): an uncalibrated number that callers may omit is a policy
+    nobody chose. ``DEFAULT_CONFIDENCE_THRESHOLD`` stays public so accepting it is a
+    grep-able act at the call site, not a hidden default.
+    """
+    with pytest.raises(TypeError):
+        route_regions([region(engine_label="table")])

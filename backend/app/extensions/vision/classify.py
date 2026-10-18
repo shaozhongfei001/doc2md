@@ -134,14 +134,17 @@ def route_regions(
     vlm_candidates: Mapping[str, Mapping[str, Any]] | None = None,
     review_decisions: Mapping[str, str] | None = None,
     decorative_reasons: Mapping[str, str] | None = None,
-    confidence_threshold: float | None = None,
+    #: Required, not defaulted: an uncalibrated number that callers can leave
+    #: implicit is a policy nobody chose. Passing ``DEFAULT_CONFIDENCE_THRESHOLD``
+    #: is the one grep-able way to say "I accept 0.6".
+    confidence_threshold: float,
 ) -> ClassificationResult:
     """Route each image region to the branch that may produce facts for it."""
     candidates = dict(vlm_candidates or {})
     decisions = dict(review_decisions or {})
     reasons = dict(decorative_reasons or {})
 
-    threshold = DEFAULT_CONFIDENCE_THRESHOLD if confidence_threshold is None else confidence_threshold
+    threshold = confidence_threshold
     if isinstance(threshold, bool) or not isinstance(threshold, (int, float)) or not 0.0 < float(threshold) <= 1.0:
         raise _input_error(
             f"confidence_threshold must be in (0, 1], got {confidence_threshold!r}"
