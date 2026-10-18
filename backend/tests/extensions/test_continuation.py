@@ -150,7 +150,7 @@ def test_a_real_caption_mismatch_is_reviewable_not_separate():
 
 @pytest.mark.parametrize(
     "continued_caption",
-    ["续表1 贷款余额", "（续）表1 贷款余额", "表1 贷款余额（续）"],
+    ["续表1 贷款余额", "续前表1 贷款余额", "（续）表1 贷款余额", "表1 贷款余额（续）"],
 )
 def test_a_continuation_marker_is_the_same_label(continued_caption):
     """The commonest real shape of a long table on the next page must not be rejected."""
@@ -324,18 +324,23 @@ def test_malformed_signatures_are_refused(bad_next, match):
     assert match in str(excinfo.value)
 
 
-def test_normalisation_does_not_mangle_a_caption_that_merely_contains_the_character():
-    """TL probe: stripping every '续' would turn '持续经营说明' into '持经营说明'.
+def test_normalisation_does_not_mangle_business_words_that_start_with_the_character():
+    """Prefix stripping only harms captions that *begin* with 续 — 续贷/续期/续保/续存.
 
-    Only affixes are removed, so a caption whose *content* contains the marker
-    character is left alone.
+    ``qa-l20`` pointed out the first version of this test asserted on
+    '持续经营说明', which no prefix/suffix rule can ever touch: the assertion was
+    true under every implementation. These inputs fail the moment a bare '续' is
+    accepted as a marker.
     """
     from app.extensions.tables.continuation import _normalise_caption
 
-    assert _normalise_caption("持续经营说明") == "持续经营说明"
+    assert _normalise_caption("续期存款") == "续期存款"
+    assert _normalise_caption("续保率") == "续保率"
     assert _normalise_caption("续贷余额") == "续贷余额"
-    assert _normalise_caption("表1 贷款余额") == "表1贷款余额"
+    # ...while a real marker is still stripped, so the test cannot pass by
+    # disabling normalisation altogether.
     assert _normalise_caption("续表1 贷款余额") == "表1贷款余额"
+    assert _normalise_caption("表1 贷款余额") == "表1贷款余额"
 
 
 def test_a_hard_conflict_still_wins_over_a_soft_one():
@@ -348,3 +353,22 @@ def test_a_hard_conflict_still_wins_over_a_soft_one():
     )
     assert result.decision == "SEPARATE"
     assert "CURRENCY_CONFLICT" in codes(result)
+
+
+def test_a_whitespace_only_difference_is_not_called_a_continuation_marker():
+    """Two different statements must not share one code.
+
+    The first version reported "differ only by a continuation marker" for captions
+    that differ only in spacing — true for the decision, wrong for the log.
+    """
+    result = propose_continuation(
+        page("T1"),
+        page("T2", page_index=2, caption="表1贷款余额"),
+        evidence_ids=EVIDENCE,
+    )
+    assert result.decision == "JOIN_CANDIDATE"
+    assert "CAPTION_WHITESPACE_ONLY" in codes(result)
+    assert "CAPTION_CONTINUATION_MARKER" not in codes(result)
+    reason = [r for r in result.reasons if r.code == "CAPTION_WHITESPACE_ONLY"][0]
+    assert reason.blocking is False
+    assert reason.severity == "INFO"

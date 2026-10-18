@@ -27,16 +27,20 @@
     },
     "B": "pytest 全量不得低于 1373 passed / 133 skipped",
     "C": "check_baseline.py --allow-index-append 必须 passed=true",
-    "GAP": "关闭判据：'表1 存款余额' vs '续表1 存款余额' 必须 JOIN_CANDIDATE；真不同表名必须 NEEDS_REVIEW（不得 SEPARATE）；币种/单位/期间冲突必须仍为 SEPARATE"
+    "GAP": "关闭判据：'表1 存款余额' vs '续表1 存款余额' 必须 JOIN_CANDIDATE；真不同表名必须 NEEDS_REVIEW；**无单侧未知时**币种/单位/期间冲突必须 SEPARATE；**存在单侧未知时**为 NEEDS_REVIEW（未知不是匹配）"
   },
   "loops": [
     {
       "loop_id": "L20",
       "name": "续表表名归一化与信号强弱修正",
       "status": "PLANNED",
-      "depends_on": ["L05"],
+      "depends_on": [
+        "L05"
+      ],
       "conditional_dependencies": [],
-      "requirement_ids": ["PI-F04-07"],
+      "requirement_ids": [
+        "PI-F04-07"
+      ],
       "allowed_new_or_scoped_paths": [
         "backend/app/extensions/tables/continuation.py",
         "backend/tests/extensions/test_continuation.py"
@@ -53,7 +57,7 @@
       "tasks": [
         {
           "task_id": "T2001",
-          "description": "表名归一化：剥离'续表/续前/续/（续）/(续)'前缀与后缀后比较；仅因续页标记不同时产出非阻断理由 CAPTION_CONTINUATION_MARKER",
+          "description": "表名归一化：剥离'续表/续前/（续）/(续)'词缀后比较（**裸'续'不剥**：续贷/续期/续保/续存 是业务词，剥了会把'续贷余额'变成'贷余额'）；仅因词缀或空白不同时产出非阻断理由，不得判分离",
           "output": "continuation.py",
           "responsible_role": "DEV",
           "status": "TODO"
@@ -73,7 +77,12 @@
           "status": "TODO"
         }
       ],
-      "role_route": ["TL_PLAN", "DEV_SELF_TEST", "INDEPENDENT_QA", "TL_FINAL"],
+      "role_route": [
+        "TL_PLAN",
+        "DEV_SELF_TEST",
+        "INDEPENDENT_QA",
+        "TL_FINAL"
+      ],
       "required_evidence": [
         "input_commit_and_hashes",
         "actual_commands_and_exit_codes",
