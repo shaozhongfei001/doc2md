@@ -38,8 +38,22 @@ FAILED test_ack_for_another_generation_is_not_an_ack -> DID NOT RAISE
 2 failed, 1 passed
 ```
 
-结论：**该规则有独立覆盖，不是覆盖缺口**；`test_missing_ack_keeps_local_ready` 单条的失败形态偏弱，
-建议后续改为先断言"抛的是 ExtensionError 且 code 正确"，再断言 detail（或补一条 `acks.get` 风格的回归用例）。
+结论需要按子分支分开说，不能笼统写"有独立覆盖"：
+
+| 守卫子分支 | 覆盖形态 | 判定 |
+|---|---|---|
+| `simulated`（模拟 ACK） | `test_simulated_ack_never_activates` 在变异下 `DID NOT RAISE` | **干净独立覆盖** |
+| `stale`（旧 generation ACK） | `test_ack_for_another_generation_is_not_an_ack` 在变异下 `DID NOT RAISE` | **干净独立覆盖** |
+| `missing`（根本没有 ACK） | 仅 `test_missing_ack_keeps_local_ready` 一条，且变异下先撞 `KeyError` | **单条用例 + 失败形态不干净** |
+
+即：整体规则不是覆盖缺口，但 `missing` 子分支的测试质量偏弱。
+
+**登记 `QA-TEST-01`（待处理，不在本轮修改）**：将 `test_missing_ack_keeps_local_ready` 改为
+先断言抛出的是 `ExtensionError` 且 `code == "E_CONSUMER_NOT_CONNECTED"`，再断言 `detail["missing"]`；
+或补一条 `acks.get(name, {})` 风格的回归用例，使该子分支在变异下也以 `DID NOT RAISE` 变红。
+
+之所以不就地改：L08 已封版，事后修改其测试会重开已通过的验收结论，须与新 Loop 或独立 ADR 一起处理
+（与 `ADR-19CAP-02` 同一处置原则）。
 
 ### 2.2 M7：TL 的"冗余防护"假设被证伪
 
