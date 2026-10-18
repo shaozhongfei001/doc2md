@@ -156,6 +156,18 @@ def build_review_packet(
                         f"cell {data_cell_id} is its own {axis} header",
                         table_id=table_id,
                     )
+        state = item.get("state")
+        if state not in ("CANDIDATE", "CONFIRMED", "NEEDS_REVIEW"):
+            raise _error(
+                f"cell {data_cell_id}: state must be CANDIDATE/CONFIRMED/NEEDS_REVIEW, "
+                f"got {state!r}",
+                table_id=table_id,
+            )
+        if state == "CONFIRMED" and not item.get("review_decision_ref"):
+            raise _error(
+                f"cell {data_cell_id}: a CONFIRMED header path needs review_decision_ref",
+                table_id=table_id,
+            )
         note_ids = list(item.get("note_ids") or ())
         for note_id in note_ids:
             used_notes.add(note_id)
@@ -186,6 +198,29 @@ def build_review_packet(
         note_id = note.get("note_id")
         if not isinstance(note_id, str) or not note_id:
             raise _error(f"notes[{index}] has no usable note_id")
+        scope = note.get("scope")
+        state = note.get("state")
+        if state not in ("CANDIDATE", "CONFIRMED", "NEEDS_REVIEW"):
+            raise _error(
+                f"note {note_id}: state must be CANDIDATE/CONFIRMED/NEEDS_REVIEW, got "
+                f"{state!r}"
+            )
+        if scope == "UNRESOLVED" and state != "NEEDS_REVIEW":
+            raise _error(
+                f"note {note_id}: an UNRESOLVED scope may not be published as {state}; "
+                "the exception range is unknown",
+                table_id=table_id,
+            )
+        if scope != "UNRESOLVED" and not list(note.get("target_ids") or ()):
+            raise _error(
+                f"note {note_id}: scope {scope!r} requires target_ids",
+                table_id=table_id,
+            )
+        if state == "CONFIRMED" and not note.get("review_decision_ref"):
+            raise _error(
+                f"note {note_id}: a CONFIRMED note needs review_decision_ref",
+                table_id=table_id,
+            )
         unknown_evidence = [
             eid for eid in (note.get("evidence_ids") or ()) if eid not in known_evidence
         ]

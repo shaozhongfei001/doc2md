@@ -179,6 +179,37 @@ def test_cell_semantics_cannot_reference_unknown_notes():
     assert "notes the table does not own" in str(excinfo.value)
 
 
+def test_unresolved_scope_cannot_be_published_as_confirmed():
+    # Found by a TL probe: the packet is the publishing vehicle, so a note whose
+    # exception range is unknown must not render as a confirmed condition.
+    bad_note = dict(notes()[0], scope="UNRESOLVED", target_ids=[], state="CONFIRMED", review_decision_ref="RV-1")
+    with pytest.raises(ExtensionError) as excinfo:
+        build(notes=[bad_note])
+    assert excinfo.value.code == PACKET_CODE
+    assert "UNRESOLVED scope may not be published" in str(excinfo.value)
+
+
+def test_confirmed_note_without_review_ref_is_refused():
+    bad_note = dict(notes()[0], state="CONFIRMED", review_decision_ref=None)
+    with pytest.raises(ExtensionError) as excinfo:
+        build(notes=[bad_note])
+    assert "needs review_decision_ref" in str(excinfo.value)
+
+
+def test_scope_with_targets_missing_is_refused_at_packet_time():
+    bad_note = dict(notes()[0], target_ids=[])
+    with pytest.raises(ExtensionError) as excinfo:
+        build(notes=[bad_note])
+    assert "requires target_ids" in str(excinfo.value)
+
+
+def test_confirmed_semantics_without_review_ref_is_refused():
+    bad = [dict(semantics()[0], state="CONFIRMED", review_decision_ref=None)]
+    with pytest.raises(ExtensionError) as excinfo:
+        build(semantics=bad)
+    assert "CONFIRMED header path needs review_decision_ref" in str(excinfo.value)
+
+
 def test_duplicate_candidate_ids_are_refused():
     with pytest.raises(ExtensionError) as excinfo:
         build(evidence_candidates=[{"candidate_evidence_id": "EV-1"}, {"candidate_evidence_id": "EV-1"}])
