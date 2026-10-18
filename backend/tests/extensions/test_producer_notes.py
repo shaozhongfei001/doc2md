@@ -214,3 +214,25 @@ def test_unresolved_producer_output_does_not_become_publishable(tmp_path):
     bound = bind_notes(table_payload, read_notes(package).candidates())
     assert bound.notes[0]["state"] == "NEEDS_REVIEW"
     assert bound.publishable == []
+
+
+# ------------------------------ L18/T1801: an unresolved note keeps its evidence
+def test_an_unresolved_note_carries_its_own_evidence(tmp_path):
+    """MB4 (qa-l18): an empty ``evidence_ids`` was invisible to every assertion.
+
+    The only nearby test checked ``state == "NEEDS_REVIEW"``, which is already true
+    for any ``scope="UNRESOLVED"`` note — so the missing evidence was masked by the
+    fact that the note was blocked for a *different* reason.
+    """
+    package = open_docx(
+        write_docx(tmp_path / "unres.docx", BODY_WITH_REF, footnotes=note("7", "孤儿脚注。"))
+    )
+    extraction = read_notes(package)
+    candidate = extraction.candidates()[0]
+    assert candidate["scope"] == "UNRESOLVED"
+    assert candidate["evidence_ids"] == ["docx:footnote:7"]
+
+    table_payload = extract_tables(package)[0]
+    bound = bind_notes(table_payload, [candidate])
+    codes = [issue.get("code") for issue in bound.issues]
+    assert "MISSING_EVIDENCE" not in codes, "an unresolved note must not lose its provenance"

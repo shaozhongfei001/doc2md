@@ -347,3 +347,68 @@ def test_a_document_without_tables_or_footnotes_still_assembles(tmp_path):
     assert result.notes == []
     assert result.stats["tables"] == 0
     assert "未检出原生 Word 表格" in result.markdown
+
+
+# ------------------- L18/T1802: the staged-file ledger must actually be checked
+def test_a_generation_missing_a_declared_file_is_refused(tmp_path, monkeypatch):
+    """MB7 (qa-l18): ``expected_files`` was never *false*, so the check never ran.
+
+    ``write_assembly`` stages and immediately commits, so the staging directory is
+    always intact and the ledger check is vacuously satisfied. Losing a staged file
+    between the two steps is exactly what the ledger exists for; without the check
+    the artifact is published as complete while missing ``report.json``.
+    """
+    doc = build_docx(tmp_path / "doc.docx")
+    assembly = assemble_package(open_docx(doc), generation_id="GEN-1")
+
+    extension = tmp_path / "ext"
+    extension.mkdir()
+    store = ArtifactStore(Roots(extension=extension))
+    original = store.write_staged
+
+    def lossy(attempt_id, relative_path, data):
+        staged = original(attempt_id, relative_path, data)
+        if relative_path == "report.json":
+            (store.staging_dir(attempt_id) / relative_path).unlink()
+        return staged
+
+    monkeypatch.setattr(store, "write_staged", lossy)
+
+    with pytest.raises(ExtensionError) as excinfo:
+        write_assembly(store, assembly)
+
+    assert excinfo.value.code == "E_COMMIT_INCOMPLETE"
+    published = [path for path in extension.rglob("manifest.json") if "staging" not in str(path)]
+    assert published == [], "a generation missing a declared file must not be published"
+
+
+# ------------- L18/T1803: two references in one cell must not duplicate evidence
+def test_two_references_in_one_cell_do_not_duplicate_the_cell_evidence(tmp_path):
+    """MB8 (qa-l18): every fixture had at most one reference per cell.
+
+    Two references in the same cell both yield ``docx:footnoteReference:<cell>``.
+    Without de-duplication the packet layer rejects the (valid) document for a
+    duplicate id — so a qualified document turned into a hard failure, and no test
+    could tell.
+    """
+    cell = (
+        "<w:tc><w:p><w:r><w:t>100</w:t></w:r>"
+        '<w:r><w:footnoteReference w:id="1"/></w:r>'
+        '<w:r><w:footnoteReference w:id="2"/></w:r></w:p></w:tc>'
+    )
+    body = table(tr(tc("金额") + tc("比例"), header=True) + tr(cell + tc("12%")))
+    path = tmp_path / "two_refs.docx"
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("[Content_Types].xml", CONTENT_TYPES)
+        archive.writestr("word/document.xml", document_xml(body))
+        archive.writestr(
+            "word/footnotes.xml",
+            footnotes_xml(note("1", "甲。") + note("2", "乙。")),
+        )
+
+    result = assemble_package(open_docx(path), generation_id="GEN-1")
+
+    assert len(result.notes) == 2, "both references must still bind"
+    evidence_ids = result.packets[0].payload["evidence_ids"]
+    cell_ids = [item for item in evidence_ids if item.startswith("docx:footnoteReference:")]
+    assert len(cell_ids) == 1, f"cell evidence must appear once, got {cell_ids}"
