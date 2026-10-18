@@ -419,7 +419,7 @@ def test_two_references_in_one_cell_do_not_duplicate_the_cell_evidence(tmp_path)
     # of on the claim it is making.
     package = open_docx(path)
     table_payload = extract_tables(package)[0]
-    candidates = _evidence_candidates(table_payload, read_notes(package).candidates())
+    candidates = _evidence_candidates(read_notes(package).candidates())
     ids = [candidate["candidate_evidence_id"] for candidate in candidates]
     cell_evidence = [item for item in ids if item.startswith("docx:footnoteReference:")]
     assert len(cell_evidence) == 1, f"cell evidence must appear once, got {cell_evidence}"
@@ -430,3 +430,61 @@ def test_two_references_in_one_cell_do_not_duplicate_the_cell_evidence(tmp_path)
     evidence_ids = result.packets[0].payload["evidence_ids"]
     cell_ids = [item for item in evidence_ids if item.startswith("docx:footnoteReference:")]
     assert len(cell_ids) == 1, f"packet evidence must appear once, got {cell_ids}"
+
+
+# ------------- L23/T2303: the known-evidence set must be document-level, not self-made
+def _table_and_notes(tmp_path):
+    from app.extensions.word.native_tables import extract_tables
+    from app.extensions.word.notes_extract import read_notes
+
+    path = build_docx(tmp_path / "ev.docx")
+    package = open_docx(path)
+    return extract_tables(package)[0], read_notes(package).candidates()
+
+
+def test_an_omission_evidence_id_that_no_note_registered_is_refused(tmp_path):
+    """qa-l20 4(e): ``_evidence_candidates`` used to fold the table's own omission ids
+    into the "known" set, so ``omission ⊆ known`` was true by construction and the
+    contract check could never fire.
+
+    Only the negative half is not enough (a blanket refusal would also make it red),
+    so the positive half is asserted in the next test.
+    """
+    from app.extensions.render.review_packet import build_review_packet
+
+    table, notes = _table_and_notes(tmp_path)
+    table = dict(table, omission_evidence_ids=["EV-GHOST"])
+
+    with pytest.raises(ExtensionError) as excinfo:
+        build_review_packet(
+            table,
+            semantics=[],
+            notes=[],
+            evidence_candidates=_evidence_candidates(notes),
+            context={},
+        )
+
+    assert excinfo.value.code == "E_REVIEW_PACKET_INVALID"
+    assert excinfo.value.detail["missing"] == ["EV-GHOST"]
+
+
+def test_an_omission_evidence_id_registered_by_a_note_is_accepted(tmp_path):
+    # The paired half: a registered id must pass, and the omission list must survive.
+    from app.extensions.render.review_packet import build_review_packet
+
+    from app.extensions.tables.notes import bind_notes
+
+    table, candidates = _table_and_notes(tmp_path)
+    bound = bind_notes(table, candidates)
+    registered = bound.notes[0]["evidence_ids"][0]
+    table = dict(table, omission_evidence_ids=[registered])
+
+    packet = build_review_packet(
+        table,
+        semantics=[],
+        notes=bound.notes,
+        evidence_candidates=_evidence_candidates(bound.notes),
+        context={},
+    )
+
+    assert packet.payload["omission_evidence_ids"] == [registered]

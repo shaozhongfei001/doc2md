@@ -249,11 +249,13 @@ def _note_candidates_for(
     return owned
 
 
-def _evidence_candidates(table: Mapping[str, Any], notes: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
+def _evidence_candidates(notes: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
+    """Document-level registered evidence, same rule as ``pipeline._evidence_candidates``.
+
+    The corrected table's own ``omission_evidence_ids`` are **not** folded in: doing so
+    would make ``omission ⊆ known`` true by construction and hide an unregistered id.
+    """
     ids: list[str] = []
-    for evidence_id in table.get("omission_evidence_ids") or ():
-        if evidence_id not in ids:
-            ids.append(str(evidence_id))
     for note in notes:
         for evidence_id in note.get("evidence_ids") or ():
             if evidence_id not in ids:
@@ -495,7 +497,7 @@ def apply_correction(
         table,
         semantics=linked,
         notes=table_notes,
-        evidence_candidates=_evidence_candidates(table, table_notes),
+        evidence_candidates=_evidence_candidates(assembly.notes),
         blocked=table_issues,
         context={},
     )

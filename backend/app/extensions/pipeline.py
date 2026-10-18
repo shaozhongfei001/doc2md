@@ -135,13 +135,16 @@ def _note_candidates_for(
     return owned
 
 
-def _evidence_candidates(
-    table: Mapping[str, Any], notes: Sequence[Mapping[str, Any]]
-) -> list[dict[str, Any]]:
+def _evidence_candidates(notes: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
+    """The document's registered evidence, from what extraction actually produced.
+
+    Deliberately does **not** include the table's own ``omission_evidence_ids``.
+    Including them made the contract check ``omission_evidence_ids ⊆ evidence[].id``
+    vacuous: the "known" set was built from the very list being checked, so a table
+    could cite an evidence id that exists nowhere in the document and still pass.
+    A table claiming an unregistered omission id must be rejected.
+    """
     ids: list[str] = []
-    for evidence_id in table.get("omission_evidence_ids") or ():
-        if evidence_id not in ids:
-            ids.append(str(evidence_id))
     for note in notes:
         for evidence_id in note.get("evidence_ids") or ():
             if evidence_id not in ids:
@@ -230,7 +233,7 @@ def assemble_package(
             table,
             semantics=linked,
             notes=notes_result.notes,
-            evidence_candidates=_evidence_candidates(table, notes_result.notes),
+            evidence_candidates=_evidence_candidates(candidates),
             blocked=table_issues,
             context={},
         )
