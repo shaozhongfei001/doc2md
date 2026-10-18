@@ -903,3 +903,30 @@ def test_the_two_note_attribution_implementations_agree():
         assert from_pipeline(index, table_id, candidates) == from_correction(
             index, table_id, candidates
         ), f"attribution differs between the two implementations at table index {index}"
+
+
+# ------------ L23/T2304: the correction path uses the same document-level known set
+def test_a_correction_refuses_an_omission_evidence_id_no_note_registered(assembly):
+    """Before L23 the corrected table's own omission ids seeded the "known" set.
+
+    That made ``omission ⊆ known`` true by construction, so this ghost id would have
+    been accepted — the same vacuity as the assemble path, in a second copy.
+    """
+    assembly.tables[0]["omission_evidence_ids"] = ["EV-GHOST"]
+
+    with pytest.raises(ExtensionError) as excinfo:
+        apply_correction(
+            assembly,
+            Correction(
+                object_id=first_data_cell_id(assembly),
+                path=("text",),
+                value="150",
+                reason="x",
+                review_decision_ref="RV-1",
+            ),
+            generation_id="GEN-2",
+            header_rows_by_table=header_rows(assembly),
+        )
+
+    assert excinfo.value.code == "E_REVIEW_PACKET_INVALID"
+    assert excinfo.value.detail["missing"] == ["EV-GHOST"]
