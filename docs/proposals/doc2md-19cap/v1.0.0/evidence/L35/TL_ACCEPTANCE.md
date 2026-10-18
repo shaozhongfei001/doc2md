@@ -71,3 +71,40 @@ if locator.get("table_id") == table_id and ...  # 表作用域
 | `L35-LIM-01` | 归因依赖 `locator.cell_id` / `locator.table_id` 这两个**约定字段**；目前没有 schema 强制，生产侧若不给这两个键，全部候选会落进 `unattributable`（安全但不推进） |
 | `L35-LIM-02` | 只声明不执行；`mark_stale` 的调用点还没接线（属 release/纠错流程） |
 | `L31-FIND-02` | `reviewer="---"` 仍被接受（授权模型，待 Owner） |
+
+## 9. 字段名澄清与独立抽检结果（2026-10-18）
+
+### 9.1 没有 `correction_declaration` 这个字段
+
+本文第 2 节说"只声明，不写盘"，这里的**"声明"是设计意图的比喻，不是字段名**。
+全仓 grep `correction_declaration` 零命中；实际实现是：
+
+| 真实名字 | 含义 |
+|---|---|
+| `CorrectionOutcome.stale_candidate_evidence` | 本次订正作废的候选证据 id |
+| `CorrectionOutcome.unattributable_evidence` | 定位信息不足以归因的候选证据 id |
+| `CorrectionOutcome.evidence_checked` | 调用方是否提供了候选清单 |
+| `stats["candidate_evidence"] = {checked, stale, unattributable}` | 可回读的同一事实 |
+
+> 用比喻代替符号，会让读者去找一个不存在的名字。此后证据里引用实现，
+> 必须引用能被 grep 到的标识符。
+
+### 9.2 抽检结论：2 捕获 / 2 缺口（缺口已在 L37 关闭）
+
+| 变异 | 结果 |
+|---|---|
+| M2 cell 归因精确到 locator | CAPTURED（`assert 'EV-OTHER' not in (...)`） |
+| M3 跨表 table-scoped 证据不被作废 | CAPTURED |
+| M4 `checked` 反映真实检查 | CAPTURED |
+| M5 无法归因不得静默保留 | CAPTURED（QA 自加） |
+| **M1 删 `candidate_evidence_id` 必填** | **NOT_CAPTURED → L37 已补** |
+| **M6 删缺 `locator` 的归因分支** | **NOT_CAPTURED → L37 已补** |
+
+成因：夹具 `_candidate()` 永远造出形状完整的候选，两条防线在用例层面不存在。
+
+### 9.3 两条观察
+
+| 编号 | 内容 |
+|---|---|
+| `L37-OBS-01` | 重复 id 不合并（`stale=('EV-DUP','EV-DUP')`）；**不做去重，由调用方幂等** |
+| `L37-OBS-02` | `None` = 未检查、`[]` = 检查过且为空；**调用方不得用 `[]` 当默认值**，否则 `evidence_checked` 会被洗成 True |
