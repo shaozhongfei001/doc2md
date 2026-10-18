@@ -1,0 +1,74 @@
+{
+  "schema_version": "1.0.0",
+  "contract_id": "DOC2MD-19CAP-V1.0.1-ADDENDUM-L31",
+  "state": "PLANNED",
+  "generated_on": "2026-10-18",
+  "parent_contract": {
+    "version": "DOC2MD-19CAP-V1.0",
+    "path": "../../v1.0.0/loop_contract.json",
+    "note": "纯追加，不修改 v1.0.0 任何 Loop。"
+  },
+  "authorization": {
+    "basis": "qa-l22 第六轮 B5：release/switch.activate 对 acks 值为非 mapping 时抛 AttributeError，而非 E_CONSUMER_NOT_CONNECTED；调用方按错误码分支会冒泡，按 except Exception 兜底则可能被当成 PASS",
+    "evidence": "QA 报告（qa-l22，2026-10-18）第 4 节 B5",
+    "decided_by": "Owner（长程任务）",
+    "decided_on": "2026-10-18"
+  },
+  "scope_note": "把'acks 结构不对'从崩溃改为显式错误：acks 本身非 mapping 属调用方错误（E_INPUT_INVALID），单个 ack 非 mapping 属消费者未接通（E_CONSUMER_NOT_CONNECTED）。",
+  "gates": {
+    "A1": {
+      "official_tool_available": false,
+      "reason": "L31 不在 PACK 的 loop 列表中",
+      "equivalent_check": [
+        "git diff --name-only <entry>..HEAD ⊆ allowed_new_or_scoped_paths",
+        "git ls-files --others --exclude-standard 为空"
+      ],
+      "honesty_rule": "不得改 PACK 或扩原白名单"
+    },
+    "B": "pytest 全量不得低于 1405 passed / 131 skipped",
+    "C": "check_baseline.py --allow-index-append 必须 passed=true",
+    "GAP": "判据：acks=None 与 acks={'x':'ACKED'} 都必须抛 ExtensionError（不得 AttributeError），且错误码分别为 E_INPUT_INVALID / E_CONSUMER_NOT_CONNECTED"
+  },
+  "loops": [
+    {
+      "loop_id": "L31",
+      "name": "ACK 结构校验：崩溃改为显式错误",
+      "status": "PLANNED",
+      "depends_on": ["L08"],
+      "conditional_dependencies": [],
+      "requirement_ids": ["PI-F04-09"],
+      "allowed_new_or_scoped_paths": [
+        "backend/app/extensions/release/switch.py",
+        "backend/tests/extensions/test_switch_recovery.py"
+      ],
+      "scoped_existing_edits": [
+        "backend/app/extensions/release/switch.py",
+        "backend/tests/extensions/test_switch_recovery.py"
+      ],
+      "forbidden": [
+        "把结构错误也当成'已验证通过'",
+        "放宽'ACK 必须带 status=ACKED 且 generation 匹配'的判定",
+        "把 AttributeError 直接包成通用 Exception"
+      ],
+      "tasks": [
+        {
+          "task_id": "T3101",
+          "description": "activate 前置校验：acks 非 Mapping -> E_INPUT_INVALID；单个 ack 非 Mapping -> E_CONSUMER_NOT_CONNECTED（detail 列出 malformed 名称）",
+          "output": "switch.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T3102",
+          "description": "用例：acks=None 与 ack 值为字符串均抛 ExtensionError 且错误码精确",
+          "output": "test_switch_recovery.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        }
+      ],
+      "role_route": ["TL_PLAN", "DEV_SELF_TEST", "INDEPENDENT_QA", "TL_FINAL"],
+      "required_evidence": ["input_commit_and_hashes", "actual_commands_and_exit_codes", "test_case_id_results"],
+      "next_loop_permission": "两种坏结构都得到精确错误码，才允许声明 fail-closed 不再依赖'抛任意异常'。"
+    }
+  ]
+}
