@@ -1,0 +1,15 @@
+# OCR worker environment — deliberately separate from backend/requirements.txt.
+# backend/requirements.txt stays untouched (it is a protected legacy file).
+#
+# SDD 8.1: "以PaddleOCR v3.3.3作为工程验证起点，准确的PaddlePaddle/PaddleX/权重/驱动锁在
+# B00/B04实测后填写，不能将latest文档字段当已验证API。"
+#
+# So only the one version the SDD names is pinned here. The framework/driver rows are
+# intentionally NOT pinned yet: writing a guessed version would look like a verified
+# lock and would be believed later.
+paddleocr==3.3.3
+
+# --- NOT YET PINNED (blocked on real-environment measurement) -----------------
+# paddlepaddle==<measured on B00/B04>
+# paddlex==<measured on B00/B04>
+# (CUDA/cuDNN driver rows belong to the deployment image, not to pip)

@@ -1,0 +1,13 @@
+# STATE: UNRESOLVED — this is NOT a resolved lock file.
+#
+# The contract names this path, so the file exists, but no environment with the OCR
+# engine installed was available when it was written. Emitting transitive pins and
+# sha256 hashes without resolving them would be fabrication: the next reader would
+# trust a lock that nothing verified.
+#
+# To resolve it (requires the isolated worker environment):
+#   pip install -r requirements-ocr-worker.in
+#   pip freeze | sort > requirements-ocr-worker.lock   # then add --require-hashes
+#
+# Direct pin carried over from the .in file:
+paddleocr==3.3.3
