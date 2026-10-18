@@ -61,8 +61,12 @@ class ComparisonReason:
     code: str
     message: str
     blocking: bool = False
-    #: ``HARD`` means the pair is not a continuation at all; ``SOFT`` means a human
-    #: should look. A label mismatch is soft — it names things, it is not the data.
+    #: Three levels, and the default is deliberately the loudest:
+    #: ``HARD``  — the pair is not a continuation at all (data disagrees);
+    #: ``SOFT``  — a human should look (a label differs; it names things, not data);
+    #: ``INFO``  — non-blocking, recorded so the trail explains why a join was OK.
+    #: Anything that does *not* block must say so, otherwise a log reader cannot
+    #: tell "this reason blocked it" from "this reason was merely observed".
     severity: str = "HARD"
 
     def to_dict(self) -> dict[str, Any]:
@@ -410,6 +414,7 @@ def propose_continuation(
                     dimension="column_paths",
                     code="NEXT_PAGE_HEADERLESS",
                     message="the next page has no header; a continuation may only be proposed",
+                    severity="INFO",
                 )
             )
 
@@ -447,6 +452,7 @@ def propose_continuation(
                 dimension="repeated_header",
                 code="HEADER_REPEATED",
                 message="the next page repeats the header, which supports continuation",
+                severity="INFO",
             )
         )
 

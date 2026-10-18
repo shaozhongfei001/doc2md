@@ -372,3 +372,23 @@ def test_a_whitespace_only_difference_is_not_called_a_continuation_marker():
     reason = [r for r in result.reasons if r.code == "CAPTION_WHITESPACE_ONLY"][0]
     assert reason.blocking is False
     assert reason.severity == "INFO"
+
+
+def test_every_non_blocking_reason_says_so_in_its_severity():
+    """A reason that does not block must not carry the loudest severity.
+
+    ``qa-l20`` found ``HEADER_REPEATED`` and ``NEXT_PAGE_HEADERLESS`` were
+    non-blocking yet defaulted to ``HARD``, which makes a log read as if they had
+    blocked the join. This asserts the invariant over a result that produces both.
+    """
+    result = propose_continuation(
+        page("T1"),
+        page("T2", page_index=2, column_paths=()),
+        evidence_ids=EVIDENCE,
+    )
+    non_blocking = [reason for reason in result.reasons if not reason.blocking]
+    assert non_blocking, "the fixture must produce at least one non-blocking reason"
+    assert all(reason.severity == "INFO" for reason in non_blocking), [
+        (reason.code, reason.severity) for reason in non_blocking
+    ]
+    assert result.decision == "JOIN_CANDIDATE"

@@ -14,7 +14,7 @@
     "decided_by": "Owner（长程任务）",
     "decided_on": "2026-10-18"
   },
-  "scope_note": "修正续表的表名比较：先把'续表/续前/（续）'等续页标记归一化再比较；真不同的表名降为可复核（NEEDS_REVIEW），不再硬判 SEPARATE。币种/单位/期间等数据冲突仍为 SEPARATE。",
+  "scope_note": "修正续表的表名比较：先把'续表/续前/（续）/(续)'等续页标记归一化再比较；真不同的表名降为可复核（NEEDS_REVIEW），不再硬判 SEPARATE。数据冲突的判决分两种情况：无单侧未知时 SEPARATE，存在单侧未知时 NEEDS_REVIEW（未知不是匹配）。",
   "gates": {
     "A1": {
       "official_tool_available": false,
@@ -71,7 +71,7 @@
         },
         {
           "task_id": "T2003",
-          "description": "用例：续表标记→JOIN_CANDIDATE；真不同表名→NEEDS_REVIEW；币种/单位/期间仍 SEPARATE；旧参数化用例按新语义拆分",
+          "description": "用例：续表标记→JOIN_CANDIDATE；真不同表名→NEEDS_REVIEW；币种/单位/期间在无单侧未知时 SEPARATE、存在单侧未知时 NEEDS_REVIEW；旧参数化用例按新语义拆分",
           "output": "test_continuation.py",
           "responsible_role": "DEV",
           "status": "TODO"
