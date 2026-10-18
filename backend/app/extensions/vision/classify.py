@@ -37,6 +37,17 @@ from ..tables.ocr_alignment import intersection_area
 
 CLASSES = ("TABLE", "FLOW", "CHART", "DECORATIVE", "UNKNOWN")
 
+#: Below this the engine is not saying "this is a table", it is guessing. The value
+#: is a starting point, **not calibrated**: it needs real Paddle/VLM output to tune,
+#: and shipping it as if it were measured would be the same mistake as treating a
+#: model's self-reported 0.99 as a probability.
+DEFAULT_CONFIDENCE_THRESHOLD = 0.6
+
+#: Classes that may produce facts. Only these are subject to the confidence gate:
+#: DECORATIVE is filtered out and UNKNOWN already requires review, so a threshold on
+#: them would add noise without adding protection.
+FACT_CLASSES = ("TABLE", "FLOW", "CHART")
+
 #: Framework labels that are direct evidence for a class.
 FRAMEWORK_LABELS = {
     "table": "TABLE",
@@ -123,11 +134,19 @@ def route_regions(
     vlm_candidates: Mapping[str, Mapping[str, Any]] | None = None,
     review_decisions: Mapping[str, str] | None = None,
     decorative_reasons: Mapping[str, str] | None = None,
+    confidence_threshold: float | None = None,
 ) -> ClassificationResult:
     """Route each image region to the branch that may produce facts for it."""
     candidates = dict(vlm_candidates or {})
     decisions = dict(review_decisions or {})
     reasons = dict(decorative_reasons or {})
+
+    threshold = DEFAULT_CONFIDENCE_THRESHOLD if confidence_threshold is None else confidence_threshold
+    if isinstance(threshold, bool) or not isinstance(threshold, (int, float)) or not 0.0 < float(threshold) <= 1.0:
+        raise _input_error(
+            f"confidence_threshold must be in (0, 1], got {confidence_threshold!r}"
+        )
+    threshold = float(threshold)
 
     polygons: dict[str, list[list[float]]] = {}
     areas: dict[str, float] = {}
@@ -237,6 +256,37 @@ def route_regions(
                 )
             classification = proposed
             state = "CANDIDATE" if proposed != "UNKNOWN" else "NEEDS_REVIEW"
+
+        # A low or missing confidence is not "confirmed by default". Before this gate
+        # 0.05, 0.0 and None produced exactly the same CANDIDATE as 0.99 — a silent
+        # pass for the one thing the router must not guess about.
+        if classification in FACT_CLASSES and state == "CANDIDATE":
+            if engine_confidence is None:
+                state = "NEEDS_REVIEW"
+                issues.append(
+                    {
+                        "code": "CONFIDENCE_MISSING",
+                        "region_id": region_id,
+                        "message": (
+                            "the engine gave no confidence for a fact-producing class; "
+                            "an absent probability is not a high one"
+                        ),
+                    }
+                )
+            elif engine_confidence < threshold:
+                state = "NEEDS_REVIEW"
+                issues.append(
+                    {
+                        "code": "CONFIDENCE_BELOW_THRESHOLD",
+                        "region_id": region_id,
+                        "message": "the engine's confidence is below the routing threshold",
+                        "detail": {
+                            "engine_confidence": engine_confidence,
+                            "threshold": threshold,
+                            "threshold_calibrated": False,
+                        },
+                    }
+                )
 
         if classification == "DECORATIVE":
             reason = reasons.get(region_id)

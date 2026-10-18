@@ -17,7 +17,9 @@ def region(region_id: str = "R1", polygon=None, **overrides) -> dict:
         "region_id": region_id,
         "polygon": polygon or [[0, 0], [100, 0], [100, 100], [0, 100]],
         "engine_label": "image",
-        "engine_confidence": None,
+        # Fixtures state a confidence: since L32 "absent" is a distinct, reviewed
+        # case, so leaving it None here would silently make every fixture a review.
+        "engine_confidence": 0.9,
         "asset_ref": "assets/r1.png",
         "evidence_id": f"EV-{region_id}",
     }
@@ -63,10 +65,13 @@ def test_vlm_may_propose_flow_but_only_as_a_candidate():
 
 def test_vlm_self_reported_confidence_is_not_written_as_engine_confidence():
     result = route_regions(
-        [region(engine_label="image")],
+        [region(engine_label="image", engine_confidence=None)],
         vlm_candidates={"R1": {"classification": "FLOW", "confidence": 0.99}},
     )
     assert result.visuals[0]["engine_confidence"] is None
+    # L32: the model's 0.99 is not a measured probability, so it cannot lift the
+    # region out of review either.
+    assert result.visuals[0]["classification_state"] == "NEEDS_REVIEW"
 
 
 def test_engine_confidence_is_passed_through():
@@ -149,3 +154,64 @@ def test_visual_payload_matches_the_published_contract():
 def test_duplicate_region_ids_are_refused():
     with pytest.raises(ExtensionError):
         route_regions([region("R1"), region("R1")])
+
+
+# ------------------- L32: low and missing confidence are not "confirmed by default"
+def test_low_confidence_downgrades_a_fact_class_to_review():
+    """qa-l22 B1: 0.05 used to route exactly like 0.99 (CANDIDATE, no issue)."""
+    result = route_regions([region(engine_label="table", engine_confidence=0.05)])
+
+    assert result.visuals[0]["classification"] == "TABLE"
+    assert result.visuals[0]["classification_state"] == "NEEDS_REVIEW"
+    assert "CONFIDENCE_BELOW_THRESHOLD" in codes(result)
+
+
+def test_missing_confidence_is_not_a_high_confidence():
+    """qa-l22 B2: ``None`` was treated the same as a confident label."""
+    result = route_regions([region(engine_label="chart", engine_confidence=None)])
+
+    assert result.visuals[0]["classification_state"] == "NEEDS_REVIEW"
+    assert "CONFIDENCE_MISSING" in codes(result)
+
+
+def test_high_confidence_still_reaches_candidate():
+    # The gate must not become a blanket downgrade.
+    result = route_regions([region(engine_label="table", engine_confidence=0.95)])
+
+    assert result.visuals[0]["classification_state"] == "CANDIDATE"
+    assert codes(result) == []
+
+
+def test_the_threshold_is_parameterised_and_marked_uncalibrated():
+    # A caller may tune it; the issue detail must not claim the default is calibrated.
+    result = route_regions(
+        [region(engine_label="table", engine_confidence=0.3)], confidence_threshold=0.2
+    )
+    assert result.visuals[0]["classification_state"] == "CANDIDATE"
+
+    strict = route_regions(
+        [region(engine_label="table", engine_confidence=0.3)], confidence_threshold=0.9
+    )
+    detail = [i for i in strict.issues if i["code"] == "CONFIDENCE_BELOW_THRESHOLD"][0]["detail"]
+    assert detail["threshold_calibrated"] is False
+
+
+def test_a_bad_threshold_is_refused():
+    with pytest.raises(ExtensionError) as excinfo:
+        route_regions([region(engine_label="table")], confidence_threshold=0.0)
+    assert "confidence_threshold" in str(excinfo.value)
+
+
+def test_decorative_and_unknown_are_not_subject_to_the_gate():
+    # They produce no facts, so a threshold on them would be noise.
+    decorative = route_regions(
+        [region(engine_label="image", engine_confidence=0.01)],
+        decorative_reasons={"R1": "logo"},
+        vlm_candidates={"R1": {"classification": "DECORATIVE"}},
+    )
+    assert decorative.visuals[0]["classification"] == "DECORATIVE"
+    assert "CONFIDENCE_BELOW_THRESHOLD" not in codes(decorative)
+
+    unknown = route_regions([region(engine_confidence=None)])
+    assert unknown.visuals[0]["classification"] == "UNKNOWN"
+    assert "CONFIDENCE_MISSING" not in codes(unknown)
