@@ -27,7 +27,8 @@ wrong:
 from __future__ import annotations
 
 import copy
-from dataclasses import dataclass
+import re
+from dataclasses import dataclass, field
 from typing import Any, Mapping, Sequence
 
 from .. import ExtensionError
@@ -36,6 +37,12 @@ from ..render.review_packet import ReviewPacket, build_review_packet
 from ..tables.notes import NotesResult, bind_notes, link_cell_note_ids
 from ..tables.semantics import derive_header_paths
 from .dependencies import DependencyGraph, impact_of
+from .patches import (
+    FORBIDDEN_FRAGMENTS,
+    PATCHABLE_PATHS,
+    patch_digest,
+    preview_patch,
+)
 from .recompute import RebuildResult, recompute
 
 __all__ = [
@@ -54,6 +61,42 @@ def _input_error(message: str, **detail: Any) -> ExtensionError:
 
 def _review_required(message: str, **detail: Any) -> ExtensionError:
     return ExtensionError("E_REVIEW_REQUIRED", message, detail=detail or None)
+
+
+_PATCHABLE_PATTERNS = tuple(re.compile(pattern) for pattern in PATCHABLE_PATHS)
+
+#: ``structural`` means the key exists on only one side; a ``replace`` op cannot
+#: express that, and ``add``/``remove`` are not allowed by the patch layer.
+VALUE = "value"
+STRUCTURAL = "structural"
+
+
+def _is_patchable(path: str) -> bool:
+    lowered = path.lower()
+    if any(fragment in lowered for fragment in FORBIDDEN_FRAGMENTS):
+        return False
+    return any(pattern.match(path) for pattern in _PATCHABLE_PATTERNS)
+
+
+def _leaf_diff(old: Any, new: Any, prefix: str = "") -> list[tuple[str, Any, Any, str]]:
+    """Every place two documents differ, at leaf granularity, in a stable order."""
+    if isinstance(old, Mapping) and isinstance(new, Mapping):
+        diff: list[tuple[str, Any, Any, str]] = []
+        for key in sorted(set(old) | set(new), key=str):
+            child = f"{prefix}/{key}"
+            if key not in old or key not in new:
+                diff.append((child, old.get(key), new.get(key), STRUCTURAL))
+                continue
+            diff.extend(_leaf_diff(old[key], new[key], child))
+        return diff
+    if isinstance(old, list) and isinstance(new, list) and len(old) == len(new):
+        diff = []
+        for index, (before, after) in enumerate(zip(old, new)):
+            diff.extend(_leaf_diff(before, after, f"{prefix}/{index}"))
+        return diff
+    if old != new:
+        return [(prefix, old, new, VALUE)]
+    return []
 
 
 @dataclass(frozen=True)
@@ -84,10 +127,17 @@ class CorrectionOutcome:
     rebuild: RebuildResult
     affected_tables: tuple[str, ...]
     notes_rebound: bool
+    patch: tuple[dict[str, Any], ...] = ()
+    patch_digest: str | None = None
+    unpatchable: tuple[dict[str, Any], ...] = ()
 
     @property
     def publishable(self) -> bool:
         return self.rebuild.ok
+
+    @property
+    def fully_patchable(self) -> bool:
+        return not self.unpatchable
 
     def to_mapping(self) -> dict[str, Any]:
         return {
@@ -95,6 +145,10 @@ class CorrectionOutcome:
             "affected_tables": list(self.affected_tables),
             "notes_rebound": self.notes_rebound,
             "publishable": self.publishable,
+            "fully_patchable": self.fully_patchable,
+            "patch_digest": self.patch_digest,
+            "patch_ops": len(self.patch),
+            "unpatchable": [dict(item) for item in self.unpatchable],
             "rebuild": self.rebuild.stats(),
             "failures": [item.to_mapping() for item in self.rebuild.failed],
         }
@@ -205,6 +259,75 @@ def _evidence_candidates(table: Mapping[str, Any], notes: Sequence[Mapping[str, 
             if evidence_id not in ids:
                 ids.append(str(evidence_id))
     return [{"candidate_evidence_id": evidence_id} for evidence_id in ids]
+
+
+def _build_patch(
+    old_document: Mapping[str, Any],
+    new_document: Mapping[str, Any],
+    *,
+    reviewer: str,
+    reason: str,
+    generation_id: str,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], str | None]:
+    """Express the correction as RFC6902 ops, and say what it cannot express.
+
+    The patch is *derived from the data difference*, not hand-assembled from the
+    correction object: a correction touches one field, but rebuilding also changes
+    derived fields, and a patch that silently omits those would apply cleanly to the
+    old artifact and reproduce none of them.
+
+    Everything outside ``PATCHABLE_PATHS`` is reported, never dropped. When the ops
+    do not reconstruct the new document on the remaining paths, that is a bug in
+    this function, so it fails loudly instead of returning a plausible patch.
+    """
+    ops: list[dict[str, Any]] = []
+    unpatchable: list[dict[str, Any]] = []
+    for path, before, after, kind in _leaf_diff(old_document, new_document):
+        if kind is not VALUE:
+            unpatchable.append(
+                {
+                    "path": path,
+                    "reason": "the field exists on only one side; add/remove are not allowed ops",
+                }
+            )
+            continue
+        if not _is_patchable(path):
+            unpatchable.append(
+                {
+                    "path": path,
+                    "reason": "path is outside PATCHABLE_PATHS or touches a forbidden fragment",
+                }
+            )
+            continue
+        ops.append({"op": "test", "path": path, "value": before})
+        ops.append({"op": "replace", "path": path, "value": after})
+
+    if not ops:
+        return [], unpatchable, None
+
+    preview = preview_patch(
+        old_document,
+        ops,
+        base_generation_id=generation_id,
+        expected_current_generation_id=generation_id,
+        current_generation_id=generation_id,
+        reviewer=reviewer,
+        reason=reason,
+    )
+
+    allowed = [item["path"] for item in unpatchable]
+    residual = [
+        path
+        for path, _before, _after, _kind in _leaf_diff(preview.document, new_document)
+        if not any(path == item or path.startswith(item + "/") for item in allowed)
+    ]
+    if residual:
+        raise _input_error(
+            "the generated patch does not reconstruct the corrected document; refusing to "
+            "report a patch that only partially describes the change",
+            unexplained=residual[:10],
+        )
+    return ops, unpatchable, patch_digest(ops)
 
 
 def apply_correction(
@@ -432,6 +555,30 @@ def apply_correction(
         }
     )
 
+    old_document = {
+        "tables": [dict(candidate) for candidate in assembly.tables],
+        "notes": [dict(note) for note in assembly.notes],
+        "issues": [dict(issue) for issue in assembly.issues],
+    }
+    new_document = {
+        "tables": [dict(candidate) for candidate in tables],
+        "notes": [dict(note) for note in flat_notes],
+        "issues": [dict(issue) for issue in issues],
+    }
+    patch, unpatchable, digest = _build_patch(
+        old_document,
+        new_document,
+        reviewer=correction.review_decision_ref,
+        reason=correction.reason,
+        generation_id=assembly.generation_id,
+    )
+    stats["patch"] = {
+        "ops": len(patch),
+        "digest": digest,
+        "unpatchable": unpatchable,
+        "fully_patchable": not unpatchable,
+    }
+
     corrected = AssemblyResult(
         generation_id=generation_id,
         source_sha256=assembly.source_sha256,
@@ -441,9 +588,13 @@ def apply_correction(
         issues=issues,
         stats=stats,
     )
+
     return CorrectionOutcome(
         assembly=corrected,
         rebuild=rebuild,
         affected_tables=(table_id,),
         notes_rebound=notes_rebound,
+        patch=tuple(patch),
+        patch_digest=digest,
+        unpatchable=tuple(unpatchable),
     )

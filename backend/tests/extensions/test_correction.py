@@ -673,3 +673,112 @@ def test_the_duplicate_defence_still_reports_when_it_does_fire(tmp_path):
     assert len(ids) == len(set(ids))
     deduped = [i for i in outcome.assembly.issues if i.get("code") == "DUPLICATE_NOTE_ID_DEDUPED"]
     assert deduped and deduped[0]["note_id"] == "FN-9"
+
+
+# ------------------------------------------- L16: RFC6902 patch chain (T1601+)
+def corrected(assembly, **overrides):
+    kwargs = {
+        "object_id": first_data_cell_id(assembly),
+        "path": ("text",),
+        "value": "150",
+        "reason": "1601 原始凭证为 150",
+        "review_decision_ref": "RV-1",
+    }
+    kwargs.update(overrides)
+    return apply_correction(
+        assembly,
+        Correction(**kwargs),
+        generation_id="GEN-2",
+        header_rows_by_table=header_rows(assembly),
+    )
+
+
+def test_a_cell_correction_yields_a_test_then_replace_pair(assembly):
+    outcome = corrected(assembly)
+    paths = [op["path"] for op in outcome.patch]
+    assert [op["op"] for op in outcome.patch] == ["test", "replace"]
+    assert len(set(paths)) == 1 and paths[0].endswith("/text")
+    assert outcome.patch[0]["value"] != outcome.patch[1]["value"]
+    assert outcome.fully_patchable is True
+
+
+def test_the_patch_reconstructs_the_corrected_document(assembly):
+    # The strong claim: old artifact + patch == new data, so "this patch is the
+    # change" is verifiable rather than asserted.
+    from app.extensions.review.patches import preview_patch
+
+    outcome = corrected(assembly)
+    old_document = {
+        "tables": [dict(table) for table in assembly.tables],
+        "notes": [dict(note) for note in assembly.notes],
+        "issues": [dict(issue) for issue in assembly.issues],
+    }
+    preview = preview_patch(
+        old_document,
+        outcome.patch,
+        base_generation_id="GEN-1",
+        expected_current_generation_id="GEN-1",
+        current_generation_id="GEN-1",
+        reviewer="RV-1",
+        reason="replay",
+    )
+    assert preview.document["tables"] == [dict(table) for table in outcome.assembly.tables]
+    assert preview.document["notes"] == [dict(note) for note in outcome.assembly.notes]
+
+
+def test_an_unpatchable_change_is_reported_not_dropped(assembly):
+    # ``row`` is a real field but is not in PATCHABLE_PATHS; the correction still
+    # happens, and the fact that no patch can describe it must be visible.
+    outcome = corrected(assembly, path=("row",), value=9)
+    assert outcome.patch == ()
+    assert outcome.fully_patchable is False
+    paths = [item["path"] for item in outcome.unpatchable]
+    assert any(path.endswith("/row") for path in paths)
+    assert outcome.assembly.stats["patch"]["fully_patchable"] is False
+
+
+def test_evidence_fields_are_never_patchable(assembly):
+    # PATCHABLE_PATHS does not list evidence, and FORBIDDEN_FRAGMENTS covers it.
+    cell_id = first_data_cell_id(assembly)
+    current = [
+        cell["evidence_ids"]
+        for table in assembly.tables
+        for cell in table["cells"]
+        if cell["cell_id"] == cell_id
+    ][0]
+    outcome = corrected(assembly, object_id=cell_id, path=("evidence_ids",), value=[*current, "E-X"])
+    assert outcome.patch == ()
+    assert any("evidence" in item["path"].lower() for item in outcome.unpatchable)
+
+
+def test_a_no_op_correction_produces_no_patch(assembly):
+    cell_id = first_data_cell_id(assembly)
+    current = [
+        cell["text"]
+        for table in assembly.tables
+        for cell in table["cells"]
+        if cell["cell_id"] == cell_id
+    ][0]
+    outcome = corrected(assembly, object_id=cell_id, value=current)
+    assert outcome.patch == ()
+    assert outcome.patch_digest is None
+    assert outcome.fully_patchable is True
+
+
+def test_the_patch_digest_is_recorded_and_stable(assembly):
+    first = corrected(assembly)
+    second = corrected(assembly)
+    assert first.patch_digest == second.patch_digest
+    assert first.assembly.stats["patch"]["digest"] == first.patch_digest
+    assert first.assembly.stats["patch"]["ops"] == len(first.patch)
+
+
+def test_patch_paths_stay_inside_the_reviewer_whitelist(assembly):
+    from app.extensions.review.patches import FORBIDDEN_FRAGMENTS, PATCHABLE_PATHS
+
+    outcome = corrected(assembly)
+    for op in outcome.patch:
+        path = op["path"]
+        assert not any(fragment in path.lower() for fragment in FORBIDDEN_FRAGMENTS), path
+        assert any(__import__("re").match(pattern, path) for pattern in PATCHABLE_PATHS), path
+        assert "/generation_id" not in path and "/stats" not in path
