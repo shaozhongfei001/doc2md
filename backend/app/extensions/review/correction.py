@@ -130,6 +130,12 @@ class CorrectionOutcome:
     patch: tuple[dict[str, Any], ...] = ()
     patch_digest: str | None = None
     unpatchable: tuple[dict[str, Any], ...] = ()
+    #: Candidate evidence this correction invalidates, and the ones whose locator
+    #: cannot attribute them to any table or cell. Reported, never acted on: marking
+    #: them STALE is a write, and this module stays pure.
+    stale_candidate_evidence: tuple[str, ...] = ()
+    unattributable_evidence: tuple[str, ...] = ()
+    evidence_checked: bool = False
 
     @property
     def publishable(self) -> bool:
@@ -149,6 +155,9 @@ class CorrectionOutcome:
             "patch_digest": self.patch_digest,
             "patch_ops": len(self.patch),
             "unpatchable": [dict(item) for item in self.unpatchable],
+            "stale_candidate_evidence": list(self.stale_candidate_evidence),
+            "unattributable_evidence": list(self.unattributable_evidence),
+            "evidence_checked": self.evidence_checked,
             "rebuild": self.rebuild.stats(),
             "failures": [item.to_mapping() for item in self.rebuild.failed],
         }
@@ -262,6 +271,45 @@ def _evidence_candidates(
     return pipeline_candidates(notes, table)
 
 
+def _affected_candidate_evidence(
+    candidates: Sequence[Mapping[str, Any]],
+    *,
+    cell_id: str | None,
+    table_id: str,
+) -> tuple[list[str], list[str]]:
+    """Split candidates into "this correction invalidates it" and "cannot attribute".
+
+    Attribution uses the **locator**, never the text: comparing quotes would guess
+    that two identical strings mean the same evidence, and would miss a candidate
+    that quotes the old value in a different form. A locator that names neither a
+    cell nor a table cannot be attributed at all — it is reported, not silently
+    kept and not silently invalidated.
+    """
+    stale: list[str] = []
+    unattributable: list[str] = []
+    for candidate in candidates:
+        if not isinstance(candidate, Mapping):
+            raise _input_error("candidate_evidence entries must be mappings")
+        candidate_id = candidate.get("candidate_evidence_id")
+        if not isinstance(candidate_id, str) or not candidate_id:
+            raise _input_error("candidate_evidence entry has no candidate_evidence_id")
+        locator = candidate.get("locator")
+        if not isinstance(locator, Mapping):
+            unattributable.append(candidate_id)
+            continue
+        locator_cell = locator.get("cell_id")
+        locator_table = locator.get("table_id")
+        if cell_id is not None and locator_cell == cell_id:
+            stale.append(candidate_id)
+            continue
+        if locator_table == table_id and (cell_id is None or locator_cell is None):
+            stale.append(candidate_id)
+            continue
+        if locator_cell is None and locator_table is None:
+            unattributable.append(candidate_id)
+    return stale, unattributable
+
+
 def _build_patch(
     old_document: Mapping[str, Any],
     new_document: Mapping[str, Any],
@@ -338,6 +386,7 @@ def apply_correction(
     generation_id: str,
     header_rows_by_table: Mapping[str, Sequence[int]],
     note_candidates: Sequence[Mapping[str, Any]] | None = None,
+    candidate_evidence: Sequence[Mapping[str, Any]] | None = None,
 ) -> CorrectionOutcome:
     """Apply ``correction`` and rebuild only what depends on it.
 
@@ -590,6 +639,22 @@ def apply_correction(
         stats=stats,
     )
 
+    if candidate_evidence is None:
+        stale_ids: list[str] = []
+        unattributable_ids: list[str] = []
+        evidence_checked = False
+    else:
+        stale_ids, unattributable_ids = _affected_candidate_evidence(
+            candidate_evidence, cell_id=cell_id, table_id=table_id
+        )
+        evidence_checked = True
+
+    stats["candidate_evidence"] = {
+        "checked": evidence_checked,
+        "stale": stale_ids,
+        "unattributable": unattributable_ids,
+    }
+
     return CorrectionOutcome(
         assembly=corrected,
         rebuild=rebuild,
@@ -598,4 +663,7 @@ def apply_correction(
         patch=tuple(patch),
         patch_digest=digest,
         unpatchable=tuple(unpatchable),
+        stale_candidate_evidence=tuple(stale_ids),
+        unattributable_evidence=tuple(unattributable_ids),
+        evidence_checked=evidence_checked,
     )

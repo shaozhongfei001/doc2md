@@ -1010,3 +1010,102 @@ def test_an_empty_row_table_survives_a_correction(tmp_path):
         "docx:gridAfter:1:1",
         "docx:gridAfter:1:2",
     ]
+
+
+# ------------- L35: the correction declares which candidate evidence it invalidates
+def _candidate(candidate_id: str, *, cell_id=None, table_id=None) -> dict:
+    locator = {"kind": "DOCX_XML", "source_sha256": "a" * 64}
+    if cell_id is not None:
+        locator["cell_id"] = cell_id
+    if table_id is not None:
+        locator["table_id"] = table_id
+    return {
+        "candidate_evidence_id": candidate_id,
+        "locator": locator,
+        "observation_class": "SOURCE_CONTENT",
+    }
+
+
+def _correct(assembly, **kwargs):
+    return apply_correction(
+        assembly,
+        Correction(
+            object_id=kwargs.pop("object_id", first_data_cell_id(assembly)),
+            path=("text",),
+            value=kwargs.pop("value", "150"),
+            reason="x",
+            review_decision_ref="RV-1",
+        ),
+        generation_id="GEN-2",
+        header_rows_by_table=header_rows(assembly),
+        **kwargs,
+    )
+
+
+def test_the_correction_lists_the_evidence_its_cell_invalidates(assembly):
+    cell_id = first_data_cell_id(assembly)
+    table_id = assembly.tables[0]["table_id"]
+    candidates = [
+        _candidate("EV-SELF", cell_id=cell_id),
+        _candidate("EV-OTHER", cell_id="some-other-cell"),
+        _candidate("EV-NOTABLE", table_id=table_id),
+    ]
+
+    outcome = _correct(assembly, candidate_evidence=candidates)
+
+    assert outcome.evidence_checked is True
+    assert "EV-SELF" in outcome.stale_candidate_evidence
+    assert "EV-OTHER" not in outcome.stale_candidate_evidence
+    # Table-scoped evidence (no cell in its locator) is invalidated too: it may quote
+    # any cell of the table, and the conservative direction here is "assume affected".
+    assert "EV-NOTABLE" in outcome.stale_candidate_evidence
+
+
+def test_evidence_without_an_attributable_locator_is_reported_not_guessed(assembly):
+    candidates = [_candidate("EV-ORPHAN")]
+    outcome = _correct(assembly, candidate_evidence=candidates)
+
+    assert outcome.unattributable_evidence == ("EV-ORPHAN",)
+    assert outcome.stale_candidate_evidence == ()
+
+
+def test_no_candidate_list_leaves_a_visible_gap_rather_than_a_clean_bill(assembly):
+    outcome = _correct(assembly)
+
+    assert outcome.evidence_checked is False
+    assert outcome.stale_candidate_evidence == ()
+    assert outcome.assembly.stats["candidate_evidence"]["checked"] is False
+
+
+def test_a_table_level_correction_invalidates_table_scoped_evidence(assembly):
+    table_id = assembly.tables[0]["table_id"]
+    candidates = [
+        _candidate("EV-TABLE", table_id=table_id),
+        _candidate("EV-CELL", cell_id=first_data_cell_id(assembly)),
+        _candidate("EV-FAR", table_id="TBL-9999"),
+    ]
+    outcome = apply_correction(
+        assembly,
+        Correction(
+            object_id=f"table:{table_id}",
+            path=("structure_state",),
+            value="VALID_CANDIDATE",
+            reason="x",
+            review_decision_ref="RV-1",
+        ),
+        generation_id="GEN-2",
+        header_rows_by_table=header_rows(assembly),
+        candidate_evidence=candidates,
+    )
+
+    assert outcome.stale_candidate_evidence == ("EV-TABLE",)
+    assert "EV-CELL" not in outcome.stale_candidate_evidence
+    assert "EV-FAR" not in outcome.stale_candidate_evidence
+
+
+def test_the_stale_list_is_deterministic(assembly):
+    cell_id = first_data_cell_id(assembly)
+    candidates = [_candidate("EV-A", cell_id=cell_id), _candidate("EV-B", cell_id=cell_id)]
+    first = _correct(assembly, candidate_evidence=candidates)
+    second = _correct(assembly, candidate_evidence=candidates)
+    assert first.stale_candidate_evidence == second.stale_candidate_evidence
