@@ -135,20 +135,76 @@ def _note_candidates_for(
     return owned
 
 
-def _evidence_candidates(notes: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
-    """The document's registered evidence, from what extraction actually produced.
+def _structural_evidence_ids(table: Mapping[str, Any]) -> list[str]:
+    """Evidence ids the table's own geometry justifies, recomputed from cells.
 
-    Deliberately does **not** include the table's own ``omission_evidence_ids``.
-    Including them made the contract check ``omission_evidence_ids ⊆ evidence[].id``
-    vacuous: the "known" set was built from the very list being checked, so a table
-    could cite an evidence id that exists nowhere in the document and still pass.
-    A table claiming an unregistered omission id must be rejected.
+    ``native_tables`` emits ``docx:gridBefore|gridAfter:<row>:<col>`` for columns a
+    row leaves empty, because Word writes ``w:trPr/w:gridAfter`` only for those.
+    Recomputing them here — instead of trusting ``omission_evidence_ids`` — is the
+    whole point: the declared list is what gets validated, so it cannot also be the
+    source of what counts as known.
+
+    A column with no cell in its row is a hole. Holes before the first covered
+    column are ``gridBefore`` holes, holes after the last are ``gridAfter``; a hole
+    in the middle has no Word justification and is simply not produced here (the
+    extractor rejects those documents before this point).
+    """
+    n_cols = table.get("n_cols")
+    if not isinstance(n_cols, int) or isinstance(n_cols, bool) or n_cols <= 0:
+        return []
+
+    covered_by_row: dict[int, list[int]] = {}
+    for cell in table.get("cells") or ():
+        if not isinstance(cell, Mapping):
+            continue
+        row = cell.get("row")
+        col = cell.get("col")
+        if not isinstance(row, int) or not isinstance(col, int):
+            continue
+        span = cell.get("colspan", 1)
+        if not isinstance(span, int) or span <= 0:
+            span = 1
+        covered_by_row.setdefault(row, []).extend(range(col, col + span))
+
+    ids: list[str] = []
+    for row in sorted(covered_by_row):
+        covered = covered_by_row[row]
+        if not covered:
+            continue
+        low, high = min(covered), max(covered)
+        for col in range(n_cols):
+            if col in covered:
+                continue
+            prefix = "gridBefore" if col < low else "gridAfter"
+            ids.append(f"docx:{prefix}:{row}:{col}")
+    return ids
+
+
+def _evidence_candidates(
+    notes: Sequence[Mapping[str, Any]], table: Mapping[str, Any]
+) -> list[dict[str, Any]]:
+    """What the document has registered as evidence — from sources, not claims.
+
+    Two sources only:
+
+    * the notes that extraction produced (``evidence_ids`` on each bound note), and
+    * the table's own structure, **recomputed** from cells and ``n_cols``.
+
+    The table's ``omission_evidence_ids`` are deliberately *not* an input. Folding
+    them in made ``omission ⊆ known`` true by construction (L23's starting bug):
+    a table could cite an evidence id that exists nowhere and still pass. Deriving
+    the structural ids independently keeps gridAfter/gridBefore tables valid —
+    narrowing the known set to notes alone (L23) rejected every such table, because
+    ``native_tables`` never routes those ids through a footnote.
     """
     ids: list[str] = []
     for note in notes:
         for evidence_id in note.get("evidence_ids") or ():
             if evidence_id not in ids:
                 ids.append(str(evidence_id))
+    for evidence_id in _structural_evidence_ids(table):
+        if evidence_id not in ids:
+            ids.append(evidence_id)
     return [{"candidate_evidence_id": evidence_id} for evidence_id in ids]
 
 
@@ -233,7 +289,7 @@ def assemble_package(
             table,
             semantics=linked,
             notes=notes_result.notes,
-            evidence_candidates=_evidence_candidates(candidates),
+            evidence_candidates=_evidence_candidates(candidates, table),
             blocked=table_issues,
             context={},
         )

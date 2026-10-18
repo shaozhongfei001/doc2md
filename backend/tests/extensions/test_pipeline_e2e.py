@@ -419,7 +419,7 @@ def test_two_references_in_one_cell_do_not_duplicate_the_cell_evidence(tmp_path)
     # of on the claim it is making.
     package = open_docx(path)
     table_payload = extract_tables(package)[0]
-    candidates = _evidence_candidates(read_notes(package).candidates())
+    candidates = _evidence_candidates(read_notes(package).candidates(), table_payload)
     ids = [candidate["candidate_evidence_id"] for candidate in candidates]
     cell_evidence = [item for item in ids if item.startswith("docx:footnoteReference:")]
     assert len(cell_evidence) == 1, f"cell evidence must appear once, got {cell_evidence}"
@@ -460,7 +460,7 @@ def test_an_omission_evidence_id_that_no_note_registered_is_refused(tmp_path):
             table,
             semantics=[],
             notes=[],
-            evidence_candidates=_evidence_candidates(notes),
+            evidence_candidates=_evidence_candidates(notes, table),
             context={},
         )
 
@@ -483,8 +483,67 @@ def test_an_omission_evidence_id_registered_by_a_note_is_accepted(tmp_path):
         table,
         semantics=[],
         notes=bound.notes,
-        evidence_candidates=_evidence_candidates(bound.notes),
+        evidence_candidates=_evidence_candidates(bound.notes, table),
         context={},
     )
 
     assert packet.payload["omission_evidence_ids"] == [registered]
+
+
+# ------------- L25: structural evidence is recomputed, so gridAfter tables stay valid
+def _grid_after_docx(tmp_path):
+    body = (
+        "<w:tbl><w:tblGrid>"
+        '<w:gridCol w:w="2000"/><w:gridCol w:w="2000"/><w:gridCol w:w="2000"/>'
+        "</w:tblGrid>"
+        "<w:tr><w:trPr><w:tblHeader/></w:trPr>"
+        + tc("金额") + tc("比例") + tc("备注")
+        + "</w:tr>"
+        '<w:tr><w:trPr><w:gridAfter w:val="1"/></w:trPr>'
+        + tc("100") + tc("12%")
+        + "</w:tr></w:tbl>"
+    )
+    path = tmp_path / "gridafter.docx"
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("[Content_Types].xml", CONTENT_TYPES)
+        archive.writestr("word/document.xml", document_xml(body))
+    return path
+
+
+def test_a_table_with_grid_after_still_assembles(tmp_path):
+    """L23 regression (qa-l21): narrowing the known set to notes rejected every table
+    that leaves a column empty via ``w:trPr/w:gridAfter`` — the only hole Word
+    justifies, and the reason ``native_tables`` emits ``docx:gridAfter:…`` evidence.
+
+    Those ids never come from a footnote, so a notes-only known set refuses a legal
+    document. This is the case that must pass.
+    """
+    result = assemble_package(open_docx(_grid_after_docx(tmp_path)), generation_id="GEN-1")
+
+    assert result.stats["tables"] == 1
+    assert result.packets[0].payload["omission_evidence_ids"] == ["docx:gridAfter:1:2"]
+
+
+def test_evidence_candidates_admit_structure_and_reject_an_unfounded_claim(tmp_path):
+    """Behaviour-level pin on the function itself, not on a packet call.
+
+    qa-l21 showed the previous white-box test stayed green when the *old* behaviour
+    (folding declared ids into the known set) was restored. This asserts the function's
+    output directly, so both directions are caught: structure must be present, an
+    unfounded declaration must be absent.
+    """
+    table, notes = _table_and_notes(tmp_path)
+    table = dict(table, omission_evidence_ids=["EV-GHOST"])
+
+    ids = [candidate["candidate_evidence_id"] for candidate in _evidence_candidates(notes, table)]
+    assert "EV-GHOST" not in ids, "a declared id with no source must not become known"
+    assert any(item.startswith("docx:footnote:") for item in ids)
+
+    from app.extensions.word.native_tables import extract_tables
+
+    grid_table = extract_tables(open_docx(_grid_after_docx(tmp_path)))[0]
+    grid_ids = [
+        candidate["candidate_evidence_id"]
+        for candidate in _evidence_candidates([], grid_table)
+    ]
+    assert grid_ids == ["docx:gridAfter:1:2"], "structural evidence must be recomputed"

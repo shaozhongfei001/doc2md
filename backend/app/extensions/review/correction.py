@@ -249,18 +249,17 @@ def _note_candidates_for(
     return owned
 
 
-def _evidence_candidates(notes: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
-    """Document-level registered evidence, same rule as ``pipeline._evidence_candidates``.
+def _evidence_candidates(
+    notes: Sequence[Mapping[str, Any]], table: Mapping[str, Any]
+) -> list[dict[str, Any]]:
+    """Same rule as ``pipeline._evidence_candidates``: notes ∪ recomputed structure.
 
-    The corrected table's own ``omission_evidence_ids`` are **not** folded in: doing so
-    would make ``omission ⊆ known`` true by construction and hide an unregistered id.
+    Imported lazily inside the function so this module keeps working if the pipeline
+    helper is ever moved; the names are pinned by a consistency test.
     """
-    ids: list[str] = []
-    for note in notes:
-        for evidence_id in note.get("evidence_ids") or ():
-            if evidence_id not in ids:
-                ids.append(str(evidence_id))
-    return [{"candidate_evidence_id": evidence_id} for evidence_id in ids]
+    from ..pipeline import _evidence_candidates as pipeline_candidates
+
+    return pipeline_candidates(notes, table)
 
 
 def _build_patch(
@@ -497,7 +496,7 @@ def apply_correction(
         table,
         semantics=linked,
         notes=table_notes,
-        evidence_candidates=_evidence_candidates(assembly.notes),
+        evidence_candidates=_evidence_candidates(assembly.notes, table),
         blocked=table_issues,
         context={},
     )
