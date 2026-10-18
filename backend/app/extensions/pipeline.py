@@ -73,7 +73,19 @@ class AssemblyResult:
 
     @property
     def markdown(self) -> str:
-        """All tables' packets in document order, separated by a rule."""
+        """All tables' packets in document order, separated by a rule.
+
+        A document with no tables still gets a packet, because an empty file and
+        "this document has no tables" are different statements and only one of them
+        is true.
+        """
+        if not self.packets:
+            return (
+                "# 复核包\n\n"
+                "本文档未检出原生 Word 表格（w:tbl）。\n"
+                f"- 源摘要：`{self.source_sha256}`\n"
+                f"- 生成：`{self.generation_id}`\n"
+            )
         return "\n\n---\n\n".join(packet.markdown for packet in self.packets)
 
     def payload(self) -> dict[str, Any]:

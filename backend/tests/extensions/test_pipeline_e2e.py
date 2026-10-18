@@ -270,3 +270,17 @@ def test_cli_assemble_commits_when_dry_run_is_absent(
     assert payload["commit"]["generation_id"] == "GEN-R1"
     assert list(extension_root.rglob("manifest.json"))
     assert list(extension_root.rglob("review_packet.md"))
+
+
+def test_document_without_tables_still_gets_an_honest_packet(tmp_path):
+    """An empty packet file and "no tables found" are different statements."""
+    body = "<w:p><w:r><w:t>本文档只有段落，没有表格。</w:t></w:r></w:p>"
+    path = tmp_path / "para-only.docx"
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("[Content_Types].xml", CONTENT_TYPES)
+        archive.writestr("word/document.xml", document_xml(body))
+
+    result = assemble_package(open_docx(path), generation_id="GEN-P1")
+    assert result.stats["tables"] == 0
+    assert "未检出原生 Word 表格" in result.markdown
+    assert result.source_sha256 in result.markdown
