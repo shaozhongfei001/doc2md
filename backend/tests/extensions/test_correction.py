@@ -843,3 +843,63 @@ def test_a_patch_that_fails_to_reconstruct_the_document_is_refused(assembly, mon
         corrected(assembly)
     assert excinfo.value.code == "E_INPUT_INVALID"
     assert "does not reconstruct" in str(excinfo.value)
+
+
+# --------------- L19/T1901: attribution is checked even when nothing changes
+def test_a_no_op_correction_still_needs_an_attributable_decision(assembly):
+    """MB1 (qa-l19): the existing test only covered a *value-changing* correction.
+
+    That path happens to be caught twice — the top-level guard and, further down,
+    ``preview_patch``'s own "reviewer must come from the local auth context" check.
+    A no-op correction produces no ops, so ``_build_patch`` returns early and never
+    reaches ``preview_patch``: with the top-level guard removed it was accepted and
+    recorded with ``review_decision_ref: ''``.
+    """
+    cell_id = first_data_cell_id(assembly)
+    current = [
+        cell["text"]
+        for table in assembly.tables
+        for cell in table["cells"]
+        if cell["cell_id"] == cell_id
+    ][0]
+
+    with pytest.raises(ExtensionError) as excinfo:
+        apply_correction(
+            assembly,
+            Correction(
+                object_id=cell_id,
+                path=("text",),
+                value=current,  # same value: no data change, no patch
+                reason="x",
+                review_decision_ref="",
+            ),
+            generation_id="GEN-2",
+            header_rows_by_table=header_rows(assembly),
+        )
+
+    assert excinfo.value.code == "E_REVIEW_REQUIRED"
+    assert "review_decision_ref" in str(excinfo.value)
+
+
+# ---------------- L19/T1902: the two attribution implementations must agree
+def test_the_two_note_attribution_implementations_agree():
+    """MB5's fix exists twice — in ``pipeline`` and in ``correction``.
+
+    Duplication is deliberate (reaching into another module's private helper makes a
+    rename silently change behaviour), but deliberate duplication still drifts. This
+    pins that both classify the same candidates identically for every table index,
+    including the ``table_index == 0`` gate that a previous round proved untested.
+    """
+    from app.extensions.pipeline import _note_candidates_for as from_pipeline
+    from app.extensions.review.correction import _note_candidates_for as from_correction
+
+    candidates = [
+        {"note_id": "N-T1", "target_ids": ["TBL-0001-R0000C0000"]},
+        {"note_id": "N-T2", "target_ids": ["TBL-0002-R0000C0000"]},
+        {"note_id": "N-ORPHAN", "target_ids": []},
+    ]
+    for index in range(3):
+        table_id = f"TBL-000{index + 1}"
+        assert from_pipeline(index, table_id, candidates) == from_correction(
+            index, table_id, candidates
+        ), f"attribution differs between the two implementations at table index {index}"
