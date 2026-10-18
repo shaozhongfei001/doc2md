@@ -83,3 +83,31 @@ QA 建议"收敛为单一实现或加等式断言"。我选后者：
 
 前两轮把判据从"代码里有检查"推进到"有变异能让它红"；这一轮再推进一层：
 **红的原因必须归属于被测守卫本身。**
+
+## 9. 独立复验（qa-l19，四项全过）
+
+| 项 | 结果 |
+|---|---|
+| 全量 @ `69be46d` | **1373 passed / 133 skipped** |
+| 产品代码 | `git diff bd9b66f 69be46d -- backend/app` = **空**；仅 `test_correction.py`（+60）与契约 JSON（+86） |
+| MB1 形态 | 红在 `:866` **`DID NOT RAISE`**，不是 `E_INPUT_INVALID` → **间接捕获已转为直接捕获** |
+| 行为对照 | 变异态 `ACCEPTED … review_decision_ref='' patch_ops=0`；还原态 `REFUSED E_REVIEW_REQUIRED` |
+| 等式断言（正向） | 只改 `correction` 侧 → `:903` `attribution differs … at table index 1` |
+| 等式断言（**反向**） | 只改 `pipeline` 侧 → 同样 `:903`，`Left contains one more item` |
+
+反向验证是 QA 额外做的：它证明了等式断言**双向有效**，不是只防单边漂移。
+
+同时它确认了两条用例现在分别封住 MB1 的**两个分支**：
+`test_correction_without_a_review_decision_is_refused`（改变取值，走下游兜底）
++ `test_a_no_op_correction_still_needs_an_attributable_decision`（不改变取值，直证）。
+
+## 10. 一条必须与等式断言成对表述的限制（QA 提出，我采纳）
+
+> 等式断言钉的是"**一致**"，不是"**正确**"。若有人把同一条错误规则同时抄进两份实现，`:903` 会绿。
+
+也就是说：`T1902` 只能防漂移，不能防"两边一起错"。规则本身的正确性由
+`test_an_orphan_note_stays_out_of_a_non_first_table`（`:818`）与
+`test_an_unattached_footnote_binds_once_and_stays_visible`（`test_pipeline_e2e.py:314`）兜底。
+
+**两者缺一不可**：只跑等式断言会给出"一致所以正确"的错觉——这和 L16 那条"守卫可达 ≠ 不会出错"是同一类错误。
+后续任何改动，不得只跑 `:903`。
