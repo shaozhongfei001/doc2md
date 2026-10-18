@@ -116,10 +116,10 @@ def test_review_decision_is_required_for_confirmed_join():
         ("currency", "美元", "CURRENCY_CONFLICT"),
         ("unit_raw", "元", "UNIT_RAW_CONFLICT"),
         ("period", "2025H2", "PERIOD_CONFLICT"),
-        ("caption", "表2 存款余额", "CAPTION_CONFLICT"),
     ],
 )
-def test_declared_conflicts_are_separate(field_name, other_value, expected_code):
+def test_data_conflicts_are_separate(field_name, other_value, expected_code):
+    """Currency, unit and period are the data; two different values cannot be one table."""
     result = propose_continuation(
         page("T1"),
         page("T2", page_index=2, **{field_name: other_value}),
@@ -127,6 +127,51 @@ def test_declared_conflicts_are_separate(field_name, other_value, expected_code)
     )
     assert result.decision == "SEPARATE"
     assert expected_code in codes(result)
+
+
+def test_a_real_caption_mismatch_is_reviewable_not_separate():
+    """A caption is a label, not the data.
+
+    ``qa-l20`` found the severity inverted: a caption differing by one character was
+    judged SEPARATE (no review possible), while *changing column definitions* — much
+    stronger evidence of a different table — only reached NEEDS_REVIEW.
+    """
+    result = propose_continuation(
+        page("T1"),
+        page("T2", page_index=2, caption="表2 存款余额"),
+        evidence_ids=EVIDENCE,
+    )
+    assert result.decision == "NEEDS_REVIEW"
+    assert "CAPTION_CONFLICT" in codes(result)
+    conflict = [r for r in result.reasons if r.code == "CAPTION_CONFLICT"][0]
+    assert conflict.severity == "SOFT"
+    assert result.reasons  # the comparison trail is still reported
+
+
+@pytest.mark.parametrize(
+    "continued_caption",
+    ["续表1 贷款余额", "（续）表1 贷款余额", "表1 贷款余额（续）"],
+)
+def test_a_continuation_marker_is_the_same_label(continued_caption):
+    """The commonest real shape of a long table on the next page must not be rejected."""
+    result = propose_continuation(
+        page("T1"),
+        page("T2", page_index=2, caption=continued_caption),
+        evidence_ids=EVIDENCE,
+    )
+    assert result.decision == "JOIN_CANDIDATE"
+    assert "CAPTION_CONTINUATION_MARKER" in codes(result)
+    assert "CAPTION_CONFLICT" not in codes(result)
+
+
+def test_a_different_label_still_blocks_a_join():
+    # Normalisation must not become "all captions match".
+    result = propose_continuation(
+        page("T1"),
+        page("T2", page_index=2, caption="表9 其他"),
+        evidence_ids=EVIDENCE,
+    )
+    assert result.decision != "JOIN_CANDIDATE"
 
 
 def test_same_column_count_is_not_enough_to_join():
@@ -277,3 +322,29 @@ def test_malformed_signatures_are_refused(bad_next, match):
         propose_continuation(page("T1"), bad_next, evidence_ids=EVIDENCE)
     assert excinfo.value.code == CONTINUATION_CODE
     assert match in str(excinfo.value)
+
+
+def test_normalisation_does_not_mangle_a_caption_that_merely_contains_the_character():
+    """TL probe: stripping every '续' would turn '持续经营说明' into '持经营说明'.
+
+    Only affixes are removed, so a caption whose *content* contains the marker
+    character is left alone.
+    """
+    from app.extensions.tables.continuation import _normalise_caption
+
+    assert _normalise_caption("持续经营说明") == "持续经营说明"
+    assert _normalise_caption("续贷余额") == "续贷余额"
+    assert _normalise_caption("表1 贷款余额") == "表1贷款余额"
+    assert _normalise_caption("续表1 贷款余额") == "表1贷款余额"
+
+
+def test_a_hard_conflict_still_wins_over_a_soft_one():
+    # Downgrading caption to NEEDS_REVIEW must not soften the data comparisons: a
+    # row that also differs in currency is still SEPARATE.
+    result = propose_continuation(
+        page("T1"),
+        page("T2", page_index=2, caption="表2 存款余额", currency="美元"),
+        evidence_ids=EVIDENCE,
+    )
+    assert result.decision == "SEPARATE"
+    assert "CURRENCY_CONFLICT" in codes(result)

@@ -14,7 +14,9 @@ Decision rules, in the order they are applied:
 * different source version, non-adjacent pages, same page, or different table
   type → ``SEPARATE``. Adjacency is a *signal*, so a same-page pair is never
   chained by index.
-* caption / currency / unit / period: both known and different → ``SEPARATE``;
+* currency / unit / period: both known and different → ``SEPARATE``; caption differing
+  only by a continuation marker (``续表``/``续前``/``（续）``) is the *same* label, and a
+  real caption mismatch is ``NEEDS_REVIEW`` (a label is not the data);
   exactly one known → ``NEEDS_REVIEW`` (an unknown side is not a match).
 * column count differs → ``SEPARATE``; column paths differ → ``NEEDS_REVIEW``
   (same width but a different header is exactly the "looks alike" trap);
@@ -59,6 +61,9 @@ class ComparisonReason:
     code: str
     message: str
     blocking: bool = False
+    #: ``HARD`` means the pair is not a continuation at all; ``SOFT`` means a human
+    #: should look. A label mismatch is soft — it names things, it is not the data.
+    severity: str = "HARD"
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -66,6 +71,7 @@ class ComparisonReason:
             "code": self.code,
             "message": self.message,
             "blocking": self.blocking,
+            "severity": self.severity,
         }
 
 
@@ -106,6 +112,35 @@ class _Signature:
     @property
     def headerless(self) -> bool:
         return self.column_paths is not None and len(self.column_paths) == 0
+
+
+#: Word users mark the second half of a long table in a handful of ways. Only
+#: these *affixes* are stripped: doing ``replace("续", "")`` would mangle a caption
+#: such as "持续经营说明", which is content, not a marker.
+#: A bare ``续`` is deliberately *not* stripped: ``续贷余额`` is a caption about
+#: rolled-over loans, not a continuation marker.
+_CAPTION_PREFIXES = ("续表", "续前", "（续）", "(续)")
+_CAPTION_SUFFIXES = ("（续）", "(续)")
+
+
+def _normalise_caption(value: str) -> str:
+    """Drop a continuation marker so ``续表1 X`` and ``表1 X`` compare equal.
+
+    Chinese financial statements routinely label the next page ``续表1 …``. Comparing
+    captions byte-for-byte then reports ``CAPTION_CONFLICT`` — the strongest evidence
+    against a continuation — for the commonest shape of a real continuation.
+    """
+    text = "".join(value.split())
+    for marker in _CAPTION_PREFIXES:
+        if text.startswith(marker) and len(text) > len(marker):
+            # ``续表`` keeps its 表: it renames the same table, it does not drop it.
+            text = ("表" if marker == "续表" else "") + text[len(marker):]
+            break
+    for marker in _CAPTION_SUFFIXES:
+        if text.endswith(marker) and len(text) > len(marker):
+            text = text[: -len(marker)]
+            break
+    return text
 
 
 def _text(value: Any, *, field_name: str, table_id: str) -> str | None:
@@ -263,9 +298,15 @@ def propose_continuation(
         if dimension not in compared:
             compared.append(dimension)
 
-    def block(dimension: str, code: str, message: str) -> None:
+    def block(dimension: str, code: str, message: str, *, severity: str = "HARD") -> None:
         reasons.append(
-            ComparisonReason(dimension=dimension, code=code, message=message, blocking=True)
+            ComparisonReason(
+                dimension=dimension,
+                code=code,
+                message=message,
+                blocking=True,
+                severity=severity,
+            )
         )
 
     # --- structural signals -------------------------------------------------
@@ -304,8 +345,29 @@ def propose_continuation(
         left = getattr(prev, dimension)
         right = getattr(nxt, dimension)
         if left and right:
-            if left != right:
-                block(dimension, f"{dimension.upper()}_CONFLICT", f"{left!r} vs {right!r}")
+            if left == right:
+                continue
+            if dimension == "caption" and _normalise_caption(left) == _normalise_caption(right):
+                reasons.append(
+                    ComparisonReason(
+                        dimension="caption",
+                        code="CAPTION_CONTINUATION_MARKER",
+                        message=(
+                            f"{left!r} vs {right!r} differ only by a continuation marker; "
+                            "the labels name the same table"
+                        ),
+                    )
+                )
+                continue
+            # A caption is a label, not the data: a real mismatch means "a human
+            # should look", not "these are certainly different tables". Currency,
+            # unit and period are data, so they stay hard.
+            block(
+                dimension,
+                f"{dimension.upper()}_CONFLICT",
+                f"{left!r} vs {right!r}",
+                severity="SOFT" if dimension == "caption" else "HARD",
+            )
         elif left or right:
             block(
                 dimension,
@@ -376,12 +438,17 @@ def propose_continuation(
         )
 
     blocking = [reason for reason in reasons if reason.blocking]
+    hard = [reason for reason in blocking if reason.severity == "HARD"]
     if any(reason.code.endswith("_UNKNOWN") for reason in blocking):
         decision = "NEEDS_REVIEW"
     elif any(reason.code in {"COLUMN_PATH_CHANGED", "COLUMN_WIDTH_DRIFT"} for reason in blocking):
         decision = "NEEDS_REVIEW"
-    elif blocking:
+    elif hard:
+        # A soft reason must never soften a hard one: if the data disagrees, the pair
+        # is not a continuation no matter how similar the captions look.
         decision = "SEPARATE"
+    elif blocking:
+        decision = "NEEDS_REVIEW"
     else:
         decision = "JOIN_CANDIDATE"
 
