@@ -284,3 +284,26 @@ def test_document_without_tables_still_gets_an_honest_packet(tmp_path):
     assert result.stats["tables"] == 0
     assert "未检出原生 Word 表格" in result.markdown
     assert result.source_sha256 in result.markdown
+
+
+def test_an_unattached_footnote_binds_once_and_stays_visible(tmp_path):
+    """L13-FIND-01: one orphan footnote must not become one note per table.
+
+    The note has no cell reference, so it cannot be attributed to a table. It is
+    attached to the first table and marked ``NEEDS_REVIEW``: visible, counted once,
+    and not silently deleted.
+    """
+    body = table(tr(tc("金额") + tc("比例"), header=True) + tr(tc("100") + tc("12%"))) + table(
+        tr(tc("条目") + tc("数量"), header=True) + tr(tc("甲") + tc("7"))
+    )
+    path = tmp_path / "orphan.docx"
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("[Content_Types].xml", CONTENT_TYPES)
+        archive.writestr("word/document.xml", document_xml(body))
+        archive.writestr("word/footnotes.xml", footnotes_xml(note("9", "孤儿脚注。")))
+
+    result = assemble_package(open_docx(path), generation_id="GEN-1")
+
+    assert result.stats["notes"] == 1, "one footnote is one note, not one per table"
+    assert [len(table_item.get("notes") or ()) for table_item in result.tables] == [1, 0]
+    assert result.notes[0]["state"] == "NEEDS_REVIEW", "it must stay visible, not be dropped"

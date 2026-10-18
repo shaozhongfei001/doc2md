@@ -624,9 +624,10 @@ def test_an_unattached_note_is_not_duplicated_across_tables(tmp_path):
     assert len(ids) == 1
 
 
-def test_a_deduped_note_says_so_in_the_issues(tmp_path):
+def test_the_remove_duplicate_defence_does_not_fire_in_normal_flow(tmp_path):
+    """After L14 the duplicate is prevented upstream, so this path must stay quiet."""
     path = build_docx(
-        tmp_path / "orphan2.docx", body=TABLE_ONE + TABLE_TWO, footnotes={"9": "孤儿脚注。"}
+        tmp_path / "orphan3.docx", body=TABLE_ONE + TABLE_TWO, footnotes={"9": "孤儿脚注。"}
     )
     assembly = assemble_package(open_docx(path), generation_id="GEN-1")
     outcome = apply_correction(
@@ -642,6 +643,33 @@ def test_a_deduped_note_says_so_in_the_issues(tmp_path):
         header_rows_by_table=header_rows(assembly),
         note_candidates=candidates_of(path),
     )
-    deduped = [issue for issue in outcome.assembly.issues if issue.get("code") == "DUPLICATE_NOTE_ID_DEDUPED"]
-    assert deduped, "collapsing a duplicate must be reported, not silent"
-    assert deduped[0]["note_id"] == "FN-9"
+    codes = [issue.get("code") for issue in outcome.assembly.issues]
+    assert "DUPLICATE_NOTE_ID_DEDUPED" not in codes
+
+
+def test_the_duplicate_defence_still_reports_when_it_does_fire(tmp_path):
+    """Defensive: an assembly that already carries a duplicate must not be counted twice."""
+    path = build_docx(
+        tmp_path / "orphan4.docx", body=TABLE_ONE + TABLE_TWO, footnotes={"9": "孤儿脚注。"}
+    )
+    assembly = assemble_package(open_docx(path), generation_id="GEN-1")
+    # Simulate a caller/older build that copied the note into a second table.
+    assembly.tables[1]["notes"] = [dict(note) for note in assembly.tables[0]["notes"]]
+
+    outcome = apply_correction(
+        assembly,
+        Correction(
+            object_id=first_data_cell_id(assembly),
+            path=("text",),
+            value="150",
+            reason="x",
+            review_decision_ref="RV-1",
+        ),
+        generation_id="GEN-2",
+        header_rows_by_table=header_rows(assembly),
+        note_candidates=candidates_of(path),
+    )
+    ids = [note["note_id"] for note in outcome.assembly.notes]
+    assert len(ids) == len(set(ids))
+    deduped = [i for i in outcome.assembly.issues if i.get("code") == "DUPLICATE_NOTE_ID_DEDUPED"]
+    assert deduped and deduped[0]["note_id"] == "FN-9"

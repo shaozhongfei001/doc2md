@@ -110,19 +110,25 @@ class AssemblyResult:
         }
 
 
-def _note_candidates_for(table_id: str, candidates: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
+def _note_candidates_for(
+    table_index: int, table_id: str, candidates: Sequence[Mapping[str, Any]]
+) -> list[dict[str, Any]]:
     """Notes whose target cell belongs to ``table_id``; unbound notes go to table 0.
 
     An unresolved note has no target, so it cannot be attributed to one table by
     cell id. Rather than dropping it (which would hide a missing footnote), it is
-    attached to the first table so ``bind_notes`` marks it ``NEEDS_REVIEW`` and it
-    stays visible in that table's packet.
+    attached to the **first** table so ``bind_notes`` marks it ``NEEDS_REVIEW`` and
+    it stays visible in that table's packet.
+
+    "First" is load-bearing: appending it to every table made one orphan footnote
+    count as N notes and appear in N packets, which reads as N separate conditions.
     """
     owned: list[dict[str, Any]] = []
     for candidate in candidates:
         targets = candidate.get("target_ids") or ()
         if not targets:
-            owned.append(dict(candidate))
+            if table_index == 0:
+                owned.append(dict(candidate))
             continue
         if any(str(target).startswith(f"{table_id}-") for target in targets):
             owned.append(dict(candidate))
@@ -177,7 +183,7 @@ def assemble_package(
     packets: list[ReviewPacket] = []
     bound_notes: list[dict[str, Any]] = []
 
-    for table in tables:
+    for table_index, table in enumerate(tables):
         table_id = table["table_id"]
         flag = flag_by_table.get(table_id)
         table_issues: list[dict[str, Any]] = []
@@ -191,7 +197,7 @@ def assemble_package(
             payload = issue.to_dict()
             table_issues.append({"layer": "semantics", **payload})
 
-        table_candidates = _note_candidates_for(table_id, candidates)
+        table_candidates = _note_candidates_for(table_index, table_id, candidates)
         notes_result: NotesResult = bind_notes(table, table_candidates) if table_candidates else NotesResult(notes=[], issues=[])
         for issue in notes_result.issues:
             table_issues.append({"layer": "notes", **issue.to_dict()})
