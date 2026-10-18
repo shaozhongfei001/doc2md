@@ -1,0 +1,97 @@
+{
+  "schema_version": "1.0.0",
+  "contract_id": "DOC2MD-19CAP-V1.0.1-ADDENDUM-L27",
+  "state": "PLANNED",
+  "generated_on": "2026-10-18",
+  "parent_contract": {
+    "version": "DOC2MD-19CAP-V1.0",
+    "path": "../../v1.0.0/loop_contract.json",
+    "note": "纯追加，不修改 v1.0.0 任何 Loop。"
+  },
+  "authorization": {
+    "basis": "qa-l21 对 L26 提出两条整改：①两处既有用例的 object_id 被误改（注释与 fixture 事实不符，且削弱了数据单元格的覆盖）；②降级路径在产品内不可达，两套口径正是 L23→L25→L26 反复的根源",
+    "evidence": "QA 复验报告（qa-l21，2026-10-18）第 3 节与第 2 节观察",
+    "decided_by": "Owner（长程任务）",
+    "decided_on": "2026-10-18"
+  },
+  "scope_note": "还原误改的既有用例；删除不可达的降级路径，改为 fail-closed（缺 slots 即拒绝），使结构证据只有一套口径。",
+  "gates": {
+    "A1": {
+      "official_tool_available": false,
+      "reason": "L27 不在 PACK 的 loop 列表中",
+      "equivalent_check": [
+        "git diff --name-only <entry>..HEAD ⊆ allowed_new_or_scoped_paths",
+        "git ls-files --others --exclude-standard 为空"
+      ],
+      "honesty_rule": "不得改 PACK 或扩原白名单"
+    },
+    "B": "pytest 全量不得低于 1395 passed / 131 skipped",
+    "C": "check_baseline.py --allow-index-append 必须 passed=true",
+    "GAP": "三条判据：①两处既有用例恢复为数据单元格订正且全绿；②缺 slots 的 payload 必须 E_INPUT_INVALID（不得静默降级）；③gridAfter/整行空洞/vMerge 三类文档行为不变"
+  },
+  "loops": [
+    {
+      "loop_id": "L27",
+      "name": "结构证据单一口径：删除不可达降级路径",
+      "status": "PLANNED",
+      "depends_on": ["L26"],
+      "conditional_dependencies": [],
+      "requirement_ids": ["PI-F04-09"],
+      "allowed_new_or_scoped_paths": [
+        "backend/app/extensions/pipeline.py",
+        "backend/tests/extensions/test_correction.py",
+        "backend/tests/extensions/test_pipeline_e2e.py",
+        "docs/proposals/doc2md-19cap/v1.0.0/evidence/L26/TL_ACCEPTANCE.md"
+      ],
+      "scoped_existing_edits": [
+        "backend/app/extensions/pipeline.py",
+        "backend/tests/extensions/test_correction.py",
+        "backend/tests/extensions/test_pipeline_e2e.py",
+        "docs/proposals/doc2md-19cap/v1.0.0/evidence/L26/TL_ACCEPTANCE.md"
+      ],
+      "forbidden": [
+        "保留第二套空洞推导口径",
+        "为了兼容手工 payload 而继续静默降级",
+        "改动任何 fixture 的文档结构来迁就断言"
+      ],
+      "tasks": [
+        {
+          "task_id": "T2701",
+          "description": "还原 test_the_remove_duplicate_defence_does_not_fire_in_normal_flow 与 test_a_grid_after_table_survives_a_correction 的 object_id 为数据单元格",
+          "output": "test_correction.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T2702",
+          "description": "_structural_evidence_ids 删除 cells 降级路径；slots 缺失时 E_INPUT_INVALID（产品不会降级，手工 payload 应显式失败）",
+          "output": "pipeline.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T2703",
+          "description": "用例：缺 slots 的 payload 被拒绝且信息明确；三类文档行为不变",
+          "output": "test_pipeline_e2e.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T2704",
+          "description": "L26 证据更正 LIM-01 措辞（slots 与 cells 在本产品内恒等，非'更忠实几何'）并标记关闭",
+          "output": "evidence/L26/TL_ACCEPTANCE.md",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        }
+      ],
+      "role_route": ["TL_PLAN", "DEV_SELF_TEST", "INDEPENDENT_QA", "TL_FINAL"],
+      "required_evidence": [
+        "input_commit_and_hashes",
+        "actual_commands_and_exit_codes",
+        "test_case_id_results",
+        "known_gaps_by_scope"
+      ],
+      "next_loop_permission": "只有'缺 slots 被拒'与'三类文档行为不变'同时成立，才允许声明单一口径。"
+    }
+  ]
+}
