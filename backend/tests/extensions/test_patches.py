@@ -92,8 +92,19 @@ def test_replace_without_a_preceding_test_is_refused():
     assert "immediately preceded by a test" in str(excinfo.value)
 
 
-def test_only_test_and_replace_are_allowed():
-    ops = [{"op": "add", "path": "/tables/0/cells/0/text", "value": "150"}]
+@pytest.mark.parametrize("op", ["add", "remove", "move", "copy"])
+def test_only_test_and_replace_are_allowed(op):
+    """qa-l22: only ``add`` was ever delivered, so the whitelist looked closed.
+
+    Every other op was unverified: adding ``remove`` to ``ALLOWED_OPS`` kept the whole
+    suite green *and* really deleted a field (``text`` vanished), which a preview does
+    not even record in ``changed_paths``.
+
+    ``value`` is supplied so that the op whitelist is the only thing that can reject
+    it — otherwise the ``'value' not in raw`` check would reject first and the test
+    would pass for the wrong reason.
+    """
+    ops = [{"op": op, "path": "/tables/0/cells/0/text", "value": "150"}]
     with pytest.raises(ExtensionError) as excinfo:
         preview(ops=ops)
     assert "not allowed" in str(excinfo.value)
@@ -115,6 +126,23 @@ def test_source_identity_and_provenance_are_never_patchable(path):
     with pytest.raises(ExtensionError) as excinfo:
         preview(ops=ops)
     assert "never patchable" in str(excinfo.value) or "outside the reviewer field whitelist" in str(excinfo.value)
+
+
+def test_forbidden_fragment_wins_over_a_whitelisted_path_shape():
+    """qa-l22 M5: the forbidden-fragment check was never independently verified.
+
+    The existing parametrised case used paths that also fail the whitelist, so the
+    assertion had to accept either message — and that ``or`` made the check look
+    covered. This path *matches* ``^/tables/[^/]+/cells/[^/]+/text$`` and still names a
+    provenance field, so only ``FORBIDDEN_FRAGMENTS`` can reject it. Measured before
+    the fix: skipping the fragment loop let ``locator`` be rewritten from
+    ``AUDIT-ONLY`` to ``LEAKED`` with the suite green.
+    """
+    path = "/tables/0/cells/locator/text"
+    ops = [{"op": "test", "path": path, "value": "AUDIT-ONLY"}, {"op": "replace", "path": path, "value": "LEAKED"}]
+    with pytest.raises(ExtensionError) as excinfo:
+        preview(ops=ops)
+    assert "never patchable" in str(excinfo.value)
 
 
 def test_a_failing_test_means_the_document_moved():
