@@ -630,12 +630,10 @@ def test_the_remove_duplicate_defence_does_not_fire_in_normal_flow(tmp_path):
         tmp_path / "orphan3.docx", body=TABLE_ONE + TABLE_TWO, footnotes={"9": "孤儿脚注。"}
     )
     assembly = assemble_package(open_docx(path), generation_id="GEN-1")
-    # The second row carries no cells at all, so there is no data cell to correct.
-    header_cell = assembly.tables[0]["cells"][0]["cell_id"]
     outcome = apply_correction(
         assembly,
         Correction(
-            object_id=header_cell,
+            object_id=first_data_cell_id(assembly),
             path=("text",),
             value="150",
             reason="x",
@@ -955,12 +953,10 @@ def test_a_grid_after_table_survives_a_correction(tmp_path):
         archive.writestr("word/document.xml", document_xml(body))
 
     assembly = assemble_package(open_docx(path), generation_id="GEN-1")
-    # The second row carries no cells at all, so there is no data cell to correct.
-    header_cell = assembly.tables[0]["cells"][0]["cell_id"]
     outcome = apply_correction(
         assembly,
         Correction(
-            object_id=header_cell,
+            object_id=first_data_cell_id(assembly),
             path=("text",),
             value="150",
             reason="x",
@@ -992,7 +988,8 @@ def test_an_empty_row_table_survives_a_correction(tmp_path):
         archive.writestr("word/document.xml", document_xml(body))
 
     assembly = assemble_package(open_docx(path), generation_id="GEN-1")
-    # The second row carries no cells at all, so there is no data cell to correct.
+    # This fixture's second row has no cells at all, so it has no data cell to
+    # correct; the header cell is the only correctable target here.
     header_cell = assembly.tables[0]["cells"][0]["cell_id"]
     outcome = apply_correction(
         assembly,

@@ -651,3 +651,22 @@ def test_recomputed_structure_matches_the_extractor_record(tmp_path):
         }
         recorded = {(int(row), int(col)) for row, col in table["omitted_slots"]}
         assert recomputed == recorded, f"{path.name}: recomputed {recomputed} vs recorded {recorded}"
+
+
+def test_a_payload_without_slots_is_refused_rather_than_degraded(tmp_path):
+    """qa-l21: the ``cells`` fallback was unreachable in production, and having two
+    derivations is what let L23→L25→L26 keep drifting.
+
+    A hand-built payload must fail loudly — "silently degraded" would mean the
+    evidence check was never applied to it.
+    """
+    from app.extensions.pipeline import _structural_evidence_ids
+
+    table, notes = _table_and_notes(tmp_path)
+    without_slots = {key: value for key, value in table.items() if key != "slots"}
+
+    with pytest.raises(ExtensionError) as excinfo:
+        _structural_evidence_ids(without_slots)
+
+    assert excinfo.value.code == "E_INPUT_INVALID"
+    assert "no slots matrix" in str(excinfo.value)

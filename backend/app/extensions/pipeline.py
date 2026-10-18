@@ -181,40 +181,18 @@ def _structural_evidence_ids(table: Mapping[str, Any]) -> list[str]:
                 ids.append(f"docx:{prefix}:{row_index}:{col}")
         return ids
 
-    # Degraded path: a table assembled without ``slots`` (hand-built payloads in
-    # tests). Cannot see merges or empty rows, so it is only a best effort.
-    if not isinstance(n_rows, int) or n_rows <= 0:
-        return []
-    covered_by_row: dict[int, list[int]] = {}
-    for cell in table.get("cells") or ():
-        if not isinstance(cell, Mapping):
-            continue
-        row = cell.get("row")
-        col = cell.get("col")
-        if not isinstance(row, int) or not isinstance(col, int):
-            continue
-        span = cell.get("colspan", 1)
-        row_span = cell.get("rowspan", 1)
-        if not isinstance(span, int) or span <= 0:
-            span = 1
-        if not isinstance(row_span, int) or row_span <= 0:
-            row_span = 1
-        for offset in range(row_span):
-            covered_by_row.setdefault(row + offset, []).extend(range(col, col + span))
-
-    ids = []
-    for row_index in range(n_rows):
-        covered = covered_by_row.get(row_index)
-        if not covered:
-            ids.extend(f"docx:gridAfter:{row_index}:{col}" for col in range(n_cols))
-            continue
-        low, high = min(covered), max(covered)
-        for col in range(n_cols):
-            if col in covered:
-                continue
-            prefix = "gridBefore" if col < low else "gridAfter"
-            ids.append(f"docx:{prefix}:{row_index}:{col}")
-    return ids
+    # No second derivation. ``slots`` is a pure function of ``cells`` built by the
+    # extractor, so a second, hand-rolled derivation could only drift from it —
+    # which is exactly what happened across L23→L25→L26. Every product caller passes
+    # a payload from ``extract_tables``; a payload without ``slots`` is a hand-built
+    # one, and silently "degrading" for it would hide the fact that the check was
+    # never applied. Fail closed instead.
+    raise ExtensionError(
+        "E_INPUT_INVALID",
+        "table payload has no slots matrix; structural evidence cannot be verified "
+        "without it (product payloads always carry slots)",
+        detail={"table_id": table.get("table_id")},
+    )
 
 
 def _evidence_candidates(
