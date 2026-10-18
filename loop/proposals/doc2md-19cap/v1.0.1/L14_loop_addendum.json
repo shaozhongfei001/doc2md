@@ -1,0 +1,98 @@
+{
+  "schema_version": "1.0.0",
+  "contract_id": "DOC2MD-19CAP-V1.0.1-ADDENDUM-L14",
+  "state": "PLANNED",
+  "generated_on": "2026-10-18",
+  "parent_contract": {
+    "version": "DOC2MD-19CAP-V1.0",
+    "path": "../../v1.0.0/loop_contract.json",
+    "note": "纯追加，不修改 v1.0.0 任何 Loop。"
+  },
+  "authorization": {
+    "basis": "L13-FIND-01：pipeline._note_candidates_for 把无目标脚注追加到每一张表，1 条脚注被计为 N 条；其 docstring 声称只归首表，代码与自述不符",
+    "evidence": "evidence/L13/TL_ACCEPTANCE.md 第 4 节",
+    "decided_by": "Owner（长程任务）",
+    "decided_on": "2026-10-18"
+  },
+  "scope_note": "在上游修正孤儿脚注的归属，使 assemble 与 correction 两侧口径一致；correction 的去重保留为防御但正常流程不再触发。",
+  "gates": {
+    "A1": {
+      "official_tool_available": false,
+      "reason": "L14 不在 PACK 的 loop 列表中",
+      "equivalent_check": [
+        "git diff --name-only <entry>..HEAD ⊆ allowed_new_or_scoped_paths",
+        "git ls-files --others --exclude-standard 为空"
+      ],
+      "honesty_rule": "不得改 PACK 或扩原白名单"
+    },
+    "B": "pytest 全量不得低于 1354 passed / 133 skipped",
+    "C": "check_baseline.py --allow-index-append 必须 passed=true",
+    "GAP": "L13-FIND-01 的关闭判据：真实 docx（1 条孤儿脚注 + 2 张表）经 assemble_package 后 must be 绑定数=1、首表 notes=1、次表 notes=0，且 stats['notes']==1"
+  },
+  "loops": [
+    {
+      "loop_id": "L14",
+      "name": "孤儿脚注归属修正",
+      "status": "PLANNED",
+      "depends_on": ["L10", "L13"],
+      "conditional_dependencies": [],
+      "requirement_ids": ["PI-F04-08"],
+      "allowed_new_or_scoped_paths": [
+        "backend/app/extensions/pipeline.py",
+        "backend/tests/extensions/test_pipeline_e2e.py",
+        "backend/tests/extensions/test_correction.py"
+      ],
+      "scoped_existing_edits": [
+        "backend/app/extensions/pipeline.py",
+        "backend/tests/extensions/test_pipeline_e2e.py",
+        "backend/tests/extensions/test_correction.py"
+      ],
+      "forbidden": [
+        "改变 assemble_package 的其他行为",
+        "让去重逻辑变成静默丢弃（去重仍须可观测）",
+        "新增错误码",
+        "把 orphan 脚注直接丢掉（必须仍可见，标 NEEDS_REVIEW）"
+      ],
+      "tasks": [
+        {
+          "task_id": "T1401",
+          "description": "_note_candidates_for 按表序号归属：无目标候选只归首表，函数注释与实现一致",
+          "output": "pipeline.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T1402",
+          "description": "assemble_package 调用点传表序号；其它行为不变（受影响表、issue 层、统计口径不回归）",
+          "output": "pipeline.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T1403",
+          "description": "E2E 断言：1 条孤儿脚注 -> 绑定 1 条、首表 1 / 次表 0、stats['notes']==1，且仍标 NEEDS_REVIEW（不是被丢弃）",
+          "output": "test_pipeline_e2e.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T1404",
+          "description": "correction 侧去重退化为防御：正常流程不再产生 DUPLICATE_NOTE_ID_DEDUPED；用注入重复的用例证明防御仍有效",
+          "output": "test_correction.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        }
+      ],
+      "role_route": ["TL_PLAN", "DEV_SELF_TEST", "DB_REVIEW", "INDEPENDENT_QA", "E2E", "HO_HANDOFF", "TL_FINAL"],
+      "required_evidence": [
+        "input_commit_and_hashes",
+        "actual_commands_and_exit_codes",
+        "test_case_id_results",
+        "protected_file_hash_comparison",
+        "known_gaps_by_scope",
+        "role_and_execution_identity"
+      ],
+      "next_loop_permission": "只有'孤儿脚注不再翻倍'与'仍可见未丢弃'两条同时成立，才允许声明 L13-FIND-01 关闭。"
+    }
+  ]
+}
