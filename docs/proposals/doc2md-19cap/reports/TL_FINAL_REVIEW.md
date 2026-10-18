@@ -80,3 +80,23 @@
   与"测试是否守得住规则"是两件事。
 - 附带证伪：TL 曾预判图表 `PRINTED_LABEL` 降级有冗余防护，实测**没有**，
   该守卫是单层承载性的（`build_chart` 的值类型校验方向相反）。预判错误已记录在该报告 2.2 节。
+
+---
+
+## 附记 02（L09 生产者接线后，2026-10-18）
+
+依据 `ADR-19CAP-02`（Owner 采纳方案 B），新开 L09 完成生产者接线，第 1 节三行状态更新：
+
+| 编号 | 原状态 | 现状态 | 依据 |
+|---|---|---|---|
+| `PI-F04-06` 多级表头 | CODE_PARTIAL | **CODE_COMPLETE（端到端可达）** | `word/table_flags.py` 产出 `tblHeader` 表头带；`extract_tables + flags → derive_header_paths` 产出非空路径（T904 断言） |
+| `PI-F04-08` 脚注 | CODE_PARTIAL | **CODE_COMPLETE（端到端可达）** | `word/notes_extract.py` 产出脚注原文与引用，`bind_notes` 可绑定并 publishable（T904 断言） |
+| `PI-F04-07` 续表 | CODE_PARTIAL | **CODE_PARTIAL（仍受限）** | 列宽已产出；页码仅来自 `w:lastRenderedPageBreak` 缓存，无缓存即 `None`（`L09-LIM-01`），续页判断对无缓存 DOCX 仍不可达 |
+
+统计更新：`CODE_COMPLETE` **13 项**，`CODE_PARTIAL` **6 项**，`NOT_STARTED` 0 项。
+
+同时登记两项新限制：`L09-LIM-01`（页码为保存时缓存，可能过期）、
+`L09-LIM-02`（脚注锚点只走顶层表，嵌套表引用降为 `UNRESOLVED`）。
+
+另：`QA-TEST-01` 已单独立项并完成（`f5618fe`），只提升一个测试的失败形态质量，
+不改任何产品代码，也不改变 L08 的验收结论。
