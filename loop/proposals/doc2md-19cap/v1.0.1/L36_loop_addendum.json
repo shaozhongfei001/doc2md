@@ -1,0 +1,92 @@
+{
+  "schema_version": "1.0.0",
+  "contract_id": "DOC2MD-19CAP-V1.0.1-ADDENDUM-L36",
+  "state": "PLANNED",
+  "generated_on": "2026-10-18",
+  "parent_contract": {
+    "version": "DOC2MD-19CAP-V1.0",
+    "path": "../../v1.0.0/loop_contract.json",
+    "note": "纯追加，不修改 v1.0.0 任何 Loop。"
+  },
+  "authorization": {
+    "basis": "qa-l22 复验 L33/L34 的 FIND-E：review_decision_ref 只校验'非空'，'  ' 通过；L34 的覆盖通路使空白 ref 可把低置信度区域升为 CONFIRMED 且写进审计。FIND-D：DEFAULT_CONFIDENCE_THRESHOLD 未进 __all__",
+    "evidence": "QA 复验报告（qa-l22，2026-10-18）第 3 节 FIND-E/FIND-D 与第 4 节",
+    "decided_by": "Owner（长程任务）",
+    "decided_on": "2026-10-18"
+  },
+  "scope_note": "非空不等于有效：空白 ref 必须被拒；同时把'公开常量'真正公开，并把'可用性以 state 为准、不得按 issue code 拒绝覆盖'落成文档规则。",
+  "gates": {
+    "A1": {
+      "official_tool_available": false,
+      "reason": "L36 不在 PACK 的 loop 列表中",
+      "equivalent_check": [
+        "git diff --name-only <entry>..HEAD ⊆ allowed_new_or_scoped_paths",
+        "git ls-files --others --exclude-standard 为空"
+      ],
+      "honesty_rule": "不得改 PACK 或扩原白名单"
+    },
+    "B": "pytest 全量不得低于 1422 passed / 131 skipped",
+    "C": "check_baseline.py --allow-index-append 必须 passed=true",
+    "GAP": "三条判据：①ref='  ' 必须 E_INPUT_INVALID（低置信度场景不得变成 CONFIRMED）；②正常 ref 行为不变（低置信可确认、UNKNOWN 仍拒绝）；③DEFAULT_CONFIDENCE_THRESHOLD 出现在 __all__"
+  },
+  "loops": [
+    {
+      "loop_id": "L36",
+      "name": "空白 review ref 与公开常量",
+      "status": "PLANNED",
+      "depends_on": ["L34", "L33"],
+      "conditional_dependencies": [],
+      "requirement_ids": ["PI-F05-01"],
+      "allowed_new_or_scoped_paths": [
+        "backend/app/extensions/vision/classify.py",
+        "backend/tests/extensions/test_vision_classify.py",
+        "loop/proposals/doc2md-19cap/v1.0.1/L34_loop_addendum.json",
+        "docs/proposals/doc2md-19cap/v1.0.0/evidence/L34/TL_ACCEPTANCE.md"
+      ],
+      "scoped_existing_edits": [
+        "backend/app/extensions/vision/classify.py",
+        "backend/tests/extensions/test_vision_classify.py",
+        "loop/proposals/doc2md-19cap/v1.0.1/L34_loop_addendum.json",
+        "docs/proposals/doc2md-19cap/v1.0.0/evidence/L34/TL_ACCEPTANCE.md"
+      ],
+      "forbidden": [
+        "把 reviewer 的合法性也一并实现（那属授权模型，待 Owner）",
+        "放宽 ref 校验为只判 is not None",
+        "给 Visual 增加字段"
+      ],
+      "tasks": [
+        {
+          "task_id": "T3601",
+          "description": "ref 校验改为 ref.strip() 非空，空白串 -> E_INPUT_INVALID",
+          "output": "classify.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T3602",
+          "description": "DEFAULT_CONFIDENCE_THRESHOLD 加入 __all__",
+          "output": "classify.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T3603",
+          "description": "用例：空白 ref 在低置信度场景被拒；正常 ref 与 UNKNOWN 拒绝语义不变",
+          "output": "test_vision_classify.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T3604",
+          "description": "落文档规则：可用性以 classification_state 为准；按 issue code 拒绝必须排除 CONFIDENCE_OVERRIDDEN",
+          "output": "L34_loop_addendum.json、evidence/L34",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        }
+      ],
+      "role_route": ["TL_PLAN", "DEV_SELF_TEST", "INDEPENDENT_QA", "TL_FINAL"],
+      "required_evidence": ["input_commit_and_hashes", "actual_commands_and_exit_codes", "test_case_id_results"],
+      "next_loop_permission": "三条判据同时成立，才允许关闭 FIND-E/FIND-D。"
+    }
+  ]
+}
