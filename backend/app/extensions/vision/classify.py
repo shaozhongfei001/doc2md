@@ -67,6 +67,7 @@ ROUTES = {
 
 __all__ = [
     "CLASSES",
+    "DEFAULT_CONFIDENCE_THRESHOLD",
     "FRAMEWORK_LABELS",
     "ROUTES",
     "ClassificationResult",
@@ -325,9 +326,14 @@ def route_regions(
 
         ref = decisions.get(region_id)
         if ref is not None:
-            if not isinstance(ref, str) or not ref:
+            # Non-empty is not the same as usable: a blank-and-spaces ref passes a
+            # truthiness test and, with the confidence override (L34), would confirm a
+            # region while writing "  " into the audit trail. ``L31-FIND-02`` is the
+            # same family (reviewer identity) and stays open for the Owner; this one is
+            # plain input hygiene and does not need a policy decision.
+            if not isinstance(ref, str) or not ref.strip():
                 raise _input_error(
-                    f"region {region_id}: review decision ref must be a non-empty string"
+                    f"region {region_id}: review decision ref must be a non-blank string"
                 )
             if state == "NEEDS_REVIEW" and blocked_by in (
                 "CONFIDENCE_LOW",

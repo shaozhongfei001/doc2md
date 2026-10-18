@@ -280,3 +280,36 @@ def test_a_reviewer_cannot_confirm_a_decorative_region_without_a_reason():
     )
     assert result.visuals[0]["classification_state"] == "NEEDS_REVIEW"
     assert "REVIEW_REF_IGNORED" in codes(result)
+
+
+# ------------ L36: a blank ref is not a decision (qa-l22 FIND-E)
+def test_a_blank_review_ref_is_refused_even_when_it_could_override():
+    """L34 made low confidence recoverable; that turned a blank ref into a decision.
+
+    Before L34 the blank ref was harmless (the unresolved branch dropped it). After
+    L34 it produced ``CONFIRMED`` with ``review_decision_ref='  '`` written to the
+    audit trail — a confirmation nobody made.
+    """
+    with pytest.raises(ExtensionError) as excinfo:
+        route_regions(
+            [region(engine_label="table", engine_confidence=0.05)],
+            review_decisions={"R1": "  "},
+            confidence_threshold=DEFAULT_CONFIDENCE_THRESHOLD,
+        )
+    assert excinfo.value.code == "E_INPUT_INVALID"
+    assert "non-blank" in str(excinfo.value)
+
+
+def test_a_blank_ref_is_refused_on_the_normal_path_too():
+    with pytest.raises(ExtensionError):
+        route_regions(
+            [region(engine_label="table", engine_confidence=0.95)],
+            review_decisions={"R1": "   "},
+            confidence_threshold=DEFAULT_CONFIDENCE_THRESHOLD,
+        )
+
+
+def test_the_default_threshold_is_part_of_the_public_surface():
+    from app.extensions.vision import classify
+
+    assert "DEFAULT_CONFIDENCE_THRESHOLD" in classify.__all__

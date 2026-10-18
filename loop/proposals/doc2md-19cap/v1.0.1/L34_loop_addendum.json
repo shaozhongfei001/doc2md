@@ -34,9 +34,14 @@
       "loop_id": "L34",
       "name": "人工覆盖低置信度（带审计）",
       "status": "PLANNED",
-      "depends_on": ["L32", "L33"],
+      "depends_on": [
+        "L32",
+        "L33"
+      ],
       "conditional_dependencies": [],
-      "requirement_ids": ["PI-F05-01"],
+      "requirement_ids": [
+        "PI-F05-01"
+      ],
       "allowed_new_or_scoped_paths": [
         "backend/app/extensions/vision/classify.py",
         "backend/tests/extensions/test_vision_classify.py"
@@ -66,9 +71,19 @@
           "status": "TODO"
         }
       ],
-      "role_route": ["TL_PLAN", "DEV_SELF_TEST", "INDEPENDENT_QA", "TL_FINAL"],
-      "required_evidence": ["input_commit_and_hashes", "actual_commands_and_exit_codes", "test_case_id_results"],
-      "next_loop_permission": "三条判据同时成立（可覆盖、UNKNOWN 不可覆盖、审计留痕），才允许声明人工逃逸口打通。"
+      "role_route": [
+        "TL_PLAN",
+        "DEV_SELF_TEST",
+        "INDEPENDENT_QA",
+        "TL_FINAL"
+      ],
+      "required_evidence": [
+        "input_commit_and_hashes",
+        "actual_commands_and_exit_codes",
+        "test_case_id_results"
+      ],
+      "next_loop_permission": "三条判据同时成立（可覆盖、UNKNOWN 不可覆盖、审计留痕），才允许声明人工逃逸口打通。",
+      "usage_rule": "可用性判据以 classification_state 为准。任何按 issue code 拒绝的规则必须显式排除 CONFIDENCE_OVERRIDDEN：CONFIDENCE_BELOW_THRESHOLD 陈述的是引擎在某一刻的观测，CONFIDENCE_OVERRIDDEN 陈述的是人的决定；用前者否决后者，等于让旧观测吞掉人工复核。"
     }
   ]
 }
