@@ -258,3 +258,46 @@ def test_source_table_promotion_requires_and_keeps_the_cell():
     assert points[1]["value_type"] == "SOURCE_TABLE"
     assert points[1]["source_table_cell_id"] == "T9-R0002C0003"
     assert points[1]["exact_value"] == "120"
+
+
+# ------------------------------------------------- root-contract integration
+def _chart_model():
+    """The published ``Chart`` contract, loaded from the adopted work copy.
+
+    Table-level tests can pass while the root contract rejects the same payload —
+    that was ``L03-GAP-06``. Chart is nested inside ``Visual``, so the only honest
+    check is to validate against the published model itself.
+    """
+    import sys
+    from pathlib import Path
+
+    repo = Path(__file__).resolve().parents[3]
+    contract_dir = repo / "contracts" / "doc2md-19cap" / "v1.0.0"
+    if str(contract_dir) not in sys.path:
+        sys.path.insert(0, str(contract_dir))
+    import contract_models
+
+    return contract_models.Chart
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {},
+        {"verified": True},
+        {"source_cell": True},
+    ],
+)
+def test_full_chain_output_is_accepted_by_the_published_chart_contract(kwargs):
+    chart_model = _chart_model()
+    result = read_chart_paddle(raw_chart())
+    if kwargs.get("verified"):
+        points = to_chart_points(
+            result, verified_labels={"CH-0-0": "100"}, label_evidence={"CH-0-0": ["EV-L"]}
+        )
+    elif kwargs.get("source_cell"):
+        points = to_chart_points(result, source_table_cells={"CH-0-0": "T1-R0001C0001"})
+    else:
+        points = to_chart_points(result)
+    built = build_chart(axes=result.axes, points=points)
+    chart_model.model_validate(built.chart)  # raises on any drift
