@@ -80,3 +80,50 @@ QA 明确同意不动，并给了一句我认为该原样保留的判断：
 | `L31-FIND-02` | `reviewer="---"` 仍被接受（授权模型，待 Owner） |
 | `L32-LIM-01` | 阈值 0.6 未校准（需真实 VLM 分布） |
 | 四类外部输入 | 未变 |
+
+## 8. 独立复验（`qa-l22`，`e333c6f`）与一处范围口径更正
+
+### 8.1 四项复验全过，且它把"两条路径"扩到了四条
+
+| 输入 | 结果 |
+|---|---|
+| 覆盖路径 `conf=0.05` + `ref='  '` | `E_INPUT_INVALID` |
+| 普通路径 `conf=0.95` + `ref='   '` | `E_INPUT_INVALID` |
+| UNKNOWN 路径 + `ref='  '` | `E_INPUT_INVALID` |
+| DECORATIVE 无理由 + `ref='\t'` | `E_INPUT_INVALID` |
+| `ref=''` / `ref=123` | `E_INPUT_INVALID` |
+
+关键点它点明了：**校验发生在分支分派之前**，所以"能不能覆盖"不再影响是否放行——空白 ref 在任何路径上都没有机会走到 `CONFIRMED`。
+
+### 8.2 三点对照可原地复现（同一副本逐次 checkout）
+
+```text
+321bea6 (L33)  ref='  ' -> ACCEPTED NEEDS_REVIEW ref=None  [BELOW_THRESHOLD, REF_IGNORED]
+944ec13 (L34)  ref='  ' -> ACCEPTED CONFIRMED    ref='  '  [BELOW_THRESHOLD, OVERRIDDEN]
+e333c6f (L36)  ref='  ' -> REJECTED E_INPUT_INVALID
+```
+
+第二个变异（从 `__all__` 移除常量）→ 1 红，`assert 'DEFAULT_CONFIDENCE_THRESHOLD' in [...]` @ `:315`。
+
+### 8.3 一处我必须接受的范围口径更正
+
+我在请它复核时写的是 `git diff 22acde5 e333c6f --stat` 应为 3 个文件。**按字面执行会失败：实际 12 个文件。**
+
+原因不是越界，而是**区间基准选错**：`22acde5` 是 L35 **之前**的提交，其间还有 `a7fda18`（L35 实现），所以区间里合法地包含了 L35 的 9 个文件。
+
+正确表述：`git diff --stat e333c6f^ e333c6f`，或 `git show --stat e333c6f`（父提交 `043c481`）。
+
+> 它说得对，这不是挑字眼：**区间基准选错 → 结果与预期不符 → 要么误判越界，要么把"不符合"当成"我记错了"放过。**
+
+这是本轮**第三个**"验证动作本身出问题"的实例，前面两个是它自己的并行污染与我的脚本路径错。三条合起来给出一条规则：
+
+> **范围断言必须钉在提交的父提交上，而不是"我上一轮记得的 HEAD"上。**
+> 前者是结构事实，后者是记忆。
+
+### 8.4 残留观察（`L36-OBS-01`，不建议开 Loop）
+
+`ref` 通过校验后未做存储规范化：`ref=' RV-9 '` → 接受，原样写入 `visual.review_decision_ref` 与 `CONFIDENCE_OVERRIDDEN.detail`。
+
+与 FIND-E **不同族**：这是一个**真决定**（有主体、有意图），只是带了空格；FIND-E 是**伪造的决定**（没人做过）。所以不按缺陷处置，只登记观察：若下游用 ref 与台账精确匹配，前导/尾随空格会 miss。
+
+可选硬化：校验通过后 `ref = ref.strip()` 再写入。当前不做。
