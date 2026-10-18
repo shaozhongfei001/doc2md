@@ -1,0 +1,97 @@
+{
+  "schema_version": "1.0.0",
+  "contract_id": "DOC2MD-19CAP-V1.0.1-ADDENDUM-L21",
+  "state": "PLANNED",
+  "generated_on": "2026-10-18",
+  "parent_contract": {
+    "version": "DOC2MD-19CAP-V1.0",
+    "path": "../../v1.0.0/loop_contract.json",
+    "note": "纯追加，不修改 v1.0.0 任何 Loop。"
+  },
+  "authorization": {
+    "basis": "qa-l20 对 L20 的复验提出 5 条：契约文本与实现矛盾(P1)、判据措辞过强(P2)、空转断言(P3)、空白差异被称作续页标记且非阻断理由标 HARD(P4)、续前无覆盖(P5)",
+    "evidence": "QA 复验报告（qa-l20，2026-10-18）第 3 节",
+    "decided_by": "Owner（长程任务）",
+    "decided_on": "2026-10-18"
+  },
+  "scope_note": "只修 L20 遗留的文本错误、空转断言与两处语义不精确：不改变续表判决的行为方向（该缓的仍缓、该硬的仍硬），只让日志与判据准确。",
+  "gates": {
+    "A1": {
+      "official_tool_available": false,
+      "reason": "L21 不在 PACK 的 loop 列表中",
+      "equivalent_check": [
+        "git diff --name-only <entry>..HEAD ⊆ allowed_new_or_scoped_paths",
+        "git ls-files --others --exclude-standard 为空"
+      ],
+      "honesty_rule": "不得改 PACK 或扩原白名单"
+    },
+    "B": "pytest 全量不得低于 1379 passed / 133 skipped",
+    "C": "check_baseline.py --allow-index-append 必须 passed=true",
+    "GAP": "三条判据：替换后的断言必须能被'把裸续加回前缀'的变异打红；空白差异必须产出独立 code 且仍为 JOIN_CANDIDATE；续前 必须有断言"
+  },
+  "loops": [
+    {
+      "loop_id": "L21",
+      "name": "L20 勘误：契约文本、空转断言与日志语义",
+      "status": "PLANNED",
+      "depends_on": ["L20"],
+      "conditional_dependencies": [],
+      "requirement_ids": ["PI-F04-07"],
+      "allowed_new_or_scoped_paths": [
+        "backend/app/extensions/tables/continuation.py",
+        "backend/tests/extensions/test_continuation.py",
+        "loop/proposals/doc2md-19cap/v1.0.1/L20_loop_addendum.json",
+        "docs/proposals/doc2md-19cap/v1.0.0/evidence/L20/TL_ACCEPTANCE.md"
+      ],
+      "scoped_existing_edits": [
+        "backend/app/extensions/tables/continuation.py",
+        "backend/tests/extensions/test_continuation.py",
+        "loop/proposals/doc2md-19cap/v1.0.1/L20_loop_addendum.json",
+        "docs/proposals/doc2md-19cap/v1.0.0/evidence/L20/TL_ACCEPTANCE.md"
+      ],
+      "forbidden": [
+        "改变币种/单位/期间冲突的判决方向",
+        "把 *_UNKNOWN 的 NEEDS_REVIEW 降级",
+        "保留任何恒真断言"
+      ],
+      "tasks": [
+        {
+          "task_id": "T2101",
+          "description": "更正 L20 addendum T2001 文本（删除裸'续'，注明续贷/续期/续保为业务词）与 GAP 措辞（区分有无单侧未知）",
+          "output": "L20_loop_addendum.json",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T2102",
+          "description": "空白差异独立成 code（CAPTION_WHITESPACE_ONLY）；非阻断理由 severity 标 INFO 而非默认 HARD",
+          "output": "continuation.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T2103",
+          "description": "用续期存款/续保率替换恒真的'持续经营说明'断言；补续前与空白差异用例",
+          "output": "test_continuation.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T2104",
+          "description": "更正 TL_ACCEPTANCE 中'数据冲突必须仍为 SEPARATE'的绝对表述与'持续经营说明会被 replace 毁掉'的错误类比",
+          "output": "evidence/L20/TL_ACCEPTANCE.md",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        }
+      ],
+      "role_route": ["TL_PLAN", "DEV_SELF_TEST", "INDEPENDENT_QA", "TL_FINAL"],
+      "required_evidence": [
+        "input_commit_and_hashes",
+        "actual_commands_and_exit_codes",
+        "test_case_id_results",
+        "known_gaps_by_scope"
+      ],
+      "next_loop_permission": "只有'新断言能被变异打红'被实测，才允许声明空转已消除。"
+    }
+  ]
+}
