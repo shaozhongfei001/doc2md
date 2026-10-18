@@ -231,3 +231,52 @@ def test_the_threshold_must_be_chosen_explicitly():
     """
     with pytest.raises(TypeError):
         route_regions([region(engine_label="table")])
+
+
+# -------- L34: a human can settle low confidence, but cannot invent a class
+def test_a_reviewer_can_confirm_a_low_confidence_region_with_audit():
+    """qa-l22 FIND-A: the confidence gate made low confidence *unrecoverable*.
+
+    The gate set NEEDS_REVIEW, and the older "an unresolved classification is not
+    confirmed by a ref" branch then swallowed the human decision — so the only ways
+    out were lowering the global threshold or re-running the engine.
+    """
+    result = route_regions(
+        [region(engine_label="table", engine_confidence=0.05)],
+        review_decisions={"R1": "RV-9"},
+        confidence_threshold=DEFAULT_CONFIDENCE_THRESHOLD,
+    )
+
+    visual = result.visuals[0]
+    assert visual["classification_state"] == "CONFIRMED"
+    assert visual["review_decision_ref"] == "RV-9"
+    code_list = codes(result)
+    assert "CONFIDENCE_OVERRIDDEN" in code_list
+    assert "CONFIDENCE_BELOW_THRESHOLD" in code_list, "the original finding must survive"
+    assert "REVIEW_REF_IGNORED" not in code_list
+
+
+def test_a_reviewer_still_cannot_invent_a_class_for_an_unknown_region():
+    result = route_regions(
+        [region(engine_confidence=0.05)],
+        review_decisions={"R1": "RV-9"},
+        confidence_threshold=DEFAULT_CONFIDENCE_THRESHOLD,
+    )
+
+    visual = result.visuals[0]
+    assert visual["classification"] == "UNKNOWN"
+    assert visual["classification_state"] == "NEEDS_REVIEW"
+    assert visual["review_decision_ref"] is None
+    assert "REVIEW_REF_IGNORED" in codes(result)
+    assert "CONFIDENCE_OVERRIDDEN" not in codes(result)
+
+
+def test_a_reviewer_cannot_confirm_a_decorative_region_without_a_reason():
+    result = route_regions(
+        [region(engine_label="image")],
+        vlm_candidates={"R1": {"classification": "DECORATIVE"}},
+        review_decisions={"R1": "RV-9"},
+        confidence_threshold=DEFAULT_CONFIDENCE_THRESHOLD,
+    )
+    assert result.visuals[0]["classification_state"] == "NEEDS_REVIEW"
+    assert "REVIEW_REF_IGNORED" in codes(result)

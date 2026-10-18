@@ -231,10 +231,15 @@ def route_regions(
 
         classification = "UNKNOWN"
         state = "NEEDS_REVIEW"
+        #: Why this region is not a candidate. The ref handling below must not treat
+        #: "I do not know what this is" and "I know, but the engine is unsure" alike:
+        #: only the second one is something a human can settle.
+        blocked_by = "UNKNOWN_CLASS"
         label_key = (engine_label or "").strip().lower()
         if label_key in FRAMEWORK_LABELS:
             classification = FRAMEWORK_LABELS[label_key]
             state = "CANDIDATE" if classification != "UNKNOWN" else "NEEDS_REVIEW"
+            blocked_by = "UNKNOWN_CLASS" if classification == "UNKNOWN" else "NONE"
             if label_key in ("image", "figure", "picture"):
                 issues.append(
                     {
@@ -266,6 +271,7 @@ def route_regions(
         if classification in FACT_CLASSES and state == "CANDIDATE":
             if engine_confidence is None:
                 state = "NEEDS_REVIEW"
+                blocked_by = "CONFIDENCE_MISSING"
                 issues.append(
                     {
                         "code": "CONFIDENCE_MISSING",
@@ -278,6 +284,7 @@ def route_regions(
                 )
             elif engine_confidence < threshold:
                 state = "NEEDS_REVIEW"
+                blocked_by = "CONFIDENCE_LOW"
                 issues.append(
                     {
                         "code": "CONFIDENCE_BELOW_THRESHOLD",
@@ -296,6 +303,7 @@ def route_regions(
             asset = raw.get("asset_ref")
             if not reason:
                 state = "NEEDS_REVIEW"
+                blocked_by = "DECORATIVE_WITHOUT_REASON"
                 issues.append(
                     {
                         "code": "DECORATIVE_WITHOUT_REASON",
@@ -321,12 +329,37 @@ def route_regions(
                 raise _input_error(
                     f"region {region_id}: review decision ref must be a non-empty string"
                 )
-            if state == "NEEDS_REVIEW":
+            if state == "NEEDS_REVIEW" and blocked_by in (
+                "CONFIDENCE_LOW",
+                "CONFIDENCE_MISSING",
+            ):
+                # A human looking at the region can settle "yes, it is a table".
+                # Losing that made low confidence unrecoverable: the only remaining
+                # options were lowering the global threshold (disarming every region)
+                # or re-running the engine.
+                state = "CONFIRMED"
+                issues.append(
+                    {
+                        "code": "CONFIDENCE_OVERRIDDEN",
+                        "region_id": region_id,
+                        "message": (
+                            "a reviewer confirmed a class the engine was unsure about; "
+                            "the original confidence finding is kept"
+                        ),
+                        "detail": {
+                            "engine_confidence": engine_confidence,
+                            "review_decision_ref": ref,
+                            "blocked_by": blocked_by,
+                        },
+                    }
+                )
+            elif state == "NEEDS_REVIEW":
                 issues.append(
                     {
                         "code": "REVIEW_REF_IGNORED",
                         "region_id": region_id,
                         "message": "an unresolved classification is not confirmed by a ref",
+                        "detail": {"blocked_by": blocked_by},
                     }
                 )
                 ref = None
