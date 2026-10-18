@@ -52,3 +52,21 @@
 
 但它**尚未成为流水线默认行为**（`L11-LIM-01`）——所以对外只能说"具备重算能力"，
 不能说"纠错后系统会自动保持下游一致"。这条差别会被写进交接材料。
+
+## 7. 独立性勘误（2026-10-18，由独立 QA 抽检触发）
+
+本文件第 3 节称 purity 由「输入深拷贝、同输入 digest 相同」保证。**该性质当时未被钉住**：
+旧用例的 producer 只读不写，`working[object_id] = rebuilt` 又只重绑顶层 key，
+因此浅拷贝与深拷贝在全部输入上不可区分。独立 QA 把
+`working = copy.deepcopy(dict(state))` 改成 `working = dict(state)` 后，**全量用例全绿**。
+
+已在 L17 补 `test_a_producer_that_writes_to_its_parent_cannot_reach_caller_state`。
+
+### 证据三坐标
+
+| 坐标 | 内容 |
+|---|---|
+| 变异 | `recompute.py`：`working = copy.deepcopy(dict(state))` → `working = dict(state)` |
+| 变红的用例 | `tests/extensions/test_recompute.py::test_a_producer_that_writes_to_its_parent_cannot_reach_caller_state` |
+| 失败位置 | `test_recompute.py:347` → `assert state == snapshot`，实测 `{'T1': {'v': 999}} != {'T1': {'v': 1}}` |
+| 还原校验 | `recompute.py` md5 回到 `c49b7355f6d2334f7ddf5bffd9eb3c29`，该用例 1 passed |

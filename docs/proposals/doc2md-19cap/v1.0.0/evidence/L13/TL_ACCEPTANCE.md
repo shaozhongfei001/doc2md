@@ -87,3 +87,16 @@ if table_index == 0:      # 孤儿脚注只归首表
 
 **教训（写入流程）**：证据里"两条路径都被钉住"这类句子，必须能指出**每条路径对应的用例名**。
 指不出来就是自述，不是证据。本文件其余章节未受影响。
+
+### 证据三坐标（任何人可重跑复核）
+
+「已用变异验证」本身也是一句声明。为使上面的关闭判据可审，留下三样可对照的坐标：
+
+| 坐标 | 内容 |
+|---|---|
+| 变异 | `correction.py` 的 `_note_candidates_for` 内：`            if table_index == 0:` → `            if True:` |
+| 变红的用例 | `tests/extensions/test_correction.py::test_an_orphan_note_stays_out_of_a_non_first_table` |
+| 失败位置 | `test_correction.py:818` → `assert [1, 1] == [1, 0]`（`At index 1 diff: 1 != 0`） |
+| 还原校验 | `correction.py` md5 回到 `882e11b3eab69fa506f393983f0ed602`，该用例 1 passed |
+
+重跑方式：改那一行 → 跑该用例 → 应 1 failed；`git checkout --` → 应 1 passed。

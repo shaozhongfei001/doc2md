@@ -94,3 +94,15 @@ raise 分支不可达，因此把 `if residual:` 改成 `if False:` 后**全量 
 > 这类缺陷在评审里最危险，因为它同时骗过了"看代码的人"和"跑测试的人"。
 
 本文件其余章节未受影响：主路径（MB11 一改 19 红）的等价性断言是真实有效的。
+
+### 证据三坐标（任何人可重跑复核）
+
+| 坐标 | 内容 |
+|---|---|
+| 变异 | `correction.py` 的 `_build_patch` 内：`    if residual:` → `    if False:` |
+| 变红的用例 | `tests/extensions/test_correction.py::test_a_patch_that_fails_to_reconstruct_the_document_is_refused` |
+| 失败位置 | `test_correction.py:842` → `Failed: DID NOT RAISE <class 'app.extensions.ExtensionError'>` |
+| 还原校验 | `correction.py` md5 回到 `882e11b3eab69fa506f393983f0ed602`，该用例 1 passed |
+
+重跑方式同 L13。注意：这条用例靠 monkeypatch 制造 `residual`，证明的是**守卫可达且生效**；
+真实补丁链路的正确性由 `test_the_patch_reconstructs_the_corrected_document` 外部回放兜底。两句缺一不可。
