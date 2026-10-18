@@ -69,6 +69,19 @@ class ComparisonReason:
     #: tell "this reason blocked it" from "this reason was merely observed".
     severity: str = "HARD"
 
+    def __post_init__(self) -> None:
+        """A non-blocking reason is ``INFO``, enforced at construction.
+
+        The previous guard was a test that walked the reasons produced by *one*
+        fixture. That only protects the branches that fixture happens to reach: a
+        new non-blocking reason added on another branch would default to ``HARD``
+        and no test would notice. Moving the rule here means the caller cannot
+        forget it — ``frozen=True`` makes ``object.__setattr__`` the only way to
+        normalise, and that is exactly what this is for.
+        """
+        if not self.blocking and self.severity != "INFO":
+            object.__setattr__(self, "severity", "INFO")
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "dimension": self.dimension,

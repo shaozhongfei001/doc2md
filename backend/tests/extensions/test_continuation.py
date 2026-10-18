@@ -392,3 +392,22 @@ def test_every_non_blocking_reason_says_so_in_its_severity():
         (reason.code, reason.severity) for reason in non_blocking
     ]
     assert result.decision == "JOIN_CANDIDATE"
+
+
+def test_a_non_blocking_reason_is_normalised_at_the_construction_site():
+    """qa-l20: a test that walks one fixture cannot protect *other* branches.
+
+    This builds a reason for a code that does not exist anywhere in the module, so
+    it cannot pass by way of any current code path — only by the constructor rule.
+    """
+    from app.extensions.tables.continuation import ComparisonReason
+
+    fresh = ComparisonReason(dimension="x", code="A_CODE_THAT_DOES_NOT_EXIST", message="m")
+    assert fresh.blocking is False
+    assert fresh.severity == "INFO"
+
+    # ...and the rule must not flatten explicit hard blocks.
+    hard = ComparisonReason(dimension="x", code="C", message="m", blocking=True, severity="HARD")
+    assert hard.severity == "HARD"
+    soft = ComparisonReason(dimension="x", code="C", message="m", blocking=True, severity="SOFT")
+    assert soft.severity == "SOFT"
