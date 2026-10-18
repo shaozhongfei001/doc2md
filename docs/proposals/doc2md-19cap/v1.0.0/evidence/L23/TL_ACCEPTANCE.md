@@ -69,3 +69,42 @@ return ids → 作为 evidence_candidates 传给 build_review_packet
 
 `qa-l20` 第 5 节提的结构化升级：把"非阻断 → INFO"从断言下沉到 `ComparisonReason.__post_init__`，
 使将来的新构造点**不必记得写测试**也能满足不变式。已登记为 L24（小改动，含新构造点用例）。
+
+## 8. QA 复验结论：**QA_REJECT**（2026-10-18，由 qa-l21 判定）
+
+独立 QA 判定本 Loop **验收不通过**，两条理由都成立：
+
+### 8.1 BLOCKER：修过头，拒掉了合法表格
+
+本文件第 2 节把"文档级证据"实现成了"**注释**声明的证据"。但生产路径上 `omission_evidence_ids`
+并不来自注释——它由 `word/native_tables.py:492` 从 OOXML `w:trPr/w:gridAfter` 生成为
+`docx:gridAfter:{row}:{col}`。
+
+后果：**任何含 `w:gridBefore/gridAfter` 的 Word 表都无法装配**（`E_REVIEW_PACKET_INVALID`，
+`detail.missing=['docx:gridAfter:1:2']`），纠错路径同受影响。
+
+QA 的最小复现（3 列 tblGrid + 第 2 行 2 个 `w:tc` + `gridAfter=1`、无脚注）：
+
+| 提交 | 结果 |
+|---|---|
+| `c225f67`（L23 前） | ASSEMBLED，omission = `['docx:gridAfter:1:2']` |
+| `cd181bc`（L23） | **REFUSED** |
+
+而 `native_tables.py:17` 明确写着 gridBefore/gridAfter 是**唯一接受的空洞形态**。
+即：我把"合法且唯一的空洞形态"判成了非法。
+
+### 8.2 pipeline 侧负例是白盒，行为回退时仍绿
+
+QA 的 M1a 变异（把表自身 omission 并回已知集，等价旧行为）**三条用例全绿**。
+因为该用例自己调 `_evidence_candidates(notes)` 再造 `build_review_packet`，
+钉住的是 `review_packet` 的守卫，而不是它 docstring 声称的"已知集不再含表自身 omission"。
+
+同一变异下纠错侧用例**红了**（那是端到端 `apply_correction`）。
+
+### 8.3 处置
+
+由 **L25** 修复：已知集 = 注释证据 ∪ **由 cells/n_cols 独立重算的结构证据**，
+表声明的不可重算 id 仍被拒。并在 L25 中补了函数级断言（结构在、幽灵不在），消除白盒缺口。
+
+> 教训：把"文档里登记过的证据"实现成"某一个来源登记过的证据"，
+> 就是对合法输入的一次窄化。**收窄守卫的输入集合，等于放宽守卫的拒绝面。**
