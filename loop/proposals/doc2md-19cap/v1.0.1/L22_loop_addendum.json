@@ -1,0 +1,88 @@
+{
+  "schema_version": "1.0.0",
+  "contract_id": "DOC2MD-19CAP-V1.0.1-ADDENDUM-L22",
+  "state": "PLANNED",
+  "generated_on": "2026-10-18",
+  "parent_contract": {
+    "version": "DOC2MD-19CAP-V1.0",
+    "path": "../../v1.0.0/loop_contract.json",
+    "note": "纯追加，不修改 v1.0.0 任何 Loop。"
+  },
+  "authorization": {
+    "basis": "qa-l20 复验：L21 的 P2 仅落实 1/3（L20 addendum 的 scope_note 与 T2003 仍写'数据冲突一律 SEPARATE'，与同文件 GAP 矛盾）；另有两处非阻断理由仍落默认 HARD，severity 注释缺 INFO 档",
+    "evidence": "QA 复验报告（qa-l20，2026-10-18）第 3、6 节",
+    "decided_by": "Owner（长程任务）",
+    "decided_on": "2026-10-18"
+  },
+  "scope_note": "消除同一份契约内部的自相矛盾，并让 severity 三档（HARD/SOFT/INFO）在代码与注释里一致；不改任何判决方向。",
+  "gates": {
+    "A1": {
+      "official_tool_available": false,
+      "reason": "L22 不在 PACK 的 loop 列表中",
+      "equivalent_check": [
+        "git diff --name-only <entry>..HEAD ⊆ allowed_new_or_scoped_paths",
+        "git ls-files --others --exclude-standard 为空"
+      ],
+      "honesty_rule": "不得改 PACK 或扩原白名单"
+    },
+    "B": "pytest 全量不得低于 1381 passed / 133 skipped",
+    "C": "check_baseline.py --allow-index-append 必须 passed=true",
+    "GAP": "三条判据：①L20 addendum 内不再出现'数据冲突一律 SEPARATE'的无条件表述；②所有非阻断理由 severity 不为 HARD（可用一条通用断言钉住）；③判决结果与改动前逐例相同"
+  },
+  "loops": [
+    {
+      "loop_id": "L22",
+      "name": "契约一致性与 severity 三档",
+      "status": "PLANNED",
+      "depends_on": ["L20", "L21"],
+      "conditional_dependencies": [],
+      "requirement_ids": ["PI-F04-07"],
+      "allowed_new_or_scoped_paths": [
+        "loop/proposals/doc2md-19cap/v1.0.1/L20_loop_addendum.json",
+        "backend/app/extensions/tables/continuation.py",
+        "backend/tests/extensions/test_continuation.py"
+      ],
+      "scoped_existing_edits": [
+        "loop/proposals/doc2md-19cap/v1.0.1/L20_loop_addendum.json",
+        "backend/app/extensions/tables/continuation.py",
+        "backend/tests/extensions/test_continuation.py"
+      ],
+      "forbidden": [
+        "改变任何 decision 结果",
+        "把非阻断理由改成阻断",
+        "新增 severity 之外的状态字段"
+      ],
+      "tasks": [
+        {
+          "task_id": "T2201",
+          "description": "L20 addendum 的 scope_note 与 T2003 同步为'无单侧未知时 SEPARATE / 存在单侧未知时 NEEDS_REVIEW'",
+          "output": "L20_loop_addendum.json",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T2202",
+          "description": "HEADER_REPEATED 与 NEXT_PAGE_HEADERLESS 补 severity=INFO；severity 注释补 INFO 档语义",
+          "output": "continuation.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T2203",
+          "description": "通用断言：任何非阻断理由的 severity 必须为 INFO（不再是默认 HARD），并实测其能被变异打红",
+          "output": "test_continuation.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        }
+      ],
+      "role_route": ["TL_PLAN", "DEV_SELF_TEST", "INDEPENDENT_QA", "TL_FINAL"],
+      "required_evidence": [
+        "input_commit_and_hashes",
+        "actual_commands_and_exit_codes",
+        "test_case_id_results",
+        "known_gaps_by_scope"
+      ],
+      "next_loop_permission": "只有'契约内部无矛盾'与'非阻断理由不再标 HARD'两条同时可验，才允许声明 P2 完全落实。"
+    }
+  ]
+}
