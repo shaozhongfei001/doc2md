@@ -1,0 +1,112 @@
+"""L40: the writer that turns L35's list into a state change."""
+
+from __future__ import annotations
+
+import copy
+
+import pytest
+
+from app.extensions import ExtensionError
+from app.extensions.evidence.revocation import revoke_candidates
+from app.extensions.review.authority import RESTRICTED, ReviewerPolicy
+
+
+def registry() -> list[dict]:
+    return [
+        {"candidate_evidence_id": "EV-1", "review_state": "UNREVIEWED", "review_decision_ref": None},
+        {"candidate_evidence_id": "EV-2", "review_state": "ACCEPTED", "review_decision_ref": "RV-OLD"},
+        {"candidate_evidence_id": "EV-3", "review_state": "STALE", "review_decision_ref": "RV-OLD"},
+    ]
+
+
+def revoke(candidates, ids=("EV-1",), **overrides):
+    kwargs = {
+        "candidate_ids": list(ids),
+        "review_decision_ref": "RV-1",
+        "reviewer": "E12345",
+        "reason": "1601 原始凭证已替换",
+        "at": "2026-10-18T20:00:00+08:00",
+    }
+    kwargs.update(overrides)
+    return revoke_candidates(candidates, **kwargs)
+
+
+def test_revoking_sets_the_state_and_the_decision():
+    updated, report = revoke(registry())
+
+    assert report.revoked == ("EV-1",)
+    assert report.changed is True
+    first = updated[0]
+    assert first["review_state"] == "STALE"
+    assert first["review_decision_ref"] == "RV-1"
+    assert first["revoked_by"] == "E12345"
+    assert first["revoked_at"] == "2026-10-18T20:00:00+08:00"
+    assert report.audit["reason"] == "1601 原始凭证已替换"
+    assert report.audit["requested"] == 1
+
+
+def test_revoking_twice_is_idempotent_and_reported():
+    once, _ = revoke(registry())
+    twice, report = revoke(once)
+
+    assert report.revoked == ()
+    assert report.already_revoked == ("EV-1",)
+    assert report.changed is False
+    assert twice == once, "a repeated call must not rewrite timestamps or add fields"
+
+
+def test_an_unknown_id_is_reported_not_swallowed():
+    """A typo must not read as success: the caller has to see what did not happen."""
+    updated, report = revoke(registry(), ids=("EV-1", "EV-TYPO"))
+
+    assert report.revoked == ("EV-1",)
+    assert report.unknown == ("EV-TYPO",)
+    assert updated[0]["review_state"] == "STALE"
+
+
+def test_a_duplicate_id_is_deduplicated_and_reported():
+    _, report = revoke(registry(), ids=("EV-1", "EV-1"))
+    assert report.revoked == ("EV-1",)
+    assert report.duplicates == ("EV-1",)
+
+
+def test_revocation_requires_a_decision_and_a_reason():
+    with pytest.raises(ExtensionError) as excinfo:
+        revoke(registry(), review_decision_ref="  ")
+    assert excinfo.value.code == "E_REVIEW_REQUIRED"
+
+    with pytest.raises(ExtensionError) as excinfo:
+        revoke(registry(), reason="")
+    assert excinfo.value.code == "E_REVIEW_REQUIRED"
+
+
+def test_the_input_registry_is_never_mutated():
+    before = registry()
+    snapshot = copy.deepcopy(before)
+
+    updated, _ = revoke(before, ids=("EV-1", "EV-2"))
+
+    assert before == snapshot, "revocation handed the caller's own objects back changed"
+    assert updated is not before
+    assert updated[0] is not before[0]
+
+
+def test_a_malformed_batch_is_rejected_whole():
+    """Half-revoked evidence is worse than untouched: the rest still reads as current."""
+    broken = registry()
+    broken.append("not-a-mapping")
+
+    with pytest.raises(ExtensionError) as excinfo:
+        revoke(broken, ids=("EV-1",))
+    assert excinfo.value.code == "E_INPUT_INVALID"
+    assert "candidates[3]" in str(excinfo.value)
+    assert broken[0]["review_state"] == "UNREVIEWED", "nothing may change on a rejected batch"
+
+
+def test_revocation_obeys_the_reviewer_policy():
+    with pytest.raises(ExtensionError):
+        revoke(
+            registry(),
+            policy=ReviewerPolicy(mode=RESTRICTED, allowed=("E99999",)),
+            reviewer="---",
+        )
