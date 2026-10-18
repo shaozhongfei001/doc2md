@@ -147,6 +147,26 @@ def test_missing_ack_keeps_local_ready():
     assert excinfo.value.detail["missing"] == ["search-index"]
 
 
+def test_present_but_unfinished_ack_does_not_activate():
+    """QA-TEST-01: the ``missing`` branch alone has an unclean failure mode.
+
+    ``test_missing_ack_keeps_local_ready`` passes ack-absent input, so under a
+    mutation that skips the guard the copy ``acks[name]`` raises ``KeyError``
+    before any assertion runs — the test goes red, but not because its own
+    assertions failed. This case keeps the key present with an unfinished status,
+    so the guard is the *only* thing that can reject it: skipping the guard returns
+    ACTIVE and the test fails with ``DID NOT RAISE``.
+    """
+    with pytest.raises(ExtensionError) as excinfo:
+        activate(
+            release(),
+            required_consumers=["search-index"],
+            acks={"search-index": {"status": "IN_PROGRESS", "generation_id": "G1"}},
+        )
+    assert excinfo.value.code == "E_CONSUMER_NOT_CONNECTED"
+    assert excinfo.value.detail["stale_or_wrong_generation"] == ["search-index"]
+
+
 def test_simulated_ack_never_activates():
     with pytest.raises(ExtensionError) as excinfo:
         activate(
