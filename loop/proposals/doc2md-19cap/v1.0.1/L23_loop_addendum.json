@@ -1,0 +1,98 @@
+{
+  "schema_version": "1.0.0",
+  "contract_id": "DOC2MD-19CAP-V1.0.1-ADDENDUM-L23",
+  "state": "PLANNED",
+  "generated_on": "2026-10-18",
+  "parent_contract": {
+    "version": "DOC2MD-19CAP-V1.0",
+    "path": "../../v1.0.0/loop_contract.json",
+    "note": "纯追加，不修改 v1.0.0 任何 Loop。"
+  },
+  "authorization": {
+    "basis": "qa-l20 第四轮抽检 4(e)：pipeline/correction 的 _evidence_candidates 把本表 omission_evidence_ids 一起塞进'已知集'，导致 omission ⊆ known 恒真，GAP-06 两条断言在真实装配路径上永不触发",
+    "evidence": "QA 报告（qa-l20，2026-10-18）第 4(e) 节与第 5 节",
+    "decided_by": "Owner（长程任务）",
+    "decided_on": "2026-10-18"
+  },
+  "scope_note": "把'已知证据集'改为文档级（全部注释的证据），不再包含表自己声明的 omission id：表引用一个文档里没登记过的 omission id 时必须被拒绝。",
+  "gates": {
+    "A1": {
+      "official_tool_available": false,
+      "reason": "L23 不在 PACK 的 loop 列表中",
+      "equivalent_check": [
+        "git diff --name-only <entry>..HEAD ⊆ allowed_new_or_scoped_paths",
+        "git ls-files --others --exclude-standard 为空"
+      ],
+      "honesty_rule": "不得改 PACK 或扩原白名单"
+    },
+    "B": "pytest 全量不得低于 1382 passed / 133 skipped",
+    "C": "check_baseline.py --allow-index-append 必须 passed=true",
+    "GAP": "成对判据（缺一不可）：①表引用未登记的 omission id -> E_REVIEW_PACKET_INVALID 且 detail.missing 精确等于该 id；②该 id 由文档内某条注释登记时 -> 必须通过且 packet 的 omission 列表不回撤。只测①会重演否定式断言恒真"
+  },
+  "loops": [
+    {
+      "loop_id": "L23",
+      "name": "候选证据已知集去空转",
+      "status": "PLANNED",
+      "depends_on": ["L05", "L16"],
+      "conditional_dependencies": [],
+      "requirement_ids": ["PI-F04-09"],
+      "allowed_new_or_scoped_paths": [
+        "backend/app/extensions/pipeline.py",
+        "backend/app/extensions/review/correction.py",
+        "backend/tests/extensions/test_pipeline_e2e.py",
+        "backend/tests/extensions/test_correction.py"
+      ],
+      "scoped_existing_edits": [
+        "backend/app/extensions/pipeline.py",
+        "backend/app/extensions/review/correction.py",
+        "backend/tests/extensions/test_pipeline_e2e.py",
+        "backend/tests/extensions/test_correction.py"
+      ],
+      "forbidden": [
+        "放宽 build_review_packet 的子集校验",
+        "把表自身声明当作登记（这正是要消除的空转）",
+        "为了通过而禁止 omission_evidence_ids"
+      ],
+      "tasks": [
+        {
+          "task_id": "T2301",
+          "description": "pipeline._evidence_candidates 改为只取文档级证据（全部注释的 evidence_ids），不再合并本表 omission ids",
+          "output": "pipeline.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T2302",
+          "description": "correction 侧同一口径：以 assembly.notes（文档级）作为已知集，而非被订正表的子集",
+          "output": "correction.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T2303",
+          "description": "成对用例：未登记 omission id 拒绝（detail.missing 精确相等）+ 已登记则通过且 omission 不回撤",
+          "output": "test_pipeline_e2e.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T2304",
+          "description": "纠错侧回归：重绑/订正后 packet 仍能正常构建，且已知集来自文档级",
+          "output": "test_correction.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        }
+      ],
+      "role_route": ["TL_PLAN", "DEV_SELF_TEST", "INDEPENDENT_QA", "TL_FINAL"],
+      "required_evidence": [
+        "input_commit_and_hashes",
+        "actual_commands_and_exit_codes",
+        "test_case_id_results",
+        "protected_file_hash_comparison",
+        "known_gaps_by_scope"
+      ],
+      "next_loop_permission": "只有成对用例都成立（拒绝 + 通过），才允许声明空转已消除。"
+    }
+  ]
+}
