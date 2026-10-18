@@ -1,0 +1,96 @@
+{
+  "schema_version": "1.0.0",
+  "contract_id": "DOC2MD-19CAP-V1.0.1-ADDENDUM-L13",
+  "state": "PLANNED",
+  "generated_on": "2026-10-18",
+  "parent_contract": {
+    "version": "DOC2MD-19CAP-V1.0",
+    "path": "../../v1.0.0/loop_contract.json",
+    "note": "纯追加，不修改 v1.0.0 任何 Loop。"
+  },
+  "authorization": {
+    "basis": "L12-LIM-01：apply_correction 不重绑脚注，只标记 notes_rebound=False",
+    "evidence": "evidence/L12/TL_ACCEPTANCE.md 第 5 节 L12-LIM-01",
+    "decided_by": "Owner（长程任务）",
+    "decided_on": "2026-10-18"
+  },
+  "scope_note": "让纠错在提供文档级脚注候选集时真正重绑脚注；未提供时保持现有显式标记，不静默假设。",
+  "gates": {
+    "A1": {
+      "official_tool_available": false,
+      "reason": "L13 不在 PACK 的 loop 列表中",
+      "equivalent_check": [
+        "git diff --name-only <entry>..HEAD ⊆ allowed_new_or_scoped_paths",
+        "git ls-files --others --exclude-standard 为空"
+      ],
+      "honesty_rule": "不得改 PACK 或扩原白名单"
+    },
+    "B": "pytest 全量不得低于 1347 passed / 133 skipped",
+    "C": "check_baseline.py --allow-index-append 必须 passed=true",
+    "GAP": "L12-LIM-01 的关闭判据：必须有一条用例证明'带脚注的真实 docx 订正后，脚注随表重绑且不再标 PLAN_NOT_REBOUND'，同时未提供候选集时仍标 False"
+  },
+  "loops": [
+    {
+      "loop_id": "L13",
+      "name": "脚注重绑：纠错路径补齐 note 候选集",
+      "status": "PLANNED",
+      "depends_on": ["L12"],
+      "conditional_dependencies": [],
+      "requirement_ids": ["PI-F04-08", "PI-F04-09"],
+      "allowed_new_or_scoped_paths": [
+        "backend/app/extensions/review/correction.py",
+        "backend/tests/extensions/test_correction.py"
+      ],
+      "scoped_existing_edits": [
+        "backend/app/extensions/review/correction.py",
+        "backend/tests/extensions/test_correction.py"
+      ],
+      "forbidden": [
+        "改 pipeline.assemble_package 的行为",
+        "从 Word 包里自行重新解析脚注（必须由调用方传入候选集，保持纯函数）",
+        "静默丢弃重绑后减少的脚注",
+        "新增错误码"
+      ],
+      "tasks": [
+        {
+          "task_id": "T1301",
+          "description": "apply_correction 接受 note_candidates；按表过滤规则复用 pipeline 同一口径（有 target 且前缀匹配本表 / 无 target 归入首表）",
+          "output": "correction.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T1302",
+          "description": "重绑后重建该表 notes 与 cell_note 链接，并同步 assembly.notes 的展平顺序与 stats",
+          "output": "correction.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T1303",
+          "description": "重绑导致脚注数减少时必须产生可见 issue（NOTES_DROPPED_ON_REBIND），不得静默丢失",
+          "output": "correction.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        },
+        {
+          "task_id": "T1304",
+          "description": "带脚注真实 docx 端到端：订正后脚注重绑、notes_rebound=True；不传候选集时仍为 False",
+          "output": "test_correction.py",
+          "responsible_role": "DEV",
+          "status": "TODO"
+        }
+      ],
+      "role_route": ["TL_PLAN", "DEV_SELF_TEST", "DB_REVIEW", "INDEPENDENT_QA", "E2E", "HO_HANDOFF", "TL_FINAL"],
+      "required_evidence": [
+        "input_commit_and_hashes",
+        "actual_commands_and_exit_codes",
+        "test_case_id_results",
+        "protected_file_hash_comparison",
+        "known_gaps_by_scope",
+        "role_and_execution_identity"
+      ],
+      "next_loop_permission": "只有'带候选集重绑'与'不带候选集显式标记'两条路径都被用例钉住，才允许声明 L12-LIM-01 关闭。"
+    }
+  ]
+}
