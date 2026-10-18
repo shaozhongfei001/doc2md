@@ -104,6 +104,45 @@ def test_separator_entries_are_not_content(tmp_path):
     assert [n.text for n in result.notes] == ["真正的内容"]
 
 
+def test_empty_separator_produces_no_issue(tmp_path):
+    """QA-TEST-02: a separator is not content, so it must not be reported as empty.
+
+    The sibling test above only asserts the note *text* list, and an empty separator
+    is filtered by the empty-text branch anyway — so dropping the separator check
+    entirely would still pass it. This asserts the *absence of an issue*, which is
+    the part that actually distinguishes "skipped on purpose" from "skipped by
+    accident".
+    """
+    package = open_docx(
+        write_docx(
+            tmp_path / "sep-empty.docx",
+            BODY_WITH_REF,
+            footnotes=note("-1", "", note_type="separator") + note("1", "真正的内容"),
+        )
+    )
+    result = read_notes(package)
+    assert result.issues == []
+
+
+def test_separator_with_text_is_still_not_content(tmp_path):
+    """QA-TEST-02: Word and some generators emit separators carrying text.
+
+    Those carry text, so the empty-text branch cannot hide a missing separator
+    check: without the type filter the note leaks out as a candidate.
+    """
+    package = open_docx(
+        write_docx(
+            tmp_path / "sep-text.docx",
+            BODY_WITH_REF,
+            footnotes=note("-1", "SEPARATOR-LINE", note_type="separator") + note("1", "真正的内容"),
+        )
+    )
+    result = read_notes(package)
+    assert [n.text for n in result.notes] == ["真正的内容"]
+    assert result.issues == []
+    assert all(candidate["text"] != "SEPARATOR-LINE" for candidate in result.candidates())
+
+
 def test_note_without_a_reference_stays_unresolved(tmp_path):
     package = open_docx(
         write_docx(tmp_path / "orphan.docx", table(f"<w:tr>{tc('金额')}{tc('比例')}</w:tr>"),
