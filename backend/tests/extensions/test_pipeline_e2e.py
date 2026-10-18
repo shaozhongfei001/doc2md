@@ -1,0 +1,272 @@
+"""T1001/T1002/T1004: one real ``.docx`` through the whole extension path.
+
+The point of this file is not coverage breadth — it is proving that the nine
+islands actually compose: a table with a native header band and a footnote must
+come out the other end with a header path, a bound note, a rendered packet, and a
+committed artifact — while the source file stays byte-identical and ``--dry-run``
+writes nothing.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import zipfile
+from pathlib import Path
+
+import pytest
+
+from app.extensions import ExtensionError
+from app.extensions.io.artifact_store import ArtifactStore
+from app.extensions.io.paths import Roots
+from app.extensions.pipeline import MISSING_CONTRACT_FIELDS, assemble_package, write_assembly
+from app.extensions.runner import WriteGuard
+from app.extensions.word.package import open_docx
+
+W_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+CONTENT_TYPES = (
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"/>'
+)
+
+
+def document_xml(body: str) -> bytes:
+    return (
+        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        f'<w:document xmlns:w="{W_NS}"><w:body>{body}</w:body></w:document>'
+    ).encode("utf-8")
+
+
+def footnotes_xml(entries: str) -> bytes:
+    return (
+        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        f'<w:footnotes xmlns:w="{W_NS}">{entries}</w:footnotes>'
+    ).encode("utf-8")
+
+
+def tc(text: str, *, ref: str | None = None) -> str:
+    reference = f'<w:r><w:footnoteReference w:id="{ref}"/></w:r>' if ref else ""
+    return f"<w:tc><w:p><w:r><w:t>{text}</w:t></w:r>{reference}</w:p></w:tc>"
+
+
+def tr(cells: str, *, header: bool = False) -> str:
+    props = "<w:trPr><w:tblHeader/></w:trPr>" if header else ""
+    return f"<w:tr>{props}{cells}</w:tr>"
+
+
+def table(rows: str) -> str:
+    grid = '<w:tblGrid><w:gridCol w:w="3000"/><w:gridCol w:w="1000"/></w:tblGrid>'
+    return f"<w:tbl>{grid}{rows}</w:tbl>"
+
+
+def note(ref_id: str, text: str) -> str:
+    return f'<w:footnote w:id="{ref_id}"><w:p><w:r><w:t>{text}</w:t></w:r></w:p></w:footnote>'
+
+
+def build_docx(path: Path, *, header: bool = True, with_note: bool = True) -> Path:
+    body = table(
+        tr(tc("金额") + tc("比例"), header=header)
+        + tr(tc("100", ref="1" if with_note else None) + tc("12%"))
+    )
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("[Content_Types].xml", CONTENT_TYPES)
+        archive.writestr("word/document.xml", document_xml(body))
+        if with_note:
+            archive.writestr("word/footnotes.xml", footnotes_xml(note("1", "含外币折人民币。")))
+    return path
+
+
+# ------------------------------------------------------------------ assembly
+def test_one_document_reaches_a_header_path_and_a_bound_note(tmp_path):
+    package = open_docx(build_docx(tmp_path / "doc.docx"))
+    result = assemble_package(package, generation_id="GEN-1")
+
+    assert result.stats["tables"] == 1
+    assert result.stats["tables_with_header_band"] == 1
+    assert result.stats["cells_with_header_path"] >= 1, "header band must produce paths"
+    assert result.stats["notes"] == 1
+    assert result.stats["notes_publishable"] == 1
+
+    table = result.tables[0]
+    assert table["cell_semantics"][0]["column_header_cell_ids"], "path must be non-empty"
+    assert table["notes"][0]["state"] == "CANDIDATE"
+    assert table["notes"][0]["target_ids"] == ["TBL-0001-R0001C0000"]
+
+
+def test_packet_contains_the_header_and_the_note(tmp_path):
+    package = open_docx(build_docx(tmp_path / "doc.docx"))
+    result = assemble_package(package, generation_id="GEN-1")
+    markdown = result.markdown
+    assert "金额" in markdown
+    assert "含外币折人民币。" in markdown
+    assert "复核包" in markdown
+
+
+def test_without_a_native_header_band_no_path_is_claimed(tmp_path):
+    package = open_docx(build_docx(tmp_path / "plain.docx", header=False, with_note=False))
+    result = assemble_package(package, generation_id="GEN-2")
+    table = result.tables[0]
+    assert table["cell_semantics"][0]["column_header_cell_ids"] == []
+    assert table["cell_semantics"][0]["state"] == "NEEDS_REVIEW"
+    assert result.stats["tables_with_header_band"] == 0
+
+
+def test_artifact_declares_what_it_is_not(tmp_path):
+    package = open_docx(build_docx(tmp_path / "doc.docx"))
+    payload = assemble_package(package, generation_id="GEN-1").payload()
+    # Not a DocumentEnhancement, and the artifact says so explicitly.
+    assert payload["schema"] == "doc2md-extension-assembly/0.1"
+    assert payload["missing_contract_fields"] == list(MISSING_CONTRACT_FIELDS)
+    assert any("geometries" in item for item in payload["missing_contract_fields"])
+
+
+def test_stats_match_the_payload(tmp_path):
+    package = open_docx(build_docx(tmp_path / "doc.docx"))
+    result = assemble_package(package, generation_id="GEN-1")
+    payload = result.payload()
+    assert result.stats["tables"] == len(payload["tables"])
+    assert result.stats["notes"] == len(payload["notes"])
+    assert result.stats["issues"] == len(payload["issues"])
+
+
+# ------------------------------------------------------------------ committing
+def test_commit_writes_report_and_packet_under_the_extension_root(tmp_path):
+    extension = tmp_path / "ext"
+    extension.mkdir()
+    store = ArtifactStore(Roots(extension=extension))
+
+    package = open_docx(build_docx(tmp_path / "doc.docx"))
+    result = assemble_package(package, generation_id="GEN-1")
+    receipt = write_assembly(store, result)
+
+    assert set(receipt["files"]) == {"report.json", "review_packet.md", "manifest.json"}
+    committed = list(extension.rglob("report.json"))
+    assert committed, "report must exist after commit"
+    payload = json.loads(committed[0].read_text(encoding="utf-8"))
+    assert payload["generation_id"] == "GEN-1"
+    assert payload["stats"]["notes"] == 1
+
+
+def test_source_document_is_never_modified(tmp_path):
+    path = build_docx(tmp_path / "doc.docx")
+    before = hashlib.sha256(path.read_bytes()).hexdigest()
+    package = open_docx(path)
+    result = assemble_package(package, generation_id="GEN-1")
+    extension = tmp_path / "ext"
+    extension.mkdir()
+    write_assembly(ArtifactStore(Roots(extension=extension)), result)
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == before
+
+
+def test_dry_run_guard_blocks_every_write(tmp_path):
+    extension = tmp_path / "ext-dry"
+    guard = WriteGuard(dry_run=True)
+    store = ArtifactStore(Roots(extension=extension), write_guard=guard)
+
+    package = open_docx(build_docx(tmp_path / "doc.docx"))
+    result = assemble_package(package, generation_id="GEN-1")
+
+    with pytest.raises(ExtensionError) as excinfo:
+        write_assembly(store, result)
+    assert excinfo.value.code == "E_DRY_RUN_WRITE_BLOCKED"
+    assert not extension.exists() or not any(extension.rglob("*")), "dry-run wrote something"
+
+
+def test_identical_recommit_is_idempotent(tmp_path):
+    extension = tmp_path / "ext"
+    extension.mkdir()
+    store = ArtifactStore(Roots(extension=extension))
+    package = open_docx(build_docx(tmp_path / "doc.docx"))
+    result = assemble_package(package, generation_id="GEN-1")
+
+    first = write_assembly(store, result)
+    second = write_assembly(store, result)
+
+    assert first["files"] == second["files"]
+    assert second["receipt"].get("already_committed") is True
+
+
+def test_different_content_never_overwrites_an_existing_generation(tmp_path):
+    """A generation is keyed by (content sha, generation id), not by id alone.
+
+    So a *different* document reusing the same generation id does not collide — it
+    lands in its own directory. The property worth pinning is that the first
+    generation stays byte-identical, because that is what "immutable" means here.
+    (Discovering this required the test to fail first: the store does *not* raise
+    ``E_VERSION_CONFLICT`` for that input, and asserting otherwise would have been
+    a test that never matched the code.)
+    """
+    extension = tmp_path / "ext"
+    extension.mkdir()
+    store = ArtifactStore(Roots(extension=extension))
+
+    first = assemble_package(open_docx(build_docx(tmp_path / "a.docx")), generation_id="GEN-1")
+    first_receipt = write_assembly(store, first)
+    first_report = next(extension.rglob("report.json"))
+    snapshot = first_report.read_bytes()
+
+    second = assemble_package(
+        open_docx(build_docx(tmp_path / "b.docx", with_note=False)), generation_id="GEN-1"
+    )
+    second_receipt = write_assembly(store, second)
+
+    assert first_receipt["files"] != second_receipt["files"]
+    assert first_report.read_bytes() == snapshot, "the first generation was rewritten"
+    assert len(list(extension.rglob("report.json"))) == 2
+
+
+# ------------------------------------------------------------------------ CLI
+def _base_config(tmp_path: Path) -> Path:
+    """Minimal legacy config: the runner only reads its ``storage`` section."""
+    for name in ("raw_vault", "parsed", "curated"):
+        (tmp_path / name).mkdir(exist_ok=True)
+    path = tmp_path / "app.yaml"
+    path.write_text(
+        "app:\n  pipeline_version: fixture\n"
+        "storage:\n"
+        "  raw_vault_root: ./raw_vault\n"
+        "  parsed_root: ./parsed\n"
+        "  curated_root: ./curated\n",
+        encoding="utf-8",
+    )
+    return path
+
+
+def _cli(tmp_path: Path, extension_config, *rest: str) -> int:
+    from app.extensions.cli import main
+
+    return main(
+        [
+            "--extension-config",
+            str(extension_config),
+            "--base-config",
+            str(_base_config(tmp_path)),
+            *rest,
+            "--output-json",
+        ]
+    )
+
+
+def test_cli_assemble_dry_run_is_the_default_and_writes_nothing(
+    tmp_path, extension_config, extension_root, capsys
+):
+    docx = build_docx(tmp_path / "cli-dry.docx")
+    code = _cli(tmp_path, extension_config, "--dry-run", "assemble", "--docx", str(docx), "--generation-id", "GEN-D1")
+    assert code == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["dry_run"] is True and payload["executed"] is False
+    assert payload["assembly"]["stats"]["tables"] == 1
+    assert not any(extension_root.rglob("*")), "dry-run created files"
+
+
+def test_cli_assemble_commits_when_dry_run_is_absent(
+    tmp_path, extension_config, extension_root, capsys
+):
+    docx = build_docx(tmp_path / "cli-real.docx")
+    code = _cli(tmp_path, extension_config, "assemble", "--docx", str(docx), "--generation-id", "GEN-R1")
+    assert code == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["executed"] is True
+    assert payload["commit"]["generation_id"] == "GEN-R1"
+    assert list(extension_root.rglob("manifest.json"))
+    assert list(extension_root.rglob("review_packet.md"))

@@ -153,6 +153,11 @@ def build_parser() -> argparse.ArgumentParser:
     outbox = _sub("outbox-dispatch", "dispatch outbox events to a consumer")
     outbox.add_argument("--consumer-id", required=True)
 
+    # L10: the first command that actually runs the document path end to end.
+    assemble = _sub("assemble", "assemble one .docx into an extension generation")
+    assemble.add_argument("--docx", required=True)
+    assemble.add_argument("--generation-id", required=True)
+
     return parser
 
 
@@ -189,6 +194,23 @@ def _fail(error: ExtensionError, *, as_json: bool) -> int:
     else:
         print(f"error[{error.code}]: {error.message}", file=sys.stderr)
     return error.exit_code
+
+
+def _run_assemble(runner: ExtensionRunner, args: argparse.Namespace) -> dict[str, Any]:
+    """Run the L10 document path; ``--dry-run`` stops before any write."""
+    from .io.artifact_store import ArtifactStore
+    from .pipeline import assemble_package, write_assembly
+    from .word.package import open_docx
+
+    package = open_docx(args.docx)
+    result = assemble_package(package, generation_id=args.generation_id)
+    payload: dict[str, Any] = {"assembly": result.to_mapping()}
+    if runner.dry_run:
+        payload["note"] = "dry-run: no directory, lock, report or file was created"
+        return payload
+    store = ArtifactStore(runner.roots, write_guard=runner.guard)
+    payload["commit"] = write_assembly(store, result)
+    return payload
 
 
 def _dispatch(runner: ExtensionRunner, args: argparse.Namespace):
@@ -228,6 +250,22 @@ def main(argv: Sequence[str] | None = None) -> int:
             base_config_path=args.base_config,
             dry_run=bool(args.dry_run),
         )
+        if args.command == "assemble":
+            # L10 is the only command whose engine exists today; everything else
+            # below still refuses to run for real.
+            assembled = _run_assemble(runner, args)
+            _emit(
+                {
+                    "schema_version": "doc2md-19cap-cli-result/1.0",
+                    "command": "assemble",
+                    "dry_run": runner.dry_run,
+                    "executed": not runner.dry_run,
+                    "exit_code": 0,
+                    **assembled,
+                },
+                as_json=as_json,
+            )
+            return 0
         if not args.dry_run:
             stage, reason = COMMANDS[args.command]
             raise ExtensionError(
