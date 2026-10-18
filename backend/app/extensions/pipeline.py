@@ -175,6 +175,23 @@ def assemble_package(
     extraction = read_notes(package)
     candidates = extraction.candidates()
 
+    # A note has no home outside a table: the contract hangs ``notes`` off ``Table``.
+    # Producing an artifact anyway would assert "this document carries no notes" for
+    # a document that carries one. Refusing is the only honest option while there is
+    # no document-level placement (``L14-FIND-02``); a document with no tables *and*
+    # no notes still assembles, because there is nothing to lose.
+    if candidates and not tables:
+        raise ExtensionError(
+            "E_REVIEW_REQUIRED",
+            "the document has footnotes but no table to carry them; the contract has no "
+            f"document-level notes, so publishing would drop {len(candidates)} note(s)",
+            detail={
+                "note_ids": [candidate.get("note_id") for candidate in candidates],
+                "note_ref_ids": [candidate.get("reference_id") for candidate in candidates],
+                "tables": 0,
+            },
+        )
+
     issues: list[dict[str, Any]] = []
     for issue in extraction.issues:
         issues.append({"layer": "notes_extract", **dict(issue)})

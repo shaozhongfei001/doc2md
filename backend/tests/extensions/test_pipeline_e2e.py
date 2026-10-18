@@ -307,3 +307,43 @@ def test_an_unattached_footnote_binds_once_and_stays_visible(tmp_path):
     assert result.stats["notes"] == 1, "one footnote is one note, not one per table"
     assert [len(table_item.get("notes") or ()) for table_item in result.tables] == [1, 0]
     assert result.notes[0]["state"] == "NEEDS_REVIEW", "it must stay visible, not be dropped"
+
+
+def test_a_document_with_footnotes_but_no_table_is_refused(tmp_path):
+    """L14-FIND-02: a note with nowhere to live must fail closed, not vanish.
+
+    The contract hangs ``notes`` off ``Table``. Assembling anyway produced an
+    artifact whose ``notes`` list was empty while the document clearly carried a
+    footnote — a quietly incomplete result is worse than a refusal.
+    """
+    body = '<w:p><w:r><w:t>正文</w:t></w:r><w:r><w:footnoteReference w:id="9"/></w:r></w:p>'
+    path = tmp_path / "notable.docx"
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("[Content_Types].xml", CONTENT_TYPES)
+        archive.writestr("word/document.xml", document_xml(body))
+        archive.writestr("word/footnotes.xml", footnotes_xml(note("9", "正文脚注。")))
+
+    with pytest.raises(ExtensionError) as excinfo:
+        assemble_package(open_docx(path), generation_id="GEN-1")
+
+    assert excinfo.value.code == "E_REVIEW_REQUIRED"
+    assert "no table to carry them" in str(excinfo.value)
+    assert excinfo.value.detail["note_ids"], "the refusal must name what would be dropped"
+    assert excinfo.value.detail["tables"] == 0
+
+
+def test_a_document_without_tables_or_footnotes_still_assembles(tmp_path):
+    # The guard must not become a blanket refusal: an empty document is a valid
+    # input, and "this document has no tables" is a real statement.
+    body = "<w:p><w:r><w:t>只有正文</w:t></w:r></w:p>"
+    path = tmp_path / "plain.docx"
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("[Content_Types].xml", CONTENT_TYPES)
+        archive.writestr("word/document.xml", document_xml(body))
+
+    result = assemble_package(open_docx(path), generation_id="GEN-1")
+
+    assert result.tables == []
+    assert result.notes == []
+    assert result.stats["tables"] == 0
+    assert "未检出原生 Word 表格" in result.markdown
