@@ -650,3 +650,107 @@ def test_empty_content_list_yields_no_entries_and_no_issues():
     assert result.issues == []
     assert result.middle_page_count == 1
     assert result.content_list_page_count == 0
+
+
+# ------------------------------- L38: geometric binding of cell_box_list
+import json
+import pathlib
+
+import pytest
+
+from app.extensions import ExtensionError
+from app.extensions.adapters.paddle_structure import normalise_response, verify_box_alignment
+
+FIXTURE = pathlib.Path(__file__).parent / "fixtures" / "ppstructure_v370_table_cjk.json"
+
+
+def real_response():
+    return json.loads(FIXTURE.read_text(encoding="utf-8"))
+
+
+def test_the_real_370_response_binds_every_box_by_geometry():
+    """The first time this adapter meets an actual engine response.
+
+    ``PADDLE_LOCK_NOTE`` has always said the field names were unconfirmed. This
+    fixture is a real PP-StructureV3 (paddleocr 3.7.0) page, so the binding is now
+    measured rather than asserted: 20 boxes land exactly on the 5x4 grid that
+    ``pred_html`` declares.
+    """
+    result = normalise_response(real_response(), cell_box_order="GEOMETRY")
+    table = result.tables[0]
+
+    assert table.box_association == "VERIFIED_BY_GEOMETRY"
+    assert len(table.cells) == 20
+    assert [cell["text"] for cell in table.cells][:4] == ["项目", "2023年", "2024年", "同比"]
+    assert all("polygon" in cell for cell in table.cells), "verified boxes must be attached"
+    codes = [issue["code"] for issue in result.issues]
+    assert not [code for code in codes if code.startswith("CELL_BOX_")]
+
+
+def test_the_verification_reports_the_grid_it_derived():
+    base = verify_box_alignment(
+        normalise_response(real_response()) .tables[0].cells,
+        json.loads(FIXTURE.read_text(encoding="utf-8"))["table_res_list"][0]["cell_box_list"],
+    )
+    assert base["ok"] is True
+    assert (base["rows"], base["cols"]) == (5, 4)
+    assert base["max_error"] <= 4.0
+
+
+def test_shuffled_boxes_are_refused_not_attached():
+    """Order is not identity: swapping two boxes must be detected, not smoothed over."""
+    response = real_response()
+    boxes = response["table_res_list"][0]["cell_box_list"]
+    boxes[0], boxes[1] = boxes[1], boxes[0]
+
+    result = normalise_response(response, cell_box_order="GEOMETRY")
+    table = result.tables[0]
+
+    assert table.box_association == "GEOMETRY_MISMATCH"
+    assert all("polygon" not in cell for cell in table.cells), "a failed check must attach nothing"
+    issue = [i for i in result.issues if i["code"] == "CELL_BOX_GEOMETRY_MISMATCH"][0]
+    assert issue["detail"]["reason"] == "geometry"
+    assert issue["detail"]["mismatch_count"] >= 1
+
+
+def test_a_missing_box_is_a_count_mismatch_not_a_guess():
+    response = real_response()
+    response["table_res_list"][0]["cell_box_list"].pop()
+
+    result = normalise_response(response, cell_box_order="GEOMETRY")
+    assert result.tables[0].box_association == "GEOMETRY_COUNT_MISMATCH"
+    assert [i["code"] for i in result.issues] == ["CELL_BOX_COUNT_MISMATCH"]
+
+
+def test_a_shifted_cell_breaks_the_grid_and_is_refused():
+    """A shifted box cannot be smoothed over by "nearest cell".
+
+    Note the failure mode: moving one cell 40 px leaves its old column boundaries in
+    place for the other cells, so the cluster count no longer matches the HTML grid.
+    The honest reason is therefore ``grid`` rather than ``geometry`` — the check
+    refuses before it can even compare cell by cell, which is the stronger outcome.
+    """
+    response = real_response()
+    boxes = response["table_res_list"][0]["cell_box_list"]
+    x1, y1, x2, y2 = boxes[6]
+    shift = 40.0  # far beyond 4 px, far below a cell
+    boxes[6] = [x1 + shift, y1, x2 + shift, y2]
+
+    check = verify_box_alignment(
+        normalise_response(real_response()).tables[0].cells, boxes
+    )
+    assert check["ok"] is False
+    assert check["reason"] in ("grid", "geometry")
+
+    result = normalise_response(response, cell_box_order="GEOMETRY")
+    assert result.tables[0].box_association == "GEOMETRY_MISMATCH"
+    assert all("polygon" not in cell for cell in result.tables[0].cells)
+    issue = [i for i in result.issues if i["code"] == "CELL_BOX_GEOMETRY_MISMATCH"][0]
+    assert issue["detail"]["ok"] is False
+
+
+def test_default_mode_still_refuses_to_bind_by_index():
+    """The safe default must not become optimistic because a new mode exists."""
+    result = normalise_response(real_response())
+    assert result.tables[0].box_association == "UNAVAILABLE"
+    assert [i["code"] for i in result.issues] == ["CELL_BOX_ORDER_UNVERIFIED"]

@@ -42,6 +42,7 @@ __all__ = [
     "PaddleTable",
     "PaddleTableResult",
     "normalise_response",
+    "verify_box_alignment",
 ]
 
 
@@ -155,6 +156,133 @@ def _span(attributes: str, name: str) -> int:
     return value
 
 
+def _cell_box(value: Any, *, where: str) -> list[list[float]]:
+    """Accept the two shapes ``cell_box_list`` has had across engine versions.
+
+    paddleocr 3.7.0 returns a **flat rectangle** ``[x1, y1, x2, y2]``; the adapter was
+    written against the documented "four points" shape and would reject the real
+    response with ``E_ENGINE_SCHEMA_DRIFT``. Both are accepted, anything else is not:
+    a box whose shape we do not recognise cannot be compared to anything.
+    """
+    if isinstance(value, (str, bytes)) or not isinstance(value, Sequence):
+        raise _drift(f"{where} must be a rectangle or four points, got {value!r}")
+
+    flat = list(value)
+    if len(flat) == 4 and all(
+        isinstance(item, (int, float)) and not isinstance(item, bool) for item in flat
+    ):
+        x1, y1, x2, y2 = (float(item) for item in flat)
+        return [[x1, y1], [x2, y1], [x2, y2], [x1, y2]]
+
+    return _polygon(value, where=where)
+
+
+def _bbox(polygon: Sequence[Sequence[float]]) -> list[float]:
+    xs = [point[0] for point in polygon]
+    ys = [point[1] for point in polygon]
+    return [min(xs), min(ys), max(xs), max(ys)]
+
+
+def _edge_centres(values: Sequence[float], tolerance: float) -> list[float]:
+    """Collapse near-identical coordinates into grid lines."""
+    ordered = sorted(values)
+    if not ordered:
+        return []
+    groups: list[list[float]] = [[ordered[0]]]
+    for value in ordered[1:]:
+        if value - groups[-1][-1] <= tolerance:
+            groups[-1].append(value)
+        else:
+            groups.append([value])
+    return [sum(group) / len(group) for group in groups]
+
+
+def verify_box_alignment(
+    cells: Sequence[Mapping[str, Any]],
+    polygons: Sequence[Sequence[Sequence[float]]],
+    *,
+    tolerance: float = 4.0,
+) -> dict[str, Any]:
+    """Prove that ``cell_box_list[i]`` really is ``cells[i]``'s box.
+
+    The point is to replace a *claim* with a *measurement*: the documented order of
+    ``cell_box_list`` is worth relying on only if the boxes, laid on the grid the HTML
+    declares, land where each cell says they should. When they do not, the caller gets
+    the mismatch instead of a plausible-looking attachment.
+
+    ``tolerance`` is in the engine's pixel space. A genuinely shifted cell moves by at
+    least half a row or column, far outside 4 px on any real page.
+    """
+    if len(cells) != len(polygons):
+        raise _input_error(
+            f"{len(cells)} html cells vs {len(polygons)} boxes; alignment needs one box "
+            "per cell"
+        )
+    if not cells:
+        return {"ok": True, "reason": None, "rows": 0, "cols": 0, "mismatches": []}
+
+    # Accept both engine shapes here as well: the function is public and a caller
+    # replaying a captured response has no reason to know which version produced it.
+    polygons = [
+        _cell_box(value, where=f"polygon[{position}]")
+        for position, value in enumerate(polygons)
+    ]
+    boxes = [_bbox(polygon) for polygon in polygons]
+    n_rows = max(int(cell["row"]) + int(cell["rowspan"]) for cell in cells)
+    n_cols = max(int(cell["col"]) + int(cell["colspan"]) for cell in cells)
+    col_edges = _edge_centres(
+        [box[0] for box in boxes] + [box[2] for box in boxes], tolerance
+    )
+    row_edges = _edge_centres(
+        [box[1] for box in boxes] + [box[3] for box in boxes], tolerance
+    )
+
+    if len(col_edges) != n_cols + 1 or len(row_edges) != n_rows + 1:
+        return {
+            "ok": False,
+            "reason": "grid",
+            "rows": n_rows,
+            "cols": n_cols,
+            "row_edges": len(row_edges),
+            "col_edges": len(col_edges),
+            "mismatches": [],
+        }
+
+    mismatches: list[dict[str, Any]] = []
+    worst = 0.0
+    for cell, box in zip(cells, boxes):
+        row, col = int(cell["row"]), int(cell["col"])
+        rowspan, colspan = int(cell["rowspan"]), int(cell["colspan"])
+        expected = [
+            col_edges[col],
+            row_edges[row],
+            col_edges[col + colspan],
+            row_edges[row + rowspan],
+        ]
+        error = max(abs(want - got) for want, got in zip(expected, box))
+        worst = max(worst, error)
+        if error > tolerance:
+            mismatches.append(
+                {
+                    "cell_id": cell["cell_id"],
+                    "expected": [round(value, 2) for value in expected],
+                    "actual": [round(value, 2) for value in box],
+                    "error": round(error, 2),
+                }
+            )
+
+    return {
+        "ok": not mismatches,
+        "reason": None if not mismatches else "geometry",
+        "rows": n_rows,
+        "cols": n_cols,
+        "tolerance": tolerance,
+        "max_error": round(worst, 2),
+        "mismatches": mismatches[:10],
+        "mismatch_count": len(mismatches),
+    }
+
+
 def normalise_response(
     response: Mapping[str, Any],
     *,
@@ -173,9 +301,10 @@ def normalise_response(
         raise _input_error(f"response must be a mapping, got {type(response).__name__}")
     if isinstance(page_no, bool) or not isinstance(page_no, int) or page_no < 1:
         raise _input_error(f"page_no must be a 1-based integer, got {page_no!r}")
-    if cell_box_order not in ("UNAVAILABLE", "DOCUMENTED"):
+    if cell_box_order not in ("UNAVAILABLE", "DOCUMENTED", "GEOMETRY"):
         raise _input_error(
-            f"cell_box_order must be 'UNAVAILABLE' or 'DOCUMENTED', got {cell_box_order!r}"
+            "cell_box_order must be 'UNAVAILABLE', 'DOCUMENTED' or 'GEOMETRY', got "
+            f"{cell_box_order!r}"
         )
 
     tables_raw = response.get("table_res_list")
@@ -219,7 +348,7 @@ def normalise_response(
             if isinstance(boxes, (str, bytes)) or not isinstance(boxes, Sequence):
                 raise _drift(f"table_res_list[{table_index}].cell_box_list must be a list")
             box_polygons = [
-                _polygon(box, where=f"cell_box_list[{position}]")
+                _cell_box(box, where=f"cell_box_list[{position}]")
                 for position, box in enumerate(boxes)
             ]
 
@@ -228,7 +357,40 @@ def normalise_response(
         association = "UNAVAILABLE"
         binding: list[dict[str, Any]] | None = None
         if box_polygons and cells:
-            if cell_box_order == "DOCUMENTED" and len(box_polygons) == len(cells):
+            if cell_box_order == "GEOMETRY":
+                if len(box_polygons) != len(cells):
+                    association = "GEOMETRY_COUNT_MISMATCH"
+                    issues.append(
+                        {
+                            "code": "CELL_BOX_COUNT_MISMATCH",
+                            "table_index": table_index,
+                            "message": (
+                                f"{len(cells)} html cells vs {len(box_polygons)} boxes; "
+                                "geometry cannot pair a partial list, and pairing what is "
+                                "left would attach boxes to the wrong cells"
+                            ),
+                        }
+                    )
+                else:
+                    check = verify_box_alignment(cells, box_polygons)
+                    if check["ok"]:
+                        association = "VERIFIED_BY_GEOMETRY"
+                        for cell, polygon in zip(cells, box_polygons):
+                            cell["polygon"] = polygon
+                    else:
+                        association = "GEOMETRY_MISMATCH"
+                        issues.append(
+                            {
+                                "code": "CELL_BOX_GEOMETRY_MISMATCH",
+                                "table_index": table_index,
+                                "message": (
+                                    "cell_box_list does not land on the grid pred_html "
+                                    "declares; the boxes are carried but not attached"
+                                ),
+                                "detail": check,
+                            }
+                        )
+            elif cell_box_order == "DOCUMENTED" and len(box_polygons) == len(cells):
                 association = "DOCUMENTED_ORDER"
                 for cell, polygon in zip(cells, box_polygons):
                     cell["polygon"] = polygon
