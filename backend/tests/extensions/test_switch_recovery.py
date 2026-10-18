@@ -299,3 +299,27 @@ def test_committed_digest_match_is_accepted():
 def test_manifest_without_a_digest_is_refused():
     with pytest.raises(ExtensionError):
         verify_committed({}, actual_sha256=DIGEST_A)
+
+
+# ------------- L31: a malformed ACK is an explicit refusal, not a crash
+def test_acks_that_are_not_a_mapping_are_an_input_error():
+    """qa-l22 B5: ``acks=None`` raised ``AttributeError`` — not an ExtensionError.
+
+    A caller branching on error codes saw a crash instead of a decision; a caller
+    with ``except Exception`` could read it as a pass.
+    """
+    with pytest.raises(ExtensionError) as excinfo:
+        activate(release(), required_consumers=["search-index"], acks=None)
+
+    assert excinfo.value.code == "E_INPUT_INVALID"
+    assert "must map consumer name to ACK" in str(excinfo.value)
+
+
+def test_an_ack_that_is_not_a_mapping_is_a_missing_consumer():
+    with pytest.raises(ExtensionError) as excinfo:
+        activate(
+            release(), required_consumers=["search-index"], acks={"search-index": "ACKED"}
+        )
+
+    assert excinfo.value.code == "E_CONSUMER_NOT_CONNECTED"
+    assert excinfo.value.detail["malformed"] == ["search-index"]

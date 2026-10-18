@@ -130,6 +130,30 @@ def activate(
             "consumer, otherwise ACTIVE means nothing"
         )
 
+    if not isinstance(acks, Mapping):
+        # A caller error, not a consumer problem: without a mapping there is nothing
+        # to acknowledge at all.
+        raise _input_error(
+            f"acks must map consumer name to ACK, got {type(acks).__name__}",
+            required_consumers=list(required_consumers),
+        )
+
+    malformed = [
+        name
+        for name in required_consumers
+        if name in acks and not isinstance(acks[name], Mapping)
+    ]
+    if malformed:
+        # Acknowledge-shaped-but-wrong data is a consumer that has not really acked.
+        # Before this check it raised ``AttributeError: 'str' object has no attribute
+        # 'get'``: a caller branching on error codes saw nothing, and a caller with a
+        # broad ``except Exception`` could read the crash as a pass.
+        raise ExtensionError(
+            "E_CONSUMER_NOT_CONNECTED",
+            "an ACK must be a mapping of status/generation_id; the release stays LOCAL_READY",
+            detail={"malformed": malformed, "required_consumers": list(required_consumers)},
+        )
+
     missing: list[str] = []
     simulated: list[str] = []
     stale: list[str] = []
