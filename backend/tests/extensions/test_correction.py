@@ -782,3 +782,64 @@ def test_patch_paths_stay_inside_the_reviewer_whitelist(assembly):
         assert not any(fragment in path.lower() for fragment in FORBIDDEN_FRAGMENTS), path
         assert any(__import__("re").match(pattern, path) for pattern in PATCHABLE_PATHS), path
         assert "/generation_id" not in path and "/stats" not in path
+
+
+# --------------------------- L17/T1702: the non-first table branch of the L13 fix
+def test_an_orphan_note_stays_out_of_a_non_first_table(tmp_path):
+    """MB5 (qa-l17): every earlier case corrected the *first* table.
+
+    ``_note_candidates_for`` gates unbound notes on ``table_index == 0``; with every
+    test hitting table 0, the ``False`` branch — the whole point of the L13 fix —
+    never ran, so ``if table_index == 0`` could be replaced by ``if True`` and all
+    1365 tests stayed green while one footnote was counted twice.
+    """
+    path = build_docx(
+        tmp_path / "orphan_second.docx",
+        body=TABLE_NOTE_ONE + TABLE_NOTE_TWO,
+        footnotes={"9": "孤儿脚注。"},
+    )
+    assembly = assemble_package(open_docx(path), generation_id="GEN-1")
+    assert [len(table.get("notes") or ()) for table in assembly.tables] == [1, 0]
+
+    outcome = apply_correction(
+        assembly,
+        Correction(
+            object_id=first_data_cell_id(assembly, table_offset=1),
+            path=("text",),
+            value="8",
+            reason="第二张表订正",
+            review_decision_ref="RV-1",
+        ),
+        generation_id="GEN-2",
+        header_rows_by_table=header_rows(assembly),
+        note_candidates=candidates_of(path),
+    )
+
+    assert [len(table.get("notes") or ()) for table in outcome.assembly.tables] == [1, 0]
+    codes = [issue.get("code") for issue in outcome.assembly.issues]
+    assert "DUPLICATE_NOTE_ID_DEDUPED" not in codes
+    ids = [note["note_id"] for note in outcome.assembly.notes]
+    assert len(ids) == len(set(ids))
+
+
+# ----------------------- L17/T1703: the equivalence self-check must be reachable
+def test_a_patch_that_fails_to_reconstruct_the_document_is_refused(assembly, monkeypatch):
+    """MB10 (qa-l17): the fail-closed check existed but nothing ever reached it.
+
+    A guard that is declared and never executed is worse than none: the code reads
+    safer than it is. This forces ``_build_patch`` to see a residual difference by
+    degrading the preview to "no change applied".
+    """
+    import types
+
+    from app.extensions.review import correction as module
+
+    def lossy_preview(document, patch, **kwargs):
+        return types.SimpleNamespace(document=copy.deepcopy(dict(document)))
+
+    monkeypatch.setattr(module, "preview_patch", lossy_preview)
+
+    with pytest.raises(ExtensionError) as excinfo:
+        corrected(assembly)
+    assert excinfo.value.code == "E_INPUT_INVALID"
+    assert "does not reconstruct" in str(excinfo.value)

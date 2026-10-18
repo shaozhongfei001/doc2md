@@ -316,3 +316,32 @@ def test_changing_one_cell_rebuilds_its_semantics_and_leaves_the_old_version_alo
     # `rglob` order is unspecified; compare the specific file, not index 0.
     assert old_report.read_bytes() == before
     assert len(list(extension.rglob("report.json"))) == 2
+
+
+# ------------------------------------ L17/T1701: purity must survive a rude producer
+def test_a_producer_that_writes_to_its_parent_cannot_reach_caller_state():
+    """MB3 (qa-l17): a shallow copy is indistinguishable until a producer writes.
+
+    Every earlier purity test used a producer that only *reads* its parent, and
+    ``working[object_id] = rebuilt`` rebinds a top-level key — so a shallow copy
+    looked identical to a deep one. This one writes in place, which is exactly the
+    behaviour ``copy.deepcopy`` exists to contain.
+    """
+    graph = DependencyGraph()
+    edge(graph, "T1", "S1")
+    state = {"T1": {"v": 1}, "S1": {"v": 0}}
+    snapshot = copy.deepcopy(state)
+
+    def produce(parent_payload, child_id):
+        parent_payload["v"] = 999
+        return {"child": child_id}
+
+    recompute(
+        graph,
+        root_id="T1",
+        state=state,
+        producers={"CELL_TEXT": produce},
+        generation_id="G1",
+    )
+
+    assert state == snapshot, "recompute handed a producer the caller's own object"
