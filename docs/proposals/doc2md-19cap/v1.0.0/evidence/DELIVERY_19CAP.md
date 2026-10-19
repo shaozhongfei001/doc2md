@@ -183,7 +183,7 @@ cd backend && PYTHONPATH=. /tmp/doc2md-l00-venv/bin/python -m pytest -q -p no:ca
 | `L46-LIM-01/02/03` | 已落盘（L47）；撤销授权规则未定；作废后并发修改的竞态未处理 |
 | `L47-LIM-01/02/03/04` | 日志无压缩；文件权限未做；未并入 artifact_store 锁体系；折叠 O(n) |
 | `L41-LIM-01` | 语料为 DK 英文图书、无文本层，不能用于阈值校准 |
-| `E2E-FIND-01` | 发票→复核包链路不存在：断点在 `paddle_structure.py:286` 与 `pipeline.py:225` 之间，且 `header_rows` 只能来自 docx |
+| `E2E-FIND-01` | 发票→复核包断成三处：①`assemble_package` 只接 `DocxPackage`（pipeline.py:225/233）②`header_rows` **逐表**来自 docx 原生标记（correction.py:435-447）③payload 无 `slots` 直接拒绝（pipeline.py:138-194） |
 | `E2E-FIND-02` | 真实票据几何校验通过率 **2/17**；15 张表无法进入 token 对齐 |
 | `L44-FIND-01` | 发票文本层不完整，伪 Gold 不成立（0.734 是方法伪影）；低分行仅 2/357 |
 | `L45-FIND-01` | 退化扫描显示 **0.6 偏低**：<0.9 各桶精度 0.29–0.76，≥0.95 为 0.983；候选 0.9（机器参照，未改常数） |
