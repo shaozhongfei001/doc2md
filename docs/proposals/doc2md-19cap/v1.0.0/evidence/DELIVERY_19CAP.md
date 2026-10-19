@@ -1,8 +1,8 @@
 # DOC2MD-19CAP 交付说明（本地可交付范围）
 
-- 交付树：`main` = `02831b2`
-- 环境基线：**1469 passed / 131 skipped**
-- 交付 tag：`delivery/19cap-l09` … `delivery/19cap-l47`、`delivery/19cap-local-ready`、`delivery/19cap-local-ready-2`
+- 交付树：`main` = `c7ced54`
+- 环境基线：**1472 passed / 131 skipped**
+- 交付 tag：`delivery/19cap-l09` … `delivery/19cap-l48`、`delivery/19cap-local-ready`、`delivery/19cap-local-ready-2`
 - 本文档只陈述**已验证**的事实；未验证项在第 3、4 节逐条列出，不作推定。
 
 ## 1. 交付了什么
@@ -26,12 +26,12 @@ Word（`.docx`）**原生表格**路径的扩展层，端到端可跑：
 | 影响清单 → 真实重算 | `review/recompute.recompute` | 已验 |
 | 单次可归属订正 → 新版本 | `review/correction.apply_correction` | 已验 |
 | RFC6902 补丁 + 不可补丁差异登记 | 同上（`patch` / `unpatchable`） | 已验 |
-| 候选证据作废归因（只算不写） | 同上（`stale_candidate_evidence` / `unattributable_evidence`） | 已验（**无 writer**，见第 4 节补注） |
+| 候选证据作废归因 | `same` + `evidence/revocation*.py` | 已验（归因 + 执行 + 恢复 + 标记流水） |
 | 低置信度门槛 + 人工覆盖（带审计） | `vision/classify.route_regions` | 已验（阈值 **未校准**） |
 | 畸形输入拒绝（空白 ref / 缺 id / 缺 locator） | 同上 / `apply_correction` | 已验 |
 | Paddle box ↔ HTML 逐格几何校验 | `adapters/paddle_structure.normalise_response(GEOMETRY)` | 合成夹具已验；**真实页 0 样本** |
 | reviewer 身份策略 | `review/authority.ReviewerPolicy` | 已收紧为 RESTRICTED（形式校验，**未接认证**） |
-| 证据作废执行器（人工触发） | `evidence/revocation.revoke_candidates` | 已验；已接线、可恢复、**标记落盘为 append-only 流水** |
+| 证据作废执行器（人工触发） | `evidence/revocation*.py` | 已验；已接线、可恢复、标记落盘为 append-only 流水，**带双重时间戳** |
 
 ## 2. 验证状态矩阵（这是本文档最重要的表）
 
@@ -83,7 +83,7 @@ L06/L07/L08 已完成抽检，但其依赖的外部输入（VLM/GPU、真实 con
 | 无真实源 / consumer / 切换授权 | L08 对账与切换联调 | 分项 `NOT_CONNECTED` |
 | 无 VLM/GPU 真实置信度分布 | `DEFAULT_CONFIDENCE_THRESHOLD = 0.6` 的校准 | 未校准，产物内如实标 `threshold_calibrated: False` |
 | 无真实 consumer 接口 | L31/L08 的 ACK 语义 | 仅在内存在 `Outbox` 上验证 |
-| 无证据 writer | L35 的"作废"是否真的发生 | 只产出"应作废清单"，仓内**无消费方**（见第 4 节补注） |
+| 无跨进程权限模型 | 谁能 append 作废标记 | 由进程权限决定，未绑定 reviewer 主体（`L47-LIM-02`） |
 
 ## 4. 明确"不声称"的清单
 
@@ -95,13 +95,17 @@ L06/L07/L08 已完成抽检，但其依赖的外部输入（VLM/GPU、真实 con
 4. 不声称"脚注全支持"——无表格文档的脚注仍为拒绝（`L15-LIM-01`）；
 5. 不声称"坐标精度达标"——无真实扫描语料；
 6. 不声称"Word 脚注抽取无遗漏"——fail-closed 的前提是抽取不漏检（`L15-LIM-02`）；
-7. **不声称"证据已被作废"**——L35 只产出"应作废清单"，仓内没有 writer（见第 4 节补注）；
+7. **不声称"证据作废是全自动的"**——可人工触发、可恢复、有流水与双时间戳，但不会自行发生（`L46`/`L47`/`L48`）；
 8. **不声称"低置信阈值可用"**——`0.6` 未校准，只是显式声明，不是校准结论；
 9. **不声称"reviewer 身份可信"**——已做**形式**校验（占位串被拒），但**未接认证上下文**，无法证明提交者是谁；
 10. **不声称"表格解析在真实语料可用"**——20 页真实页面检出表格 **0 个**，几何绑定仍只有合成夹具；
-11. **不声称"纠错后证据自动作废"**——执行器需人工触发；清单已可直接驱动它（L46），但作废结果**未持久化**。
+11. **不声称"作废已跨进程并发安全"**——单机 append + `flock` 已验证；未并入 `artifact_store` 锁体系（`L47-LIM-03`）。
 
-### 补注：一条最容易说错的话——L35 的"作废"没有发生
+### 补注：一条曾经最容易说错的话——L35 的"作废"当时没有发生
+
+> **更新（L46–L48）**：本节描述的是 L35 交付时的状态。现在清单已能驱动执行器、
+> 作废可恢复，并以 append-only 流水落盘（含 `at` 与 `recorded_at` 两个时间戳）。
+> 保留本节是为了记住当时的边界，不代表当前能力。
 
 L35 完成的是 **"算得对、报得出"**，不是 **"已经作废了"**：
 
