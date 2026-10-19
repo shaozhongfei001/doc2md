@@ -1,8 +1,8 @@
 # DOC2MD-19CAP 交付说明（本地可交付范围）
 
-- 交付树：`main` = `1c47504`
-- 环境基线：**1481 passed / 131 skipped**
-- 交付 tag：`delivery/19cap-l09` … `delivery/19cap-l49`、`delivery/19cap-local-ready`、`delivery/19cap-local-ready-2`
+- 交付树：`main` = `e0be4f3`
+- 环境基线：**1487 passed / 131 skipped**
+- 交付 tag：`delivery/19cap-l09` … `delivery/19cap-l50`、`delivery/19cap-local-ready`、`delivery/19cap-local-ready-2`
 - 本文档只陈述**已验证**的事实；未验证项在第 3、4 节逐条列出，不作推定。
 
 ## 1. 交付了什么
@@ -99,7 +99,7 @@ L06/L07/L08 已完成抽检，但其依赖的外部输入（VLM/GPU、真实 con
 7. **不声称"证据作废是全自动的"**——可人工触发、可恢复、有流水与双时间戳，但不会自行发生（`L46`/`L47`/`L48`）；
 8. **不声称"低置信阈值可用"**——`0.6` 未校准，只是显式声明，不是校准结论；
 9. **不声称"reviewer 身份可信"**——已做**形式**校验（占位串被拒），但**未接认证上下文**，无法证明提交者是谁；
-9b. **不声称"发票/PDF 能进复核包"**——现已能产出契约形状的 OCR 表（L49：cells+slots+人工表头），但 `assemble_package` 仍只接 `DocxPackage`，**入口未通**；
+9b. **不声称"发票/PDF 能进复核包"**——现已能产出契约形状的 OCR 表与**显式的缺失声明**（L49/L50：cells+slots+人工表头+notes/evidence 不可用），但**没有复核包、没有订正链路**；
 10. **不声称"表格解析在真实语料可用"**——20 页真实页面检出表格 **0 个**，几何绑定仍只有合成夹具；
 11. **不声称"作废已跨进程并发安全"**——单机 append + `flock` 已验证；未并入 `artifact_store` 锁体系（`L47-LIM-03`）。
 
@@ -183,7 +183,7 @@ cd backend && PYTHONPATH=. /tmp/doc2md-l00-venv/bin/python -m pytest -q -p no:ca
 | `L46-LIM-01/02/03` | 已落盘（L47）；撤销授权规则未定；作废后并发修改的竞态未处理 |
 | `L47-LIM-01/02/03/04` | 日志无压缩；文件权限未做；未并入 artifact_store 锁体系；折叠 O(n) |
 | `L41-LIM-01` | 语料为 DK 英文图书、无文本层，不能用于阈值校准 |
-| `E2E-FIND-01` | 断成三处：①`assemble_package` 只接 `DocxPackage`（**仍未解**）②`header_rows` 逐表来源 → **L49 人工声明已解** ③`slots` → **L49 机械推导已解** |
+| `E2E-FIND-01` | 三处已解两处半：②`header_rows`（L49 人工声明）、③`slots`（L49 推导）、①入口类型由 L50 的 OCR 侧装配替代，**但 packets 与订正链路仍缺** |
 | `E2E-FIND-02` | 真实票据几何校验通过率 **2/17**；15 张表无法进入 token 对齐 |
 | `L44-FIND-01` | 发票文本层不完整，伪 Gold 不成立（0.734 是方法伪影）；低分行仅 2/357 |
 | `L45-FIND-01` | 退化扫描显示 **0.6 偏低**：<0.9 各桶精度 0.29–0.76，≥0.95 为 0.983；候选 0.9（机器参照，未改常数） |
