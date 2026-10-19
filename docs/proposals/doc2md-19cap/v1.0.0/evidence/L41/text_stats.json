@@ -1,0 +1,188 @@
+{
+ "pages": [
+  {
+   "book": "DK How the Body Works.pdf",
+   "page": 40,
+   "lines": 85,
+   "mean": 0.9973,
+   "min": 0.9111,
+   "under_0_6": 0,
+   "under_0_8": 0
+  },
+  {
+   "book": "DK How the Body Works.pdf",
+   "page": 41,
+   "lines": 68,
+   "mean": 0.9821,
+   "min": 0.5675,
+   "under_0_6": 1,
+   "under_0_8": 3
+  },
+  {
+   "book": "DK How the Body Works.pdf",
+   "page": 42,
+   "lines": 60,
+   "mean": 0.994,
+   "min": 0.743,
+   "under_0_6": 0,
+   "under_0_8": 1
+  },
+  {
+   "book": "DK How the Body Works.pdf",
+   "page": 43,
+   "lines": 54,
+   "mean": 0.9966,
+   "min": 0.9711,
+   "under_0_6": 0,
+   "under_0_8": 0
+  },
+  {
+   "book": "DK How the Body Works.pdf",
+   "page": 44,
+   "lines": 73,
+   "mean": 0.9943,
+   "min": 0.7529,
+   "under_0_6": 0,
+   "under_0_8": 1
+  },
+  {
+   "book": "Civil War.pdf",
+   "page": 6,
+   "lines": 123,
+   "mean": 0.9948,
+   "min": 0.8517,
+   "under_0_6": 0,
+   "under_0_8": 0
+  },
+  {
+   "book": "Civil War.pdf",
+   "page": 7,
+   "lines": 156,
+   "mean": 0.9977,
+   "min": 0.9658,
+   "under_0_6": 0,
+   "under_0_8": 0
+  },
+  {
+   "book": "Civil War.pdf",
+   "page": 8,
+   "lines": 130,
+   "mean": 0.9973,
+   "min": 0.98,
+   "under_0_6": 0,
+   "under_0_8": 0
+  },
+  {
+   "book": "Civil War.pdf",
+   "page": 9,
+   "lines": 137,
+   "mean": 0.9973,
+   "min": 0.9719,
+   "under_0_6": 0,
+   "under_0_8": 0
+  },
+  {
+   "book": "Civil War.pdf",
+   "page": 10,
+   "lines": 142,
+   "mean": 0.9714,
+   "min": 0.4892,
+   "under_0_6": 2,
+   "under_0_8": 10
+  },
+  {
+   "book": "Aztec, Inca & Maya (DK Eyewitness)(gnv64).pdf",
+   "page": 12,
+   "lines": 85,
+   "mean": 0.9976,
+   "min": 0.9819,
+   "under_0_6": 0,
+   "under_0_8": 0
+  },
+  {
+   "book": "Aztec, Inca & Maya (DK Eyewitness)(gnv64).pdf",
+   "page": 13,
+   "lines": 50,
+   "mean": 0.9867,
+   "min": 0.8847,
+   "under_0_6": 0,
+   "under_0_8": 0
+  },
+  {
+   "book": "Aztec, Inca & Maya (DK Eyewitness)(gnv64).pdf",
+   "page": 14,
+   "lines": 48,
+   "mean": 0.9959,
+   "min": 0.9643,
+   "under_0_6": 0,
+   "under_0_8": 0
+  },
+  {
+   "book": "Aztec, Inca & Maya (DK Eyewitness)(gnv64).pdf",
+   "page": 15,
+   "lines": 72,
+   "mean": 0.9976,
+   "min": 0.9525,
+   "under_0_6": 0,
+   "under_0_8": 0
+  },
+  {
+   "book": "Aztec, Inca & Maya (DK Eyewitness)(gnv64).pdf",
+   "page": 16,
+   "lines": 78,
+   "mean": 0.9975,
+   "min": 0.9669,
+   "under_0_6": 0,
+   "under_0_8": 0
+  },
+  {
+   "book": "Monet (DK Art Ebook).pdf",
+   "page": 30,
+   "lines": 40,
+   "mean": 0.9897,
+   "min": 0.7996,
+   "under_0_6": 0,
+   "under_0_8": 1
+  },
+  {
+   "book": "Monet (DK Art Ebook).pdf",
+   "page": 31,
+   "lines": 44,
+   "mean": 0.9965,
+   "min": 0.9772,
+   "under_0_6": 0,
+   "under_0_8": 0
+  },
+  {
+   "book": "Monet (DK Art Ebook).pdf",
+   "page": 32,
+   "lines": 23,
+   "mean": 0.9879,
+   "min": 0.8012,
+   "under_0_6": 0,
+   "under_0_8": 0
+  },
+  {
+   "book": "Monet (DK Art Ebook).pdf",
+   "page": 33,
+   "lines": 44,
+   "mean": 0.9961,
+   "min": 0.9729,
+   "under_0_6": 0,
+   "under_0_8": 0
+  },
+  {
+   "book": "Monet (DK Art Ebook).pdf",
+   "page": 34,
+   "lines": 50,
+   "mean": 0.9899,
+   "min": 0.6584,
+   "under_0_6": 0,
+   "under_0_8": 1
+  }
+ ],
+ "total_lines": 1562,
+ "pages_with_zero_lines": 0,
+ "page_mean_of_means": 0.9929,
+ "pages_with_any_below_0_6": 2
+}
