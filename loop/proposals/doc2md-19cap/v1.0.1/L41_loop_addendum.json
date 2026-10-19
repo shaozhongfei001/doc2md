@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0.0",
+  "contract_id": "DOC2MD-19CAP-V1.0.1-ADDENDUM-L41",
+  "state": "PLANNED",
+  "generated_on": "2026-10-19",
+  "parent_contract": {"version": "DOC2MD-19CAP-V1.0", "path": "../../v1.0.0/loop_contract.json", "note": "纯追加。"},
+  "authorization": {
+    "basis": "Owner D8 授权本机语料 /media/szf/share/Storage/DK_P2（293 个 PDF）。实测：均无可用文本层（前 3 页 0–116 字符），且为 DK 英文图书，故不能用于阈值校准，只能用于真实版面鲁棒性",
+    "evidence": "本文件 + evidence/L41",
+    "decided_by": "Owner",
+    "decided_on": "2026-10-18"
+  },
+  "scope_note": "只测 L38 适配器在真实脏版面上的通过率与失败原因；不产出阈值结论，不声称任何精度指标。",
+  "gates": {
+    "A1": {
+      "official_tool_available": false,
+      "reason": "L41 不在 PACK 的 loop 列表中",
+      "equivalent_check": ["git diff --name-only loop-entry/L41..HEAD ⊆ allowed_new_or_scoped_paths", "git ls-files --others --exclude-standard 为空"],
+      "honesty_rule": "不得改 PACK 或扩原白名单"
+    },
+    "B": "pytest 全量不得低于 1449 passed / 131 skipped",
+    "C": "check_baseline.py --allow-index-append 必须 passed=true",
+    "GAP": "三条判据：①样本页数与来源可复现；②每页记录 表格数/网格通过/失败原因；③结论只写在实测范围内，明确不可外推到中文金融件"
+  },
+  "loops": [
+    {
+      "loop_id": "L41",
+      "name": "真实语料版面鲁棒性",
+      "status": "PLANNED",
+      "depends_on": ["L38", "L40"],
+      "conditional_dependencies": [],
+      "requirement_ids": ["PI-F04-02"],
+      "allowed_new_or_scoped_paths": [
+        "docs/proposals/doc2md-19cap/v1.0.0/evidence/L41/"
+      ],
+      "scoped_existing_edits": [],
+      "forbidden": [
+        "把 DK 英文图书的通过率当成中文金融件指标",
+        "用无文本层的页面做伪 Gold 精度结论"
+      ],
+      "tasks": [
+        {"task_id": "T4101", "description": "抽样脚本：4 本书 × 5 页，150dpi 渲染，记录来源与页码", "output": "evidence/L41/sample.py", "responsible_role": "DEV", "status": "TODO"},
+        {"task_id": "T4102", "description": "跑 PP-StructureV3 与 OCR，记录表格数、几何校验结果、失败原因", "output": "evidence/L41/run.py + results.json", "responsible_role": "DEV", "status": "TODO"},
+        {"task_id": "T4103", "description": "写结论：通过率、失败分布、不可外推声明", "output": "evidence/L41/TL_ACCEPTANCE.md", "responsible_role": "DEV", "status": "TODO"}
+      ],
+      "role_route": ["TL_PLAN", "DEV_SELF_TEST", "INDEPENDENT_QA", "TL_FINAL"],
+      "required_evidence": ["input_commit_and_hashes", "actual_commands_and_exit_codes", "test_case_id_results"],
+      "next_loop_permission": "三条判据同时成立才允许关闭。"
+    }
+  ]
+}
