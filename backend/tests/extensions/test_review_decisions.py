@@ -85,24 +85,39 @@ def test_non_decision_payload_is_invalid_not_an_error():
 
 
 # --------------------------- L39: reviewer policy (Owner D1, ALLOW_ALL today)
-def test_the_default_policy_accepts_a_placeholder_reviewer():
-    """Owner chose "全部放行" (D1). The mechanism exists; the policy is not enforcing.
+def test_the_default_policy_refuses_a_placeholder_reviewer():
+    """Owner closed "全部放行" (2026-10-19): the shipped policy is now RESTRICTED.
 
-    This test asserts the *current* owner decision, not a desirable end state: while
-    ALLOW_ALL is in force, the audit trail records who claimed to sign and cannot
-    prove it. Flipping this test to red is what tightening the policy will do.
+    This test used to assert the opposite. It was written that way on purpose — the
+    previous owner decision was "accept everyone" — so flipping it here is the
+    decision changing, not a test being bent to fit the code.
     """
-    decision = record_decision(
-        decision_id="D-1",
-        patch_digest="a" * 64,
-        base_generation_id="GEN-1",
-        access_revision="AR-1",
-        scope="table:1",
-        reviewer="---",
-        outcome="LOCAL_OPERATOR",
-    )
-    assert decision["reviewer"] == "---"
+    with pytest.raises(ExtensionError) as excinfo:
+        record_decision(
+            decision_id="D-1",
+            patch_digest="a" * 64,
+            base_generation_id="GEN-1",
+            access_revision="AR-1",
+            scope="table:1",
+            reviewer="---",
+            outcome="LOCAL_OPERATOR",
+        )
+    assert excinfo.value.code == "E_INPUT_INVALID"
+    assert "RESTRICTED" in str(excinfo.value)
 
+
+def test_the_default_policy_accepts_a_plausible_identity():
+    for reviewer in ("E12345", "张三", "reviewer.1", "ops@example.com"):
+        decision = record_decision(
+            decision_id="D-OK",
+            patch_digest="a" * 64,
+            base_generation_id="GEN-1",
+            access_revision="AR-1",
+            scope="table:1",
+            reviewer=reviewer,
+            outcome="LOCAL_OPERATOR",
+        )
+        assert decision["reviewer"] == reviewer
 
 def test_a_restricted_policy_refuses_an_unlisted_reviewer():
     from app.extensions.review.authority import RESTRICTED, ReviewerPolicy
@@ -147,7 +162,11 @@ def test_an_unknown_policy_mode_fails_at_construction():
 
 
 def test_a_restricted_policy_with_no_rules_denies_everyone():
-    """Misconfiguration must fail closed. An empty whitelist is not "no restriction"."""
+    """Misconfiguration must fail closed. An empty whitelist is not "no restriction".
+
+    ``pattern=None`` is passed explicitly: the shipped default carries a pattern, so
+    relying on the default would test the opposite of what this case is about.
+    """
     from app.extensions.review.authority import RESTRICTED, ReviewerPolicy
 
     with pytest.raises(ExtensionError):
@@ -159,9 +178,8 @@ def test_a_restricted_policy_with_no_rules_denies_everyone():
             scope="table:1",
             reviewer="E12345",
             outcome="LOCAL_OPERATOR",
-            policy=ReviewerPolicy(mode=RESTRICTED),
+            policy=ReviewerPolicy(mode=RESTRICTED, allowed=(), pattern=None),
         )
-
 
 def test_a_blank_reviewer_is_refused_under_every_policy():
     from app.extensions.review.authority import ALLOW_ALL, ReviewerPolicy

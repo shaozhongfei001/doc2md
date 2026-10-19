@@ -209,10 +209,15 @@ def _preview(reviewer, *, policy=None):
     )
 
 
-def test_the_patch_path_keeps_allowing_a_placeholder_reviewer_by_default():
-    preview = _preview("---")
-    assert preview.audit["reviewer"] == "---"
+def test_the_patch_path_refuses_a_placeholder_reviewer_by_default():
+    with pytest.raises(ExtensionError) as excinfo:
+        _preview("---")
+    assert excinfo.value.code == "E_INPUT_INVALID"
 
+
+def test_the_patch_path_accepts_a_plausible_reviewer_by_default():
+    preview = _preview("E12345")
+    assert preview.audit["reviewer"] == "E12345"
 
 def test_the_patch_path_refuses_when_the_policy_is_restricted():
     from app.extensions.review.authority import RESTRICTED, ReviewerPolicy

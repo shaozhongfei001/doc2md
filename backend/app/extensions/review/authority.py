@@ -24,7 +24,21 @@ from typing import Any
 
 from .. import ExtensionError
 
-__all__ = ["ALLOW_ALL", "RESTRICTED", "MODES", "ReviewerPolicy"]
+__all__ = [
+    "ALLOW_ALL",
+    "RESTRICTED",
+    "MODES",
+    "DEFAULT_REVIEWER_PATTERN",
+    "ReviewerPolicy",
+]
+
+#: Shipped legal form: starts with a letter/digit/underscore/CJK character, 2-64
+#: characters, then letters/digits/underscore/CJK/``.``/``@``/``-``.
+#:
+#: A placeholder such as ``---`` fails because it does not *start* with an
+#: identifier character, so no blacklist is needed. Chinese names pass, which
+#: matters here: the reviewers are people, not only system accounts.
+DEFAULT_REVIEWER_PATTERN = r"[0-9A-Za-z_\u4e00-\u9fff][0-9A-Za-z_\u4e00-\u9fff.@-]{1,63}"
 
 #: Every reviewer is accepted. Recorded, not enforced.
 ALLOW_ALL = "ALLOW_ALL"
@@ -47,9 +61,9 @@ class ReviewerPolicy:
     only kind of misconfiguration worth having here.
     """
 
-    mode: str = ALLOW_ALL
+    mode: str = RESTRICTED
     allowed: tuple[str, ...] = ()
-    pattern: str | None = None
+    pattern: str | None = DEFAULT_REVIEWER_PATTERN
 
     def __post_init__(self) -> None:
         if self.mode not in MODES:
