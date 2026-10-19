@@ -73,13 +73,18 @@ def main() -> int:
     for job in jobs:
         identifier = job["id"]
         path = pathlib.Path(job["path"])
-        limit = int(job.get("max_pages") or args.max_pages)
+        raw_limit = job.get("max_pages")
+        limit = int(args.max_pages if raw_limit is None else raw_limit)
+        if limit <= 0:
+            limit = 0  # 0 means "no cap"; resolved against the real page count below
         record: dict = {"id": identifier, "ok": False, "pages": [], "error": None}
         began = time.time()
         try:
             if path.suffix.lower() == ".pdf":
                 total = _page_count(path)
                 record["page_count"] = total
+                if limit <= 0:
+                    limit = total or 10**9
                 if total and total > limit:
                     with tempfile.TemporaryDirectory(prefix="intake-ocr-") as tmp:
                         images = _render_first_pages(path, limit, pathlib.Path(tmp))

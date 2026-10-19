@@ -113,7 +113,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--manifest", default=None, help="defaults to <out>/manifest.jsonl")
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--max-pages", type=int, default=20,
-                        help="visual engine page cap per document (reported when hit)")
+                        help="visual engine page cap per document; 0 = every page")
     parser.add_argument("--device", default="gpu")
     parser.add_argument("--paddle-python", default=os.environ.get("PADDLE_PYTHON", ""))
     parser.add_argument("--no-visual", action="store_true")
