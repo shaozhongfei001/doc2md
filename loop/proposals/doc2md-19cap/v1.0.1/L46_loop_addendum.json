@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0.0",
+  "contract_id": "DOC2MD-19CAP-V1.0.1-ADDENDUM-L46",
+  "state": "PLANNED",
+  "generated_on": "2026-10-19",
+  "parent_contract": {"version": "DOC2MD-19CAP-V1.0", "path": "../../v1.0.0/loop_contract.json", "note": "纯追加。"},
+  "authorization": {
+    "basis": "Owner 选择 A：把 L35 的应作废清单接到 L40 执行器。Owner 未就'可回滚'表态，故按保守默认实现恢复能力但不改变默认流程",
+    "evidence": "本轮指令 + L40-LIM-03",
+    "decided_by": "Owner",
+    "decided_on": "2026-10-19"
+  },
+  "scope_note": "只做'清单→作废'的连接层与'恢复到作废前'的逆操作；不落盘、不自动调用。作废时记录 previous_review_state，使恢复不必猜。",
+  "gates": {
+    "A1": {
+      "official_tool_available": false,
+      "reason": "L46 不在 PACK 的 loop 列表中",
+      "equivalent_check": ["git diff --name-only loop-entry/L46..HEAD ⊆ allowed_new_or_scoped_paths", "git ls-files --others --exclude-standard 为空"],
+      "honesty_rule": "不得改 PACK 或扩原白名单"
+    },
+    "B": "pytest 全量不得低于 1461 passed / 131 skipped",
+    "C": "check_baseline.py --allow-index-append 必须 passed=true",
+    "GAP": "四条判据：①correction 的 stale 清单可直接作废且审计含来源；②unattributable 非空默认拒绝（不假装全处理）；③恢复回到作废前状态而非硬编码 UNREVIEWED；④无 previous 状态时恢复必须拒绝，不猜"
+  },
+  "loops": [
+    {
+      "loop_id": "L46",
+      "name": "清单接线与可恢复作废",
+      "status": "PLANNED",
+      "depends_on": ["L35", "L40"],
+      "conditional_dependencies": [],
+      "requirement_ids": ["PI-F05-01"],
+      "allowed_new_or_scoped_paths": [
+        "backend/app/extensions/evidence/revocation.py",
+        "backend/tests/extensions/test_revocation.py"
+      ],
+      "scoped_existing_edits": [
+        "backend/app/extensions/evidence/revocation.py",
+        "backend/tests/extensions/test_revocation.py"
+      ],
+      "forbidden": ["自动在 apply_correction 内触发作废", "恢复时假设原状态为 UNREVIEWED"],
+      "tasks": [
+        {"task_id": "T4601", "description": "revoke 记录 previous_review_state/ref", "output": "revocation.py", "responsible_role": "DEV", "status": "TODO"},
+        {"task_id": "T4602", "description": "revoke_for_correction：消费 stale 清单，unattributable 非空默认拒绝", "output": "revocation.py", "responsible_role": "DEV", "status": "TODO"},
+        {"task_id": "T4603", "description": "restore_candidates：按记录恢复，无记录拒绝", "output": "revocation.py", "responsible_role": "DEV", "status": "TODO"},
+        {"task_id": "T4604", "description": "六条用例 + 两个变异", "output": "test_revocation.py", "responsible_role": "DEV", "status": "TODO"}
+      ],
+      "role_route": ["TL_PLAN", "DEV_SELF_TEST", "INDEPENDENT_QA", "TL_FINAL"],
+      "required_evidence": ["input_commit_and_hashes", "actual_commands_and_exit_codes", "test_case_id_results"],
+      "next_loop_permission": "四条判据成立才允许关闭。"
+    }
+  ]
+}
