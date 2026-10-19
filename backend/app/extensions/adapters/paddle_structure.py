@@ -138,6 +138,9 @@ def _html_cells(pred_html: str) -> list[dict[str, Any]]:
                     "colspan": colspan,
                     "text": text,
                     "text_origin": "ENGINE_OCR",
+                    # The engine's own markup, kept as evidence: a <th> row is what
+                    # the engine asserts, not what we inferred from weight or position.
+                    "html_tag": match.group(1).lower(),
                 }
             )
             column += colspan
