@@ -1,948 +1,264 @@
-# Documents covert to markdownfile
+# doc2md
 
+把 Word / PDF / 扫描件转成**可复核、可订正、可追溯**的结构化产物（Markdown + 表格 + 证据链）。
 
-## 2. 项目总边界
-
-### 2.1 本项目包含
-
-- Word / WPS 文档；
-- PPT / WPS 演示；
-- PDF；
-- Excel / CSV；
-- 图片 / 扫描件；
-- 压缩包中的文档类文件；
-- 投标文件；
-- 招标文件；
-- 方案文档；
-- 需求说明书；
-- 设计说明书；
-- 汇报材料；
-- 验收材料；
-- 培训材料；
-- 会议纪要；
-- 业务规则和指标口径文档。
-
-### 2.2 本项目不包含
-
-- Java / Python / JS / Vue 等源代码分析；
-- SQL / SAS 程序逻辑分析；
-- Git 仓库结构分析；
-- API 调用关系分析；
-- 自动删除原始文件；
-- 企业级权限管理；
-- 多用户协同编辑。
-
-源代码知识库应作为后续独立项目设计。
+这不是一个"一键转换"工具。它假设产物会被人签字、被机器消费、被审计追问，
+所以每个结论都要能回答：**谁说的、依据是什么、错了怎么改、改了影响谁。**
 
 ---
 
-## 3. V1.1 核心设计原则
+## 1. 这个项目解决什么问题
 
-### 3.1 原始文件只读
-
-系统默认不对原始文件执行：
-
-```text
-delete
-rename
-move
-overwrite
-chmod
-in-place conversion
-```
-
-原始文件只做扫描、读取、计算 hash 和登记。
-
-### 3.2 文件实例与内容对象分离
-
-V1.1 必须区分：
-
-```text
-kb_file_instance：某个硬盘路径上的文件实例
-kb_file_content：基于 SHA256 的唯一内容对象
-```
-
-这样可以处理：
-
-- 同一文件散落在多个目录；
-- 同名文件内容不同；
-- 同内容文件名字不同；
-- 文件被复制多次；
-- 文件移动但内容不变。
-
-### 3.3 唯一原文仓库 raw_vault
-
-每个唯一 SHA256 内容对象可以复制一份进入：
-
-```text
-raw_vault/by_hash/{sha256_prefix}/{sha256}/
-  original.bin
-  original_name.txt
-  source_paths.json
-  file_metadata.json
-```
-
-注意：
-
-- `raw_vault` 是唯一原文仓库；
-- 原始目录仍然不动；
-- 多个原始路径只指向同一个 `content_uid`；
-- 同一个内容只解析一次。
-
-### 3.4 解析产物按 hash + parser_profile 管理
-
-解析产物保存到：
-
-```text
-parsed/by_hash/{sha256_prefix}/{sha256}/{parser_profile}/
-  document.md
-  document.json
-  manifest.json
-  quality.json
-  parser.log
-  tables/
-  images/
-```
-
-同一内容、同一 `parser_profile` 不重复解析。
-
-如果更换解析器版本或配置，生成新的 `parser_profile` 目录，而不是覆盖旧产物。
-
-### 3.5 梳理成果进入 curated
-
-梳理后的项目知识资产进入：
-
-```text
-curated/projects/{project_code}/
-  00_project_card.md
-  01_background.md
-  02_requirements.md
-  03_solution.md
-  04_delivery_assets.md
-  05_reusable_assets.md
-  06_lessons_learned.md
-  10_evidence_index.md
-  source_documents.md
-```
-
-`curated` 目录保存的是“梳理成果”，不是原始文件搬家。
-
-### 3.6 重复文件只建议，不自动删除
-
-系统可以识别重复文件和生成清理建议，但不得自动删除。
-
-重复文件治理流程：
-
-```text
-发现重复
-  ↓
-生成 duplicate_group
-  ↓
-选择 master candidate
-  ↓
-生成 cleanup suggestion
-  ↓
-人工确认
-  ↓
-可选移动到 quarantine
-```
+| 场景 | 普通转换器 | 本项目 |
+|---|---|---|
+| 表格结构 | 输出 Markdown 表格 | 输出 cell 网格 + 合并关系 + 每个单元格的定位证据 |
+| 识别不确定 | 尽量猜一个结果 | **不猜**：不确定就标出来，交给人 |
+| 复核 | 无 | 生成复核包，且 `omission ⊆ evidence` 可校验 |
+| 订正 | 重跑整篇 | 只重建受影响表，其余逐字节不变；产出可回放的 RFC6902 补丁 |
+| 改动归属 | 无 | 每次订正必须带 `review_decision_ref`，可追溯到人 |
+| 证据作废 | 无 | 订正产生的"应作废清单"可执行，落 append-only 流水，可恢复 |
 
 ---
 
-## 4. Cursor 项目开发目录
-
-完整工作区目录如下：
-
-```text
-pkb_sdd_cursor/
-  .cursor/
-    rules/
-      000-project-rules.mdc
-      001-sdd-workflow.mdc
-      002-python-coding.mdc
-      003-database.mdc
-      004-parser.mdc
-      005-testing.mdc
-      006-ai-boundaries.mdc
-
-  docs/
-    sdd_development_standard.md
-    coding_standard.md
-    database_standard.md
-    parser_integration_standard.md
-    ai_agent_workflow.md
-    cursor_usage_guide.md
-    codex_usage_guide.md
-    git_workflow.md
-    test_standard.md
-    feature_index.md
-
-  specs/
-    000-project-charter/
-    001-file-inventory/
-    002-file-content-vault/
-    003-duplicate-governance/
-    004-parser-router/
-    005-markitdown-parser/
-    006-mineru-parser/
-    007-quality-checker/
-    008-parse-quality-checker/
-    008-review-workflow/
-    009-quality-report-summary/
-    010-evidence-chain/
-    011-curated-project-assets/
-    012-search-service/
-    013-streamlit-admin/
-    901-docker-compose-deployment/
-    902-test-dataset/
-
-  backend/
-    app/
-      api/
-      cli/
-      core/
-      models/
-      schemas/
-      services/
-      workers/
-    tests/
-    requirements.txt
-
-  frontend/
-    streamlit_admin/
-
-  config/
-    app.example.yaml
-    parser_rules.yaml
-    value_rules.yaml
-    project_taxonomy.yaml
-    quality_actions.yaml
-
-  sql/
-    001_init_schema_v1_1.sql
-    migrations/
-
-  scripts/
-    init_db.sh
-    run_pipeline.sh
-    create_sample_dataset.sh
-
-  ai_tasks/
-    cursor_task_template.md
-    codex_task_template.md
-    review_checklist.md
-    hermes_skill_backlog.md
-
-  data/
-    .gitkeep
-```
-
----
-
-## 5. .cursor/rules 设计说明
-
-`.cursor/rules` 是 Cursor 项目的核心约束。它让 Cursor 在生成、修改、重构代码时始终遵守项目边界。
-
-### 5.1 000-project-rules.mdc
-
-定义项目总规则：
-
-- 不处理源代码知识库；
-- 不移动、不删除、不重命名原始文件；
-- 不自动删除重复文件；
-- 不默认上传外部云服务；
-- 数据库变更必须有 migration；
-- 所有代码变更必须能追溯到 Spec。
-
-### 5.2 001-sdd-workflow.mdc
-
-定义 SDD 流程：
-
-```text
-先读 Spec
-再读 Plan
-再读 Tasks
-再读 Acceptance
-最后写代码
-```
-
-Cursor 不允许绕过 Spec 直接写功能。
-
-### 5.3 002-python-coding.mdc
-
-定义 Python 编码规则：
-
-- 使用 Python 3.11+；
-- 使用 `pathlib`；
-- 使用类型注解；
-- 批处理必须单文件失败不中断；
-- 业务逻辑放 `services`；
-- API route 不写复杂业务逻辑。
-
-### 5.4 003-database.mdc
-
-定义数据库规则：
-
-- MySQL 为系统数据库；
-- `file_instance` 和 `file_content` 必须分离；
-- 不以文件名作为唯一标识；
-- 不以路径作为内容唯一标识；
-- 大文件不进入 MySQL；
-- schema 变更必须写 migration。
-
-### 5.5 004-parser.mdc
-
-定义解析器规则：
-
-- MarkItDown 负责普通 Office / HTML / JSON / XML；
-- MinerU 负责 PDF / 图片 / 扫描件 / 高价值文档；
-- 解析产物按 SHA256 + `parser_profile` 保存；
-- 同一 content + parser_profile 幂等；
-- 低质量输出可触发重解析。
-
-### 5.6 005-testing.mdc
-
-定义测试规则：
-
-- 必须覆盖中文路径；
-- 必须覆盖重复文件；
-- 必须验证原始文件不被修改；
-- parser 测试使用小样本；
-- 不依赖外部网络。
-
-### 5.7 006-ai-boundaries.mdc
-
-定义 AI 工具边界：
-
-- AI 只能在当前 Spec 范围内写代码；
-- AI 不得发明数据库字段；
-- AI 不得引入未授权云服务；
-- 发现设计缺口先更新 Spec，再写代码。
-
----
-
-## 6. docs 文档体系
-
-### 6.1 sdd_development_standard.md
-
-定义完整 SDD 开发规范，包括：
-
-- Spec 包结构；
-- Gate 机制；
-- 完成定义；
-- 验收规则；
-- AI 协作规则。
-
-### 6.2 coding_standard.md
-
-定义 Python / FastAPI / Typer / 服务模块编码规范。
-
-### 6.3 database_standard.md
-
-定义 MySQL 表设计、迁移、实体关系和数据一致性要求。
-
-### 6.4 parser_integration_standard.md
-
-定义 MinerU / MarkItDown / DirectParser 的分工、输出目录、manifest、幂等规则和低质量重解析机制。
-
-### 6.5 ai_agent_workflow.md
-
-定义 Cursor、Codex、Hermes 的分工：
-
-```text
-Cursor：主开发 IDE
-Codex：明确任务的大块代码生成和重构
-Hermes：后续沉淀 SKILL 和项目经验
-```
-
-### 6.6 cursor_usage_guide.md
-
-说明如何在 Cursor 中打开项目、如何给 Cursor 下任务。
-
-### 6.7 codex_usage_guide.md
-
-说明如何把明确任务交给 Codex，不让它扩大范围。
-
-### 6.8 git_workflow.md
-
-定义分支命名和 commit 规范。
-
-### 6.9 test_standard.md
-
-定义测试样本、测试类型、必测场景。
-
-### 6.10 feature_index.md
-
-列出所有 Spec 的状态和开发阶段。
-
----
-
-## 7. specs 设计说明
-
-每个 Spec 都是一个完整功能包，包含：
-
-```text
-spec.md
-plan.md
-tasks.md
-acceptance.md
-test_cases.md
-```
-
-### 7.1 spec.md
-
-说明：
-
-- 为什么做；
-- 做什么；
-- 不做什么；
-- 输入是什么；
-- 输出是什么；
-- 业务规则是什么。
-
-### 7.2 plan.md
-
-说明：
-
-- 相关模块；
-- 相关数据库表；
-- 核心流程；
-- 状态设计；
-- 异常处理。
-
-### 7.3 tasks.md
-
-拆成 Cursor / Codex 可执行任务。
-
-### 7.4 acceptance.md
-
-定义验收标准。
-
-### 7.5 test_cases.md
-
-定义测试用例。
-
----
-
-## 8. 第一批 MVP Specs
-
-### 8.1 000-project-charter
-
-定义项目总章程，包括项目目标、范围、非范围、核心原则。
-
-### 8.2 001-file-inventory
-
-实现文件盘点和资产登记。
-
-核心目标：
-
-```text
-扫描目录 → 识别候选文档 → 计算路径哈希 → 计算 SHA256 → 写入 MySQL
-```
-
-核心输出：
-
-```text
-kb_file_instance
-kb_file_content
-扫描报告
-```
-
-### 8.3 002-file-content-vault
-
-实现唯一原文仓库 raw_vault。
-
-核心目标：
-
-```text
-同一 SHA256 只复制一份到 raw_vault
-```
-
-核心输出：
-
-```text
-raw_vault/by_hash/{sha256_prefix}/{sha256}/
-  original.bin
-  original_name.txt
-  source_paths.json
-  file_metadata.json
-```
-
-### 8.4 003-duplicate-governance
-
-实现重复文件治理。
-
-核心目标：
-
-```text
-识别重复 → 分组 → 主文件建议 → 清理建议 → 人工确认
-```
-
-不允许自动删除。
-
-### 8.5 004-parser-router
-
-实现解析路由。
-
-核心规则：
-
-```text
-PDF / 图片 / A类核心文档 → MinerU
-普通 Office / HTML / XML / JSON → MarkItDown
-CSV / TXT / MD → DirectParser
-```
-
-### 8.6 005-markitdown-parser
-
-实现普通文档 Markdown 转换。
-
-核心输出：
-
-```text
-document.md
-manifest.json
-parser.log
-```
-
-### 8.7 006-mineru-parser
-
-实现 PDF / 图片 / 扫描件 / 高价值文档解析。
-
-核心输出：
-
-```text
-document.md
-document.json
-tables/
-images/
-manifest.json
-parser.log
-```
-
-### 8.8 007-quality-checker
-
-实现解析质量检查。
-
-核心指标：
-
-- `markdown_length`；
-- `heading_count`；
-- `table_count`；
-- `image_count`；
-- `garbled_ratio`；
-- `quality_score`；
-- `quality_status`。
-
-### 8.9 008-review-workflow（FUTURE STUB / NOT CURRENT）
-
-> 这不是已完成的 `008-parse-quality-checker`。权威状态见 `specs/SPEC_INDEX.md` §3。
-
-实现人工复核闭环（未来 Spec，当前未启动）。
-
-复核对象：
-
-- 价值等级；
-- 项目归属；
-- 重复文件主文件；
-- 低质量文档；
-- 蒸馏结果。
-
----
-
-## 9. 后续扩展 Specs
-
-> 权威索引见 `specs/SPEC_INDEX.md`。目录编号以 SPEC_INDEX 为准。
-
-### 9.1 009-quality-report-summary（DONE）
-
-只读消费 008 `parse_quality_report.json`，输出 Markdown / JSON 摘要；不连 MySQL、不读 raw_vault / parsed、不修复。
-
-### 9.2 010-evidence-chain（DONE）
-
-从 parsed 三件套构建证据链，写入 `kb_document_chunk` / `kb_evidence`：
-
-- document_chunk（section / page MVP）
-- char offset / page_no / bbox（best-effort）
-- quote_text / source_location / evidence_uid
-
-只读 parsed + SELECT registry；不调用 parser、不写 curated/embedding/review。
-
-### 9.3 011-curated-project-assets（DONE）
-
-从 010 evidence + registry 元数据生成项目化知识资产（**规则/模板 MVP**，非 LLM 蒸馏）：
-
-```text
-curated/projects/{project_code}/
-  00_project_card.md       # MVP
-  10_evidence_index.md     # MVP
-  source_documents.md      # MVP
-```
-
-- CLI: `build-curated-project`
-- 写入 `kb_project` / `kb_project_document` / `kb_curated_asset`
-- 产物引用 `evidence_uid` / `content_uid` / `document_uid`
-- **不做：** LLM 蒸馏、embedding、review workflow、parser 调用、search-service、Streamlit
-
-权威边界见 `specs/SPEC_INDEX.md` §4.3。
-
-### 9.4 012-search-service（DONE）
-
-基于 MySQL FULLTEXT 的**只读**检索服务（无 embedding、无 parser、无 raw_vault/parsed 读取）：
-
-- 检索域（MVP）：`kb_document.title`、`kb_document_chunk.content`、`kb_evidence` 文本、`kb_project`、`kb_curated_asset.asset_title`
-- CLI: `search-kb`（`--query`、`--scope`、`--project-code`、`--limit`、`--offset`）
-- `scope=all`：五 scope COUNT+SELECT → merge → relevance 排序 → global offset/limit
-- 命中须带 `evidence_uid` / `document_uid` / `content_uid`（适用时）
-- `--project-code` 过滤经 `kb_project_document`（不依赖 `kb_evidence.project_uid` backfill）
-- **不做：** LLM、embedding、review workflow、parser、Streamlit、DB 写入（MVP SELECT-only）
-
-权威边界见 `specs/SPEC_INDEX.md` §4.3。
-
-### 9.5 013-streamlit-admin（DONE）
-
-只读 Streamlit 管理台（无 parser、无 pipeline 触发、无 DB 写入 MVP）：
-
-- 页面（MVP）：KB Search、Evidence Explorer、Projects & Curated、Parse Registry、Quality Reports、Inventory Snapshot
-- Search：进程内调用 `SearchService`（与 CLI `search-kb` 同合同）
-- 只读：`reports_root` 下 008/009 报告；`curated_root` 下 Markdown
-- SELECT：`kb_document` / chunk / evidence / project / curated / parse registry 等
-- 启动：`PYTHONPATH=backend streamlit run frontend/streamlit_admin/app.py`
-- **不做：** 触发 inventory/vault/parse/build CLIs、review workflow、LLM/embed、raw_vault/parsed 读取、原始文件变更
-
-权威边界见 `specs/SPEC_INDEX.md` §4.4。
-
-### 9.6 901-docker-compose-deployment
-
-实现本地 Docker Compose 部署。
-
-### 9.7 902-test-dataset（DONE）
-
-构造不含敏感资料的小样本集 + 幂等生成脚本 + pytest，已于 2026-09-05 完成。
-
-- 权威合同：`specs/902-test-dataset/`
-- 选型记录：`docs/tl-review-2026-09-05-env-and-active-spec.md`
-- 交接文档：`docs/handoff-902-test-dataset.md`
-- 样本说明：`docs/sample_dataset.md`
-- **不做：** 调用 parser / 写 MySQL / review workflow / Docker / 真实私有文档
-
-门禁链：P2 PASS WITH CONSTRAINTS → P3 GATE PASS → P4 DEV DONE → P5 QA PASS → P6 E2E PASS → P7 PASS。
-
-**当前无 Active Spec。** 开始下一个 Spec 前必须由 TL 重新执行 Active Spec Selection Review，
-不得按目录编号顺延去做 `008-review-workflow` 或 `901`。
-
----
-
-## 10. backend 后端目录说明
-
-```text
-backend/app/
-  api/       FastAPI 路由
-  cli/       Typer CLI 命令
-  core/      配置、数据库、日志、工具函数
-  models/    SQLAlchemy ORM
-  schemas/   Pydantic DTO
-  services/  核心业务服务
-  workers/   后续任务 Worker
-```
-
-第一阶段优先实现：
-
-```text
-services/inventory_scanner.py
-services/file_content_vault.py
-services/duplicate_detector.py
-services/parser_router.py
-services/markitdown_parser.py
-services/mineru_parser.py
-services/quality_checker.py
-services/review_service.py
-```
-
----
-
-## 11. config 配置说明
-
-### 11.1 app.example.yaml
-
-定义：
-
-- storage 根路径；
-- MySQL 连接；
-- parser 参数；
-- quality 阈值；
-- raw 文件保护规则。
-
-### 11.2 parser_rules.yaml
-
-定义解析器路由规则。
-
-### 11.3 value_rules.yaml
-
-定义 A/B/C/D 价值分层关键词。
-
-### 11.4 project_taxonomy.yaml
-
-定义项目词典，用于项目归属推断。
-
-### 11.5 quality_actions.yaml
-
-定义质量检查后的动作：
-
-```text
-低质量 MarkItDown → MinerU 重解析
-空 Markdown → 人工复核
-乱码率高 → 人工复核
-```
-
----
-
-## 12. sql 目录说明
-
-```text
-sql/
-  001_init_schema_v1_1.sql
-  migrations/
-```
-
-如果后续修改表结构，必须新增 migration，不允许直接改已发布脚本。
-
----
-
-## 13. scripts 目录说明
-
-### 13.1 init_db.sh
-
-初始化 MySQL 数据库。
-
-### 13.2 run_pipeline.sh
-
-执行基础流水线：
-
-```text
-scan
-build-parse-queue
-parse
-quality-check
-```
-
-### 13.3 create_sample_dataset.sh
-
-创建小样本测试文件，避免使用真实敏感资料测试。
-
----
-
-## 14. ai_tasks 目录说明
-
-### 14.1 cursor_task_template.md
-
-给 Cursor 的任务模板。
-
-### 14.2 codex_task_template.md
-
-给 Codex 的任务模板。
-
-### 14.3 review_checklist.md
-
-代码和功能 Review 清单。
-
-### 14.4 hermes_skill_backlog.md
-
-后续可沉淀的 Hermes SKILL：
-
-```text
-PERSONAL_KB_SPEC_REVIEW_SKILL
-PERSONAL_KB_FILE_INVENTORY_SKILL
-PERSONAL_KB_DUPLICATE_GOVERNANCE_SKILL
-PERSONAL_KB_PARSE_DEBUG_SKILL
-PERSONAL_KB_PROJECT_DISTILL_SKILL
-PERSONAL_KB_ACCEPTANCE_REVIEW_SKILL
-```
-
----
-
-## 15. Cursor 开发流程
-
-### 15.1 打开项目
+## 2. 当前状态（2026-10-19）
+
+| 项 | 值 |
+|---|---|
+| 基线 | `main`，**1487 passed / 131 skipped** |
+| 主语言 | Python 3.11 |
+| 扩展层 | `backend/app/extensions/`（约 40 个模块） |
+| 已验证路径 | 原生 `.docx` → 复核包 → 订正 → 补丁 → 作废 → 恢复（**第三方 E2E 8/8**） |
+| 未打通路径 | PDF/发票 → 复核包（OCR 侧已能产出契约形状的表，但无复核包、无订正） |
+
+> 数字会变。**以 `pytest` 实际输出为准**，不要引用本文里的计数作为验收依据。
+
+### 快速开始
 
 ```bash
-cursor pkb_sdd_cursor
+# 环境（首次）
+python -m venv .venv
+.venv/bin/pip install -r backend/requirements.txt
+
+# 全量测试（不需要 GPU、不需要语料）
+cd backend
+PYTHONPATH=. ../.venv/bin/python -m pytest -q -p no:cacheprovider
+
+# CLI（子命令见 python -m app.extensions.cli --help）
+PYTHONPATH=. ../.venv/bin/python -m app.extensions.cli enhance --help
 ```
 
-### 15.2 开发第一个功能
+OCR / 表格识别需要独立环境（Paddle 会钉住 numpy/opencv 版本，**不要装进测试 venv**）：
 
-建议从 `001-file-inventory` 开始。
-
-给 Cursor 的提示词：
-
-```text
-你现在是本项目的开发助手。
-请严格遵守 .cursor/rules。
-当前开发 Spec 是 specs/001-file-inventory。
-请先阅读 spec.md、plan.md、tasks.md、acceptance.md、test_cases.md。
-然后只实现 tasks.md 中 T001-T003。
-不要扩大范围。
-不要移动、删除、重命名任何原始文件。
-```
-
-### 15.3 开发后检查
-
-每次提交前检查：
-
-```text
-是否对应明确 Spec？
-是否只实现 tasks？
-是否满足 acceptance？
-是否有测试？
-是否有数据库 migration？
-是否误动 raw_vault、parsed、curated？
-是否违反原始文件只读原则？
+```bash
+python3.11 -m venv /tmp/paddle-gpu-venv
+/tmp/paddle-gpu-venv/bin/pip install paddlepaddle-gpu==3.3.1 \
+  -i https://www.paddlepaddle.org.cn/packages/stable/cu118/
+/tmp/paddle-gpu-venv/bin/pip install "paddleocr==3.7.0" "paddlex[ocr]==3.7.2"
 ```
 
 ---
 
-## 16. Codex 使用方式
-
-Codex 适合处理明确任务，例如：
+## 3. 架构
 
 ```text
-请基于 specs/001-file-inventory 和 sql/001_init_schema_v1_1.sql，
-补全 backend/app/models/file.py 和 backend/app/services/inventory_scanner.py。
-禁止修改其他模块。
-完成后补 tests/test_inventory_scanner.py。
+输入               解析                     结构化                   人工/审计
+────               ────                     ──────                   ────────
+.docx ──┐
+.pdf  ──┼─> word/package ──> word/native_tables ──┐
+图片  ──┼─> adapters/paddle_structure ───────────┤
+        │      (几何校验 box ↔ HTML 网格)         ├─> tables/semantics  表头路径
+        │                                          ├─> tables/notes      脚注绑定
+        │                                          └─> render/review_packet  复核包
+        │                                                    │
+        │                                                    ▼
+        └─> pipeline.assemble_package ────────────────> generation（原子提交）
+                                                             │
+                                     review/correction 订正 ──┤ 只重建受影响表
+                                     review/patches 补丁 ─────┤ RFC6902 + CAS
+                                     review/recompute 重算 ───┘
+                                                             │
+                                              应作废清单 ────> evidence/revocation
+                                                             └─> 标记流水（append-only）
 ```
 
-不建议给 Codex 的任务：
+### 分层
 
-```text
-帮我把整个项目都做完
-重构所有代码
-你看着办
-顺便把前端也做了
-```
+| 层 | 模块 | 职责 |
+|---|---|---|
+| 输入 | `word/` | docx 包解析、原生表格、脚注、表头标记 |
+| 识别 | `adapters/` | Paddle 响应归一、几何绑定、OCR 表装配 |
+| 结构 | `tables/` | 网格、合并、表头路径、续表候选、脚注绑定 |
+| 呈现 | `render/` | 复核包（Markdown + 证据） |
+| 编排 | `pipeline.py` | 端到端装配、原子写盘 |
+| 变更 | `review/` | 影响清单、重算、订正、补丁、决策与 reviewer 策略 |
+| 证据 | `evidence/` | 候选证据、作废执行器、标记流水 |
+| 交付 | `release/` | 对账、切换、回滚、消费者 ACK |
 
 ---
 
-## 17. Hermes 使用方式
+## 4. 三条不可协商的设计原则
 
-Hermes 不建议作为第一阶段主开发工具。
+### 4.1 不猜
 
-更适合后续做：
+- 表头带**不按加粗/首行**推断；原生 `.docx` 读 `w:tblHeader`，OCR 表**必须人工声明**。
+- 表格 box 与单元格的对应**不按下标**，按几何逐格比对；对不上就拒绝绑定。
+- 作废恢复**不假设**原状态是 `UNREVIEWED`，按流水里记录的值恢复；无记录则拒绝。
 
-- Spec Review；
-- 开发经验复盘；
-- 解析问题排查；
-- 项目蒸馏流程沉淀；
-- SKILL 生成。
+> 猜出来的结果最危险的地方不是错，而是**错得看起来合理**。
+
+### 4.2 不静默
+
+孤儿脚注、重复 id、无法归因的证据、只描述一半的补丁、残缺的批次——
+全部变成可见的 issue 或报告，**不允许"跳过并继续"**。
+
+典型例子：`notes = []` 读作"这张表没有脚注"；只有配上
+`NOTES_UNAVAILABLE_FROM_OCR` 才是"我们没读到脚注"。这两件事业务上完全不同。
+
+### 4.3 单一事实源
+
+状态由事件推导，不另存一份"当前值"：
+
+```text
+revocations.jsonl  （只追加，永不改写）
+  seq1 REVOKE  at=10:00 recorded_at=10:00:03
+  seq2 RESTORE at=11:00 recorded_at=11:00:01
+        └── fold ──> 当前状态
+```
+
+同一个事实若有两个来源，迟早会对不上——这条项目已经付过学费。
 
 ---
 
-## 18. 推荐开发顺序
+## 5. 能力与验证状态
 
-### 阶段一：MVP 文件治理和解析闭环
+**"机制"与"证据"是两件事。** 下表第三列只写有实测支持的部分。
 
-```text
-000-project-charter
-001-file-inventory
-002-file-content-vault
-003-duplicate-governance
-004-parser-router
-005-markitdown-parser
-006-mineru-parser
-007-quality-checker
-008-review-workflow
-```
+| 能力 | 入口 | 验证状态 |
+|---|---|---|
+| 原生表格抽取（合并/空洞/嵌套拒绝） | `word/native_tables.extract_tables` | 已验（含独立变异抽检） |
+| 表头路径（cell 引用） | `tables/semantics.derive_header_paths` | 已验 |
+| 脚注绑定 | `tables/notes.bind_notes` | 已验 |
+| 复核包 `omission ⊆ evidence` | `render/review_packet` | 已验；有负向探针（伪造省略位被拒） |
+| 端到端装配 + 原子提交 | `pipeline.assemble_package` | **第三方 E2E 8/8 PASS** |
+| 订正 + 只重建受影响表 | `review/correction.apply_correction` | 已验；未受影响表字节不变 |
+| RFC6902 补丁 + 不可补丁登记 | 同上 | 已验；回放后逐叶子零残留 |
+| 证据作废（人工触发 + 可恢复） | `evidence/revocation*.py` | 已验；双进程 seq 无重 |
+| reviewer 身份策略 | `review/authority.ReviewerPolicy` | 形式校验已收紧；**未接认证** |
+| Paddle 表格几何绑定 | `adapters/paddle_structure` | 真实票据 **2/17 通过**（安全性成立，可用性不足） |
+| OCR 表头人工声明 | `adapters/ocr_tables` | 已验（建议来自 `<th>`，人签署才生效） |
+| OCR 装配入口 | `adapters/ocr_assembly` | 已验；缺项显式 issue，**无复核包/无订正** |
 
-目标：
+### 验收判据（这段比结论更可复用）
 
-```text
-扫描目录
-登记文件实例和内容对象
-复制唯一内容到 raw_vault
-识别重复
-生成解析任务
-调用 MarkItDown / MinerU
-生成 parsed 产物
-质量评分
-进入人工复核
-```
-
-### 阶段二：知识资产和检索
-
-```text
-009-quality-report-summary
-010-evidence-chain
-011-curated-project-assets
-012-search-service
-013-streamlit-admin
-```
-
-目标：
-
-```text
-证据链
-项目卡
-源文档清单
-全文检索
-管理台
-```
-
-### 阶段三：部署和测试
-
-```text
-901-docker-compose-deployment
-902-test-dataset
-```
-
-目标：
-
-```text
-本地可部署
-有测试样本
-可回归验证
-```
+| 版本 | 判据 | 防的错 |
+|---|---|---|
+| v1 | 代码里有这个检查 | 无 |
+| v2 | 有变异能让它变红 | 守卫声明了却从未执行 |
+| v3 | v2 + 三坐标（变异原文 / 用例 / 失败行） | 判据自身变成声明 |
+| **v4** | v3 + 重放必须保留原变异全部语义变化 | 用弱变异体证明强结论 |
 
 ---
 
-## 19. 验收标准
+## 6. 明确"不声称"
 
-一套 SDD Cursor 工作区合格的标准是：
+以下说法在本仓库**不成立**，交付材料中不得出现：
 
-```text
-1. Cursor 打开后能自动读取 .cursor/rules。
-2. 每个 Spec 有 spec/plan/tasks/acceptance/test_cases。
-3. docs 里有开发、数据库、解析器、AI 协作规范。
-4. backend 有基础目录骨架。
-5. config 有 V1.1 配置模板。
-6. sql 有 V1.1 初始化脚本位置。
-7. scripts 有初始化和流水线脚本。
-8. ai_tasks 有 Cursor/Codex/Hermes 模板。
-9. README 能指导开发者从 001-file-inventory 开始。
-10. 所有规范都强调原始文件只读和不自动删除重复文件。
-```
+1. 不声称端到端生产可用（无真实 OCR 环境与真实语料）；
+2. 不声称表格解析在真实票据上可用（真实 17 表仅 2 表通过几何校验）；
+3. 不声称识别准确率（无人工标注，全部是相对量）；
+4. 不声称阈值已校准（`0.6` 偏低，`0.9` 只是候选值）；
+5. 不声称 reviewer 身份可信（只校验形式，未接认证上下文）；
+6. 不声称证据作废是全自动的（需人工触发）；
+7. 不声称跨进程并发安全（单机 `flock`，未并入 `artifact_store` 锁体系）；
+8. 不声称 MySQL 相关 131 例已跑（`NOT_EXECUTED`）；
+9. 不声称发票/PDF 能进复核包（OCR 侧只到"契约形状的表 + 缺失声明"）。
 
 ---
 
-## 20. 一句话总结
-
-这套 SDD Spec + Cursor 项目目录的目的不是“多写文档”，而是让 Cursor、Codex、Hermes 都被约束在同一套工程边界内：
+## 7. 仓库结构
 
 ```text
-V1.1 详细设计负责定义系统；
-SDD Spec 负责定义功能；
-Cursor Rules 负责约束 AI；
-Tasks 负责驱动编码；
-Acceptance 负责防止失控。
+backend/
+  app/extensions/          # 本项目的核心（下述为其中重点）
+    word/                  #   docx 解析、原生表格、脚注、表头标记
+    adapters/              #   Paddle 响应归一、几何绑定、OCR 表装配
+    tables/                #   网格、表头路径、续表、脚注
+    render/                #   复核包
+    review/                #   影响清单、重算、订正、补丁、策略
+    evidence/              #   候选证据、作废执行器、标记流水
+    release/               #   对账、切换、回滚、ACK
+    pipeline.py            #   装配与原子写盘
+    cli.py                 #   命令行入口
+  tests/                   #   扩展层测试（1487 条中占大多数）
+docs/proposals/doc2md-19cap/
+  v1.0.0/evidence/         #   逐 Loop 验收证据（含勘误）
+  v1.0.0/evidence/QA/      #   独立 QA 报告
+  v1.0.0/evidence/DATASET_INVOICES/  # 样本清单（不含原始凭证）
+loop/proposals/            # Loop 契约（追加式，不改历史）
+.ua/                       # 知识图谱（见第 9 节说明）
 ```
 
-最终目标是把个人历史项目文档真正治理成：
+### 证据在哪
 
-```text
-可盘点
-可去重
-可解析
-可追溯
-可复核
-可蒸馏
-可检索
-可复用
+| 想知道 | 看 |
+|---|---|
+| 某个 Loop 验了什么、边界是什么 | `docs/proposals/doc2md-19cap/v1.0.0/evidence/L*/TL_ACCEPTANCE.md` |
+| 独立 QA 抓到了什么 | `evidence/QA/` |
+| 为什么这么设计（被否掉的方案） | `evidence/TL_DESIGN_SUMMARY_20261019.md` |
+| 谁决定了什么（政策层） | `evidence/OWNER_DECISIONS_20261018.md` |
+| 未验证清单 | `evidence/DELIVERY_19CAP.md` 第 3/4 节 |
+| 样本从哪来、能证明什么 | `evidence/DATASET_INVOICES/README.md` |
+
+---
+
+## 8. 已知缺口（按"出错后多久会被发现"排序）
+
+| 风险 | 为什么危险 | 现状 |
+|---|---|---|
+| 表格几何绑定真实通过率 2/17 | 结构复杂时会整批失败，且不报错 | 已登记，待真实样本 |
+| 阈值 `0.6` 偏低 | 该复核的被放过；不会报错 | 有相对依据，未改常数 |
+| OCR 链路断在复核包之前 | "能识别"被误读成"能交付" | 已写进"不声称"第 9 条 |
+| 作废流水无权限约束 | 有进程权限即可 append | `L47-LIM-02` |
+| 日志只增不减 | 长期膨胀 | `L47-LIM-01` |
+| 报销发票 ≠ 银行票据 | 结论域差 | `DS-INV-05` |
+
+---
+
+## 9. 知识图谱（`.ua/`）
+
+`.ua/knowledge-graph.json` 由 `/understand` 生成，当前快照对应提交 `1e1432d`（2026-10-16），
+**已落后于 `main`**。它适合用来浏览模块关系，不适合当作当前实现的索引。
+
+重新生成：
+
+```bash
+/understand --full --language zh
 ```
+
+> 本文档的描述以代码与测试为准；图谱用于导航，不作为事实来源。
+
+---
+
+## 10. 开发约定
+
+- **改动必须自带证据**：`evidence/L*/TL_ACCEPTANCE.md` 写明判据、命令、实测数字、边界。
+- **Loop 契约只追加**：`loop/proposals/` 下不改历史契约。
+- **测试基线不可漂移**：新增依赖若会改 numpy/opencv 版本，必须装进独立 venv。
+- **不猜、不静默、单一事实源**：见第 4 节；违反其一的设计需要单独记录理由。
+- **声称必须能指出反例**：写"两条路径都被钉住"时，必须能说出每条路径的用例名。
+
+---
+
+## 11. 最近完成（摘要）
+
+| Loop | 内容 | 结果 |
+|---|---|---|
+| L38 | Paddle 表格几何绑定 | 真实响应暴露 `cell_box_list` 形状漂移，已双形状兼容 |
+| L39 | reviewer 身份策略 | 机制建成，当时策略为"全部放行" |
+| L40 | 证据作废执行器 | 人工触发、幂等、整批原子 |
+| L43 | reviewer 合法形式 | 关闭"全部放行"，占位串被拒 |
+| L44–L45 | 阈值校准 | 伪 Gold 失败；退化实验显示 `0.6` 偏低，候选 `0.9` |
+| L46–L48 | 作废接线 / 可恢复 / 双时间戳 | 清单直达执行器，落 append-only 流水 |
+| L49–L50 | OCR 表头人工声明 / 装配入口 | 引擎建议 + 人裁决；缺项显式 issue |
+
+完整历史见 `docs/proposals/doc2md-19cap/v1.0.0/evidence/`。
