@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0.0",
+  "contract_id": "DOC2MD-19CAP-V1.0.1-ADDENDUM-L47",
+  "state": "PLANNED",
+  "generated_on": "2026-10-19",
+  "parent_contract": {"version": "DOC2MD-19CAP-V1.0", "path": "../../v1.0.0/loop_contract.json", "note": "纯追加。"},
+  "authorization": {
+    "basis": "Owner 裁定：作废只是标签，应在 generation 的作废记录上追加标记；B（独立 registry）会造成维护混乱，A（新 generation）会因贴标签而抬版本号",
+    "evidence": "本轮对话",
+    "decided_by": "Owner",
+    "decided_on": "2026-10-19"
+  },
+  "scope_note": "append-only 标记流水（revoke/restore 都是标记），折叠出当前状态；generation 产物不变、版本号不变；写用 flock + fsync，seq 在锁内分配。",
+  "gates": {
+    "A1": {
+      "official_tool_available": false,
+      "reason": "L47 不在 PACK 的 loop 列表中",
+      "equivalent_check": ["git diff --name-only loop-entry/L47..HEAD ⊆ allowed_new_or_scoped_paths", "git ls-files --others --exclude-standard 为空"],
+      "honesty_rule": "不得改 PACK 或扩原白名单"
+    },
+    "B": "pytest 全量不得低于 1469 passed / 131 skipped",
+    "C": "check_baseline.py --allow-index-append 必须 passed=true",
+    "GAP": "四条判据：①revoke 后折叠状态为 STALE；②restore 标记让状态回到原值；③重复同向标记不写第二行（幂等）；④两进程并发追加 100 条，seq 无重无丢"
+  },
+  "loops": [
+    {
+      "loop_id": "L47",
+      "name": "作废标记流水（append-only）",
+      "status": "PLANNED",
+      "depends_on": ["L46"],
+      "conditional_dependencies": [],
+      "requirement_ids": ["PI-F05-01"],
+      "allowed_new_or_scoped_paths": [
+        "backend/app/extensions/evidence/revocation_log.py",
+        "backend/tests/extensions/test_revocation_log.py"
+      ],
+      "scoped_existing_edits": [],
+      "forbidden": ["改写已有标记行（只能追加）", "用单独 registry 文件保存当前状态", "无锁写入"],
+      "tasks": [
+        {"task_id": "T4701", "description": "append_mark：flock + fsync + 锁内分配 seq；重复同向标记跳过", "output": "revocation_log.py", "responsible_role": "DEV", "status": "TODO"},
+        {"task_id": "T4702", "description": "fold_marks：按序折叠出 candidate -> state/decision", "output": "revocation_log.py", "responsible_role": "DEV", "status": "TODO"},
+        {"task_id": "T4703", "description": "八条用例含双进程并发", "output": "test_revocation_log.py", "responsible_role": "DEV", "status": "TODO"}
+      ],
+      "role_route": ["TL_PLAN", "DEV_SELF_TEST", "INDEPENDENT_QA", "TL_FINAL"],
+      "required_evidence": ["input_commit_and_hashes", "actual_commands_and_exit_codes", "test_case_id_results"],
+      "next_loop_permission": "四条判据成立才允许关闭。"
+    }
+  ]
+}
