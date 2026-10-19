@@ -1,0 +1,1512 @@
+{
+ "pages": [
+  {
+   "source": "发票运单明细.pdf",
+   "variant": "clean",
+   "lines": 39,
+   "mean_score": 0.9951,
+   "correct": 39,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "发票运单明细.pdf",
+   "variant": "blur1",
+   "lines": 38,
+   "mean_score": 0.9926,
+   "correct": 38,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "发票运单明细.pdf",
+   "variant": "blur2",
+   "lines": 36,
+   "mean_score": 0.9914,
+   "correct": 34,
+   "wrong": 2,
+   "unjudged": 0
+  },
+  {
+   "source": "发票运单明细.pdf",
+   "variant": "blur3",
+   "lines": 29,
+   "mean_score": 0.8799,
+   "correct": 22,
+   "wrong": 4,
+   "unjudged": 3
+  },
+  {
+   "source": "发票运单明细.pdf",
+   "variant": "down70",
+   "lines": 39,
+   "mean_score": 0.9935,
+   "correct": 38,
+   "wrong": 1,
+   "unjudged": 0
+  },
+  {
+   "source": "发票运单明细.pdf",
+   "variant": "down50",
+   "lines": 37,
+   "mean_score": 0.9918,
+   "correct": 35,
+   "wrong": 2,
+   "unjudged": 0
+  },
+  {
+   "source": "发票运单明细.pdf",
+   "variant": "contrast",
+   "lines": 39,
+   "mean_score": 0.9948,
+   "correct": 39,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "发票运单明细.pdf",
+   "variant": "mix",
+   "lines": 36,
+   "mean_score": 0.9901,
+   "correct": 34,
+   "wrong": 2,
+   "unjudged": 0
+  },
+  {
+   "source": "发票运单明细.pdf",
+   "variant": "blur4",
+   "lines": 11,
+   "mean_score": 0.5438,
+   "correct": 5,
+   "wrong": 2,
+   "unjudged": 4
+  },
+  {
+   "source": "发票运单明细.pdf",
+   "variant": "down40",
+   "lines": 37,
+   "mean_score": 0.9882,
+   "correct": 35,
+   "wrong": 2,
+   "unjudged": 0
+  },
+  {
+   "source": "顺丰电子发票.pdf",
+   "variant": "clean",
+   "lines": 56,
+   "mean_score": 0.9919,
+   "correct": 56,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "顺丰电子发票.pdf",
+   "variant": "blur1",
+   "lines": 53,
+   "mean_score": 0.9917,
+   "correct": 53,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "顺丰电子发票.pdf",
+   "variant": "blur2",
+   "lines": 55,
+   "mean_score": 0.9815,
+   "correct": 48,
+   "wrong": 6,
+   "unjudged": 1
+  },
+  {
+   "source": "顺丰电子发票.pdf",
+   "variant": "blur3",
+   "lines": 48,
+   "mean_score": 0.8926,
+   "correct": 27,
+   "wrong": 16,
+   "unjudged": 5
+  },
+  {
+   "source": "顺丰电子发票.pdf",
+   "variant": "down70",
+   "lines": 56,
+   "mean_score": 0.9929,
+   "correct": 55,
+   "wrong": 1,
+   "unjudged": 0
+  },
+  {
+   "source": "顺丰电子发票.pdf",
+   "variant": "down50",
+   "lines": 53,
+   "mean_score": 0.9828,
+   "correct": 50,
+   "wrong": 2,
+   "unjudged": 1
+  },
+  {
+   "source": "顺丰电子发票.pdf",
+   "variant": "contrast",
+   "lines": 56,
+   "mean_score": 0.9907,
+   "correct": 55,
+   "wrong": 1,
+   "unjudged": 0
+  },
+  {
+   "source": "顺丰电子发票.pdf",
+   "variant": "mix",
+   "lines": 53,
+   "mean_score": 0.9764,
+   "correct": 48,
+   "wrong": 3,
+   "unjudged": 2
+  },
+  {
+   "source": "顺丰电子发票.pdf",
+   "variant": "blur4",
+   "lines": 21,
+   "mean_score": 0.7271,
+   "correct": 8,
+   "wrong": 5,
+   "unjudged": 8
+  },
+  {
+   "source": "顺丰电子发票.pdf",
+   "variant": "down40",
+   "lines": 54,
+   "mean_score": 0.9587,
+   "correct": 48,
+   "wrong": 4,
+   "unjudged": 2
+  },
+  {
+   "source": "dzfp_24112000000039983381_中电金信软件（上海）有限公司_20240519212719.pdf",
+   "variant": "clean",
+   "lines": 40,
+   "mean_score": 0.9746,
+   "correct": 40,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "dzfp_24112000000039983381_中电金信软件（上海）有限公司_20240519212719.pdf",
+   "variant": "blur1",
+   "lines": 39,
+   "mean_score": 0.976,
+   "correct": 39,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "dzfp_24112000000039983381_中电金信软件（上海）有限公司_20240519212719.pdf",
+   "variant": "blur2",
+   "lines": 37,
+   "mean_score": 0.9758,
+   "correct": 33,
+   "wrong": 3,
+   "unjudged": 1
+  },
+  {
+   "source": "dzfp_24112000000039983381_中电金信软件（上海）有限公司_20240519212719.pdf",
+   "variant": "blur3",
+   "lines": 31,
+   "mean_score": 0.8546,
+   "correct": 22,
+   "wrong": 5,
+   "unjudged": 4
+  },
+  {
+   "source": "dzfp_24112000000039983381_中电金信软件（上海）有限公司_20240519212719.pdf",
+   "variant": "down70",
+   "lines": 40,
+   "mean_score": 0.9794,
+   "correct": 38,
+   "wrong": 1,
+   "unjudged": 1
+  },
+  {
+   "source": "dzfp_24112000000039983381_中电金信软件（上海）有限公司_20240519212719.pdf",
+   "variant": "down50",
+   "lines": 39,
+   "mean_score": 0.9657,
+   "correct": 37,
+   "wrong": 2,
+   "unjudged": 0
+  },
+  {
+   "source": "dzfp_24112000000039983381_中电金信软件（上海）有限公司_20240519212719.pdf",
+   "variant": "contrast",
+   "lines": 40,
+   "mean_score": 0.9786,
+   "correct": 38,
+   "wrong": 1,
+   "unjudged": 1
+  },
+  {
+   "source": "dzfp_24112000000039983381_中电金信软件（上海）有限公司_20240519212719.pdf",
+   "variant": "mix",
+   "lines": 37,
+   "mean_score": 0.9866,
+   "correct": 35,
+   "wrong": 2,
+   "unjudged": 0
+  },
+  {
+   "source": "dzfp_24112000000039983381_中电金信软件（上海）有限公司_20240519212719.pdf",
+   "variant": "blur4",
+   "lines": 23,
+   "mean_score": 0.6644,
+   "correct": 3,
+   "wrong": 10,
+   "unjudged": 10
+  },
+  {
+   "source": "dzfp_24112000000039983381_中电金信软件（上海）有限公司_20240519212719.pdf",
+   "variant": "down40",
+   "lines": 38,
+   "mean_score": 0.9854,
+   "correct": 35,
+   "wrong": 3,
+   "unjudged": 0
+  },
+  {
+   "source": "中信银行_床品四件套_digital_25317000002557541473.pdf",
+   "variant": "clean",
+   "lines": 44,
+   "mean_score": 0.9959,
+   "correct": 44,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "中信银行_床品四件套_digital_25317000002557541473.pdf",
+   "variant": "blur1",
+   "lines": 41,
+   "mean_score": 0.997,
+   "correct": 41,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "中信银行_床品四件套_digital_25317000002557541473.pdf",
+   "variant": "blur2",
+   "lines": 40,
+   "mean_score": 0.9797,
+   "correct": 39,
+   "wrong": 1,
+   "unjudged": 0
+  },
+  {
+   "source": "中信银行_床品四件套_digital_25317000002557541473.pdf",
+   "variant": "blur3",
+   "lines": 31,
+   "mean_score": 0.7597,
+   "correct": 11,
+   "wrong": 12,
+   "unjudged": 8
+  },
+  {
+   "source": "中信银行_床品四件套_digital_25317000002557541473.pdf",
+   "variant": "down70",
+   "lines": 42,
+   "mean_score": 0.9943,
+   "correct": 42,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "中信银行_床品四件套_digital_25317000002557541473.pdf",
+   "variant": "down50",
+   "lines": 41,
+   "mean_score": 0.9964,
+   "correct": 41,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "中信银行_床品四件套_digital_25317000002557541473.pdf",
+   "variant": "contrast",
+   "lines": 43,
+   "mean_score": 0.9967,
+   "correct": 42,
+   "wrong": 1,
+   "unjudged": 0
+  },
+  {
+   "source": "中信银行_床品四件套_digital_25317000002557541473.pdf",
+   "variant": "mix",
+   "lines": 39,
+   "mean_score": 0.9743,
+   "correct": 36,
+   "wrong": 3,
+   "unjudged": 0
+  },
+  {
+   "source": "中信银行_床品四件套_digital_25317000002557541473.pdf",
+   "variant": "blur4",
+   "lines": 14,
+   "mean_score": 0.617,
+   "correct": 1,
+   "wrong": 5,
+   "unjudged": 8
+  },
+  {
+   "source": "中信银行_床品四件套_digital_25317000002557541473.pdf",
+   "variant": "down40",
+   "lines": 40,
+   "mean_score": 0.9611,
+   "correct": 38,
+   "wrong": 1,
+   "unjudged": 1
+  },
+  {
+   "source": "中信银行_电热水壶_digital_25927000000168021489.pdf",
+   "variant": "clean",
+   "lines": 44,
+   "mean_score": 0.9951,
+   "correct": 44,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "中信银行_电热水壶_digital_25927000000168021489.pdf",
+   "variant": "blur1",
+   "lines": 42,
+   "mean_score": 0.9966,
+   "correct": 41,
+   "wrong": 1,
+   "unjudged": 0
+  },
+  {
+   "source": "中信银行_电热水壶_digital_25927000000168021489.pdf",
+   "variant": "blur2",
+   "lines": 41,
+   "mean_score": 0.9315,
+   "correct": 36,
+   "wrong": 0,
+   "unjudged": 5
+  },
+  {
+   "source": "中信银行_电热水壶_digital_25927000000168021489.pdf",
+   "variant": "blur3",
+   "lines": 28,
+   "mean_score": 0.8158,
+   "correct": 12,
+   "wrong": 13,
+   "unjudged": 3
+  },
+  {
+   "source": "中信银行_电热水壶_digital_25927000000168021489.pdf",
+   "variant": "down70",
+   "lines": 42,
+   "mean_score": 0.996,
+   "correct": 42,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "中信银行_电热水壶_digital_25927000000168021489.pdf",
+   "variant": "down50",
+   "lines": 43,
+   "mean_score": 0.9844,
+   "correct": 39,
+   "wrong": 4,
+   "unjudged": 0
+  },
+  {
+   "source": "中信银行_电热水壶_digital_25927000000168021489.pdf",
+   "variant": "contrast",
+   "lines": 42,
+   "mean_score": 0.9955,
+   "correct": 42,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "中信银行_电热水壶_digital_25927000000168021489.pdf",
+   "variant": "mix",
+   "lines": 40,
+   "mean_score": 0.9224,
+   "correct": 34,
+   "wrong": 1,
+   "unjudged": 5
+  },
+  {
+   "source": "中信银行_电热水壶_digital_25927000000168021489.pdf",
+   "variant": "blur4",
+   "lines": 12,
+   "mean_score": 0.5609,
+   "correct": 1,
+   "wrong": 3,
+   "unjudged": 8
+  },
+  {
+   "source": "中信银行_电热水壶_digital_25927000000168021489.pdf",
+   "variant": "down40",
+   "lines": 41,
+   "mean_score": 0.9517,
+   "correct": 35,
+   "wrong": 6,
+   "unjudged": 0
+  },
+  {
+   "source": "BUSS_5_R&D_1788268633341.pdf",
+   "variant": "clean",
+   "lines": 95,
+   "mean_score": 0.9944,
+   "correct": 95,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "BUSS_5_R&D_1788268633341.pdf",
+   "variant": "blur1",
+   "lines": 96,
+   "mean_score": 0.9826,
+   "correct": 94,
+   "wrong": 0,
+   "unjudged": 2
+  },
+  {
+   "source": "BUSS_5_R&D_1788268633341.pdf",
+   "variant": "blur2",
+   "lines": 95,
+   "mean_score": 0.993,
+   "correct": 95,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "BUSS_5_R&D_1788268633341.pdf",
+   "variant": "blur3",
+   "lines": 94,
+   "mean_score": 0.9918,
+   "correct": 90,
+   "wrong": 4,
+   "unjudged": 0
+  },
+  {
+   "source": "BUSS_5_R&D_1788268633341.pdf",
+   "variant": "down70",
+   "lines": 95,
+   "mean_score": 0.9924,
+   "correct": 95,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "BUSS_5_R&D_1788268633341.pdf",
+   "variant": "down50",
+   "lines": 95,
+   "mean_score": 0.9938,
+   "correct": 95,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "BUSS_5_R&D_1788268633341.pdf",
+   "variant": "contrast",
+   "lines": 95,
+   "mean_score": 0.9954,
+   "correct": 94,
+   "wrong": 0,
+   "unjudged": 1
+  },
+  {
+   "source": "BUSS_5_R&D_1788268633341.pdf",
+   "variant": "mix",
+   "lines": 96,
+   "mean_score": 0.9924,
+   "correct": 94,
+   "wrong": 0,
+   "unjudged": 2
+  },
+  {
+   "source": "BUSS_5_R&D_1788268633341.pdf",
+   "variant": "blur4",
+   "lines": 80,
+   "mean_score": 0.906,
+   "correct": 54,
+   "wrong": 21,
+   "unjudged": 5
+  },
+  {
+   "source": "BUSS_5_R&D_1788268633341.pdf",
+   "variant": "down40",
+   "lines": 95,
+   "mean_score": 0.9959,
+   "correct": 95,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "BUSS_7_PRE_1788268931453.pdf",
+   "variant": "clean",
+   "lines": 87,
+   "mean_score": 0.9944,
+   "correct": 87,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "BUSS_7_PRE_1788268931453.pdf",
+   "variant": "blur1",
+   "lines": 87,
+   "mean_score": 0.9814,
+   "correct": 85,
+   "wrong": 0,
+   "unjudged": 2
+  },
+  {
+   "source": "BUSS_7_PRE_1788268931453.pdf",
+   "variant": "blur2",
+   "lines": 86,
+   "mean_score": 0.9922,
+   "correct": 86,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "BUSS_7_PRE_1788268931453.pdf",
+   "variant": "blur3",
+   "lines": 84,
+   "mean_score": 0.9893,
+   "correct": 81,
+   "wrong": 3,
+   "unjudged": 0
+  },
+  {
+   "source": "BUSS_7_PRE_1788268931453.pdf",
+   "variant": "down70",
+   "lines": 86,
+   "mean_score": 0.9918,
+   "correct": 86,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "BUSS_7_PRE_1788268931453.pdf",
+   "variant": "down50",
+   "lines": 86,
+   "mean_score": 0.9936,
+   "correct": 86,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "BUSS_7_PRE_1788268931453.pdf",
+   "variant": "contrast",
+   "lines": 86,
+   "mean_score": 0.9958,
+   "correct": 85,
+   "wrong": 0,
+   "unjudged": 1
+  },
+  {
+   "source": "BUSS_7_PRE_1788268931453.pdf",
+   "variant": "mix",
+   "lines": 88,
+   "mean_score": 0.9909,
+   "correct": 84,
+   "wrong": 2,
+   "unjudged": 2
+  },
+  {
+   "source": "BUSS_7_PRE_1788268931453.pdf",
+   "variant": "blur4",
+   "lines": 69,
+   "mean_score": 0.9158,
+   "correct": 50,
+   "wrong": 15,
+   "unjudged": 4
+  },
+  {
+   "source": "BUSS_7_PRE_1788268931453.pdf",
+   "variant": "down40",
+   "lines": 86,
+   "mean_score": 0.9945,
+   "correct": 86,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "BUSS_8_R&D_1788269110162.pdf",
+   "variant": "clean",
+   "lines": 136,
+   "mean_score": 0.9954,
+   "correct": 136,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "BUSS_8_R&D_1788269110162.pdf",
+   "variant": "blur1",
+   "lines": 132,
+   "mean_score": 0.9943,
+   "correct": 131,
+   "wrong": 0,
+   "unjudged": 1
+  },
+  {
+   "source": "BUSS_8_R&D_1788269110162.pdf",
+   "variant": "blur2",
+   "lines": 132,
+   "mean_score": 0.9948,
+   "correct": 132,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "BUSS_8_R&D_1788269110162.pdf",
+   "variant": "blur3",
+   "lines": 132,
+   "mean_score": 0.9897,
+   "correct": 128,
+   "wrong": 3,
+   "unjudged": 1
+  },
+  {
+   "source": "BUSS_8_R&D_1788269110162.pdf",
+   "variant": "down70",
+   "lines": 132,
+   "mean_score": 0.9945,
+   "correct": 131,
+   "wrong": 0,
+   "unjudged": 1
+  },
+  {
+   "source": "BUSS_8_R&D_1788269110162.pdf",
+   "variant": "down50",
+   "lines": 132,
+   "mean_score": 0.9932,
+   "correct": 132,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "BUSS_8_R&D_1788269110162.pdf",
+   "variant": "contrast",
+   "lines": 132,
+   "mean_score": 0.9967,
+   "correct": 131,
+   "wrong": 0,
+   "unjudged": 1
+  },
+  {
+   "source": "BUSS_8_R&D_1788269110162.pdf",
+   "variant": "mix",
+   "lines": 135,
+   "mean_score": 0.9926,
+   "correct": 129,
+   "wrong": 4,
+   "unjudged": 2
+  },
+  {
+   "source": "BUSS_8_R&D_1788269110162.pdf",
+   "variant": "blur4",
+   "lines": 115,
+   "mean_score": 0.8984,
+   "correct": 77,
+   "wrong": 27,
+   "unjudged": 11
+  },
+  {
+   "source": "BUSS_8_R&D_1788269110162.pdf",
+   "variant": "down40",
+   "lines": 134,
+   "mean_score": 0.9969,
+   "correct": 133,
+   "wrong": 0,
+   "unjudged": 1
+  },
+  {
+   "source": "download-1788268633341.pdf",
+   "variant": "clean",
+   "lines": 95,
+   "mean_score": 0.9944,
+   "correct": 95,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "download-1788268633341.pdf",
+   "variant": "blur1",
+   "lines": 96,
+   "mean_score": 0.9826,
+   "correct": 94,
+   "wrong": 0,
+   "unjudged": 2
+  },
+  {
+   "source": "download-1788268633341.pdf",
+   "variant": "blur2",
+   "lines": 95,
+   "mean_score": 0.993,
+   "correct": 95,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "download-1788268633341.pdf",
+   "variant": "blur3",
+   "lines": 94,
+   "mean_score": 0.9918,
+   "correct": 90,
+   "wrong": 4,
+   "unjudged": 0
+  },
+  {
+   "source": "download-1788268633341.pdf",
+   "variant": "down70",
+   "lines": 95,
+   "mean_score": 0.9924,
+   "correct": 95,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "download-1788268633341.pdf",
+   "variant": "down50",
+   "lines": 95,
+   "mean_score": 0.9938,
+   "correct": 95,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "download-1788268633341.pdf",
+   "variant": "contrast",
+   "lines": 95,
+   "mean_score": 0.9954,
+   "correct": 94,
+   "wrong": 0,
+   "unjudged": 1
+  },
+  {
+   "source": "download-1788268633341.pdf",
+   "variant": "mix",
+   "lines": 96,
+   "mean_score": 0.9924,
+   "correct": 94,
+   "wrong": 0,
+   "unjudged": 2
+  },
+  {
+   "source": "download-1788268633341.pdf",
+   "variant": "blur4",
+   "lines": 80,
+   "mean_score": 0.906,
+   "correct": 54,
+   "wrong": 21,
+   "unjudged": 5
+  },
+  {
+   "source": "download-1788268633341.pdf",
+   "variant": "down40",
+   "lines": 95,
+   "mean_score": 0.9959,
+   "correct": 95,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "dzfp_24952000000057216162_深圳市登喜路国际大酒店有限公司_20240427133437.pdf",
+   "variant": "clean",
+   "lines": 37,
+   "mean_score": 0.9632,
+   "correct": 36,
+   "wrong": 0,
+   "unjudged": 1
+  },
+  {
+   "source": "dzfp_24952000000057216162_深圳市登喜路国际大酒店有限公司_20240427133437.pdf",
+   "variant": "blur1",
+   "lines": 36,
+   "mean_score": 0.9648,
+   "correct": 34,
+   "wrong": 1,
+   "unjudged": 1
+  },
+  {
+   "source": "dzfp_24952000000057216162_深圳市登喜路国际大酒店有限公司_20240427133437.pdf",
+   "variant": "blur2",
+   "lines": 33,
+   "mean_score": 0.9865,
+   "correct": 30,
+   "wrong": 3,
+   "unjudged": 0
+  },
+  {
+   "source": "dzfp_24952000000057216162_深圳市登喜路国际大酒店有限公司_20240427133437.pdf",
+   "variant": "blur3",
+   "lines": 25,
+   "mean_score": 0.8116,
+   "correct": 14,
+   "wrong": 8,
+   "unjudged": 3
+  },
+  {
+   "source": "dzfp_24952000000057216162_深圳市登喜路国际大酒店有限公司_20240427133437.pdf",
+   "variant": "down70",
+   "lines": 36,
+   "mean_score": 0.9508,
+   "correct": 34,
+   "wrong": 0,
+   "unjudged": 2
+  },
+  {
+   "source": "dzfp_24952000000057216162_深圳市登喜路国际大酒店有限公司_20240427133437.pdf",
+   "variant": "down50",
+   "lines": 36,
+   "mean_score": 0.9548,
+   "correct": 34,
+   "wrong": 0,
+   "unjudged": 2
+  },
+  {
+   "source": "dzfp_24952000000057216162_深圳市登喜路国际大酒店有限公司_20240427133437.pdf",
+   "variant": "contrast",
+   "lines": 37,
+   "mean_score": 0.9504,
+   "correct": 35,
+   "wrong": 1,
+   "unjudged": 1
+  },
+  {
+   "source": "dzfp_24952000000057216162_深圳市登喜路国际大酒店有限公司_20240427133437.pdf",
+   "variant": "mix",
+   "lines": 33,
+   "mean_score": 0.9904,
+   "correct": 30,
+   "wrong": 3,
+   "unjudged": 0
+  },
+  {
+   "source": "dzfp_24952000000057216162_深圳市登喜路国际大酒店有限公司_20240427133437.pdf",
+   "variant": "blur4",
+   "lines": 21,
+   "mean_score": 0.7047,
+   "correct": 2,
+   "wrong": 10,
+   "unjudged": 9
+  },
+  {
+   "source": "dzfp_24952000000057216162_深圳市登喜路国际大酒店有限公司_20240427133437.pdf",
+   "variant": "down40",
+   "lines": 34,
+   "mean_score": 0.9893,
+   "correct": 34,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "滴滴出行行程报销单.pdf",
+   "variant": "clean",
+   "lines": 41,
+   "mean_score": 0.9947,
+   "correct": 41,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "滴滴出行行程报销单.pdf",
+   "variant": "blur1",
+   "lines": 41,
+   "mean_score": 0.9955,
+   "correct": 41,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "滴滴出行行程报销单.pdf",
+   "variant": "blur2",
+   "lines": 39,
+   "mean_score": 0.9846,
+   "correct": 35,
+   "wrong": 4,
+   "unjudged": 0
+  },
+  {
+   "source": "滴滴出行行程报销单.pdf",
+   "variant": "blur3",
+   "lines": 28,
+   "mean_score": 0.8566,
+   "correct": 21,
+   "wrong": 2,
+   "unjudged": 5
+  },
+  {
+   "source": "滴滴出行行程报销单.pdf",
+   "variant": "down70",
+   "lines": 41,
+   "mean_score": 0.991,
+   "correct": 40,
+   "wrong": 1,
+   "unjudged": 0
+  },
+  {
+   "source": "滴滴出行行程报销单.pdf",
+   "variant": "down50",
+   "lines": 41,
+   "mean_score": 0.9917,
+   "correct": 40,
+   "wrong": 1,
+   "unjudged": 0
+  },
+  {
+   "source": "滴滴出行行程报销单.pdf",
+   "variant": "contrast",
+   "lines": 40,
+   "mean_score": 0.9901,
+   "correct": 39,
+   "wrong": 1,
+   "unjudged": 0
+  },
+  {
+   "source": "滴滴出行行程报销单.pdf",
+   "variant": "mix",
+   "lines": 39,
+   "mean_score": 0.9822,
+   "correct": 36,
+   "wrong": 3,
+   "unjudged": 0
+  },
+  {
+   "source": "滴滴出行行程报销单.pdf",
+   "variant": "blur4",
+   "lines": 11,
+   "mean_score": 0.8459,
+   "correct": 6,
+   "wrong": 4,
+   "unjudged": 1
+  },
+  {
+   "source": "滴滴出行行程报销单.pdf",
+   "variant": "down40",
+   "lines": 41,
+   "mean_score": 0.9953,
+   "correct": 40,
+   "wrong": 1,
+   "unjudged": 0
+  },
+  {
+   "source": "滴滴电子发票.pdf",
+   "variant": "clean",
+   "lines": 56,
+   "mean_score": 0.9838,
+   "correct": 56,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "滴滴电子发票.pdf",
+   "variant": "blur1",
+   "lines": 56,
+   "mean_score": 0.9824,
+   "correct": 54,
+   "wrong": 1,
+   "unjudged": 1
+  },
+  {
+   "source": "滴滴电子发票.pdf",
+   "variant": "blur2",
+   "lines": 55,
+   "mean_score": 0.9754,
+   "correct": 51,
+   "wrong": 4,
+   "unjudged": 0
+  },
+  {
+   "source": "滴滴电子发票.pdf",
+   "variant": "blur3",
+   "lines": 48,
+   "mean_score": 0.8592,
+   "correct": 29,
+   "wrong": 11,
+   "unjudged": 8
+  },
+  {
+   "source": "滴滴电子发票.pdf",
+   "variant": "down70",
+   "lines": 57,
+   "mean_score": 0.9628,
+   "correct": 54,
+   "wrong": 2,
+   "unjudged": 1
+  },
+  {
+   "source": "滴滴电子发票.pdf",
+   "variant": "down50",
+   "lines": 56,
+   "mean_score": 0.9831,
+   "correct": 54,
+   "wrong": 2,
+   "unjudged": 0
+  },
+  {
+   "source": "滴滴电子发票.pdf",
+   "variant": "contrast",
+   "lines": 56,
+   "mean_score": 0.991,
+   "correct": 55,
+   "wrong": 1,
+   "unjudged": 0
+  },
+  {
+   "source": "滴滴电子发票.pdf",
+   "variant": "mix",
+   "lines": 56,
+   "mean_score": 0.9824,
+   "correct": 52,
+   "wrong": 4,
+   "unjudged": 0
+  },
+  {
+   "source": "滴滴电子发票.pdf",
+   "variant": "blur4",
+   "lines": 35,
+   "mean_score": 0.7077,
+   "correct": 12,
+   "wrong": 9,
+   "unjudged": 14
+  },
+  {
+   "source": "滴滴电子发票.pdf",
+   "variant": "down40",
+   "lines": 56,
+   "mean_score": 0.9809,
+   "correct": 53,
+   "wrong": 3,
+   "unjudged": 0
+  },
+  {
+   "source": "电子存根-SF1445516617245.png",
+   "variant": "clean",
+   "lines": 44,
+   "mean_score": 0.9693,
+   "correct": 44,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "电子存根-SF1445516617245.png",
+   "variant": "blur1",
+   "lines": 44,
+   "mean_score": 0.9673,
+   "correct": 42,
+   "wrong": 1,
+   "unjudged": 1
+  },
+  {
+   "source": "电子存根-SF1445516617245.png",
+   "variant": "blur2",
+   "lines": 44,
+   "mean_score": 0.9513,
+   "correct": 39,
+   "wrong": 4,
+   "unjudged": 1
+  },
+  {
+   "source": "电子存根-SF1445516617245.png",
+   "variant": "blur3",
+   "lines": 44,
+   "mean_score": 0.9586,
+   "correct": 37,
+   "wrong": 4,
+   "unjudged": 3
+  },
+  {
+   "source": "电子存根-SF1445516617245.png",
+   "variant": "down70",
+   "lines": 43,
+   "mean_score": 0.9898,
+   "correct": 43,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "电子存根-SF1445516617245.png",
+   "variant": "down50",
+   "lines": 43,
+   "mean_score": 0.9851,
+   "correct": 42,
+   "wrong": 1,
+   "unjudged": 0
+  },
+  {
+   "source": "电子存根-SF1445516617245.png",
+   "variant": "contrast",
+   "lines": 44,
+   "mean_score": 0.9772,
+   "correct": 42,
+   "wrong": 1,
+   "unjudged": 1
+  },
+  {
+   "source": "电子存根-SF1445516617245.png",
+   "variant": "mix",
+   "lines": 45,
+   "mean_score": 0.9394,
+   "correct": 41,
+   "wrong": 3,
+   "unjudged": 1
+  },
+  {
+   "source": "电子存根-SF1445516617245.png",
+   "variant": "blur4",
+   "lines": 45,
+   "mean_score": 0.9431,
+   "correct": 32,
+   "wrong": 9,
+   "unjudged": 4
+  },
+  {
+   "source": "电子存根-SF1445516617245.png",
+   "variant": "down40",
+   "lines": 44,
+   "mean_score": 0.9657,
+   "correct": 39,
+   "wrong": 3,
+   "unjudged": 2
+  },
+  {
+   "source": "电子存根-SF1459592643455.png",
+   "variant": "clean",
+   "lines": 47,
+   "mean_score": 0.9846,
+   "correct": 47,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "电子存根-SF1459592643455.png",
+   "variant": "blur1",
+   "lines": 48,
+   "mean_score": 0.9667,
+   "correct": 42,
+   "wrong": 5,
+   "unjudged": 1
+  },
+  {
+   "source": "电子存根-SF1459592643455.png",
+   "variant": "blur2",
+   "lines": 48,
+   "mean_score": 0.961,
+   "correct": 45,
+   "wrong": 2,
+   "unjudged": 1
+  },
+  {
+   "source": "电子存根-SF1459592643455.png",
+   "variant": "blur3",
+   "lines": 49,
+   "mean_score": 0.9588,
+   "correct": 44,
+   "wrong": 2,
+   "unjudged": 3
+  },
+  {
+   "source": "电子存根-SF1459592643455.png",
+   "variant": "down70",
+   "lines": 47,
+   "mean_score": 0.9871,
+   "correct": 42,
+   "wrong": 5,
+   "unjudged": 0
+  },
+  {
+   "source": "电子存根-SF1459592643455.png",
+   "variant": "down50",
+   "lines": 48,
+   "mean_score": 0.9652,
+   "correct": 45,
+   "wrong": 2,
+   "unjudged": 1
+  },
+  {
+   "source": "电子存根-SF1459592643455.png",
+   "variant": "contrast",
+   "lines": 47,
+   "mean_score": 0.9883,
+   "correct": 44,
+   "wrong": 3,
+   "unjudged": 0
+  },
+  {
+   "source": "电子存根-SF1459592643455.png",
+   "variant": "mix",
+   "lines": 51,
+   "mean_score": 0.9369,
+   "correct": 40,
+   "wrong": 10,
+   "unjudged": 1
+  },
+  {
+   "source": "电子存根-SF1459592643455.png",
+   "variant": "blur4",
+   "lines": 51,
+   "mean_score": 0.9202,
+   "correct": 38,
+   "wrong": 9,
+   "unjudged": 4
+  },
+  {
+   "source": "电子存根-SF1459592643455.png",
+   "variant": "down40",
+   "lines": 48,
+   "mean_score": 0.9883,
+   "correct": 45,
+   "wrong": 1,
+   "unjudged": 2
+  },
+  {
+   "source": "20260719124631_184_78.jpg",
+   "variant": "clean",
+   "lines": 35,
+   "mean_score": 0.9922,
+   "correct": 35,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "20260719124631_184_78.jpg",
+   "variant": "blur1",
+   "lines": 35,
+   "mean_score": 0.9909,
+   "correct": 33,
+   "wrong": 2,
+   "unjudged": 0
+  },
+  {
+   "source": "20260719124631_184_78.jpg",
+   "variant": "blur2",
+   "lines": 35,
+   "mean_score": 0.9908,
+   "correct": 31,
+   "wrong": 4,
+   "unjudged": 0
+  },
+  {
+   "source": "20260719124631_184_78.jpg",
+   "variant": "blur3",
+   "lines": 34,
+   "mean_score": 0.9952,
+   "correct": 32,
+   "wrong": 2,
+   "unjudged": 0
+  },
+  {
+   "source": "20260719124631_184_78.jpg",
+   "variant": "down70",
+   "lines": 35,
+   "mean_score": 0.9925,
+   "correct": 33,
+   "wrong": 2,
+   "unjudged": 0
+  },
+  {
+   "source": "20260719124631_184_78.jpg",
+   "variant": "down50",
+   "lines": 35,
+   "mean_score": 0.9917,
+   "correct": 33,
+   "wrong": 2,
+   "unjudged": 0
+  },
+  {
+   "source": "20260719124631_184_78.jpg",
+   "variant": "contrast",
+   "lines": 35,
+   "mean_score": 0.9934,
+   "correct": 34,
+   "wrong": 1,
+   "unjudged": 0
+  },
+  {
+   "source": "20260719124631_184_78.jpg",
+   "variant": "mix",
+   "lines": 34,
+   "mean_score": 0.9903,
+   "correct": 31,
+   "wrong": 3,
+   "unjudged": 0
+  },
+  {
+   "source": "20260719124631_184_78.jpg",
+   "variant": "blur4",
+   "lines": 33,
+   "mean_score": 0.9933,
+   "correct": 29,
+   "wrong": 4,
+   "unjudged": 0
+  },
+  {
+   "source": "20260719124631_184_78.jpg",
+   "variant": "down40",
+   "lines": 35,
+   "mean_score": 0.9916,
+   "correct": 31,
+   "wrong": 4,
+   "unjudged": 0
+  },
+  {
+   "source": "20260719124641_185_78.jpg",
+   "variant": "clean",
+   "lines": 37,
+   "mean_score": 0.9361,
+   "correct": 36,
+   "wrong": 0,
+   "unjudged": 1
+  },
+  {
+   "source": "20260719124641_185_78.jpg",
+   "variant": "blur1",
+   "lines": 35,
+   "mean_score": 0.9826,
+   "correct": 34,
+   "wrong": 1,
+   "unjudged": 0
+  },
+  {
+   "source": "20260719124641_185_78.jpg",
+   "variant": "blur2",
+   "lines": 32,
+   "mean_score": 0.9834,
+   "correct": 31,
+   "wrong": 0,
+   "unjudged": 1
+  },
+  {
+   "source": "20260719124641_185_78.jpg",
+   "variant": "blur3",
+   "lines": 33,
+   "mean_score": 0.9805,
+   "correct": 28,
+   "wrong": 4,
+   "unjudged": 1
+  },
+  {
+   "source": "20260719124641_185_78.jpg",
+   "variant": "down70",
+   "lines": 36,
+   "mean_score": 0.9707,
+   "correct": 34,
+   "wrong": 2,
+   "unjudged": 0
+  },
+  {
+   "source": "20260719124641_185_78.jpg",
+   "variant": "down50",
+   "lines": 35,
+   "mean_score": 0.9748,
+   "correct": 35,
+   "wrong": 0,
+   "unjudged": 0
+  },
+  {
+   "source": "20260719124641_185_78.jpg",
+   "variant": "contrast",
+   "lines": 35,
+   "mean_score": 0.9763,
+   "correct": 33,
+   "wrong": 2,
+   "unjudged": 0
+  },
+  {
+   "source": "20260719124641_185_78.jpg",
+   "variant": "mix",
+   "lines": 35,
+   "mean_score": 0.9535,
+   "correct": 32,
+   "wrong": 2,
+   "unjudged": 1
+  },
+  {
+   "source": "20260719124641_185_78.jpg",
+   "variant": "blur4",
+   "lines": 35,
+   "mean_score": 0.9702,
+   "correct": 26,
+   "wrong": 7,
+   "unjudged": 2
+  },
+  {
+   "source": "20260719124641_185_78.jpg",
+   "variant": "down40",
+   "lines": 34,
+   "mean_score": 0.9906,
+   "correct": 34,
+   "wrong": 0,
+   "unjudged": 0
+  }
+ ],
+ "total_lines": 8827,
+ "total_wrong": 422,
+ "buckets": {
+  "0.00-0.50": {
+   "lines": 116,
+   "correct": 8,
+   "wrong": 14,
+   "unjudged": 94,
+   "judged": 22,
+   "precision": 0.3636,
+   "coverage": 0.1897
+  },
+  "0.50-0.60": {
+   "lines": 75,
+   "correct": 10,
+   "wrong": 25,
+   "unjudged": 40,
+   "judged": 35,
+   "precision": 0.2857,
+   "coverage": 0.4667
+  },
+  "0.60-0.70": {
+   "lines": 63,
+   "correct": 15,
+   "wrong": 22,
+   "unjudged": 26,
+   "judged": 37,
+   "precision": 0.4054,
+   "coverage": 0.5873
+  },
+  "0.70-0.80": {
+   "lines": 93,
+   "correct": 25,
+   "wrong": 54,
+   "unjudged": 14,
+   "judged": 79,
+   "precision": 0.3165,
+   "coverage": 0.8495
+  },
+  "0.80-0.90": {
+   "lines": 207,
+   "correct": 105,
+   "wrong": 85,
+   "unjudged": 17,
+   "judged": 190,
+   "precision": 0.5526,
+   "coverage": 0.9179
+  },
+  "0.90-0.95": {
+   "lines": 385,
+   "correct": 289,
+   "wrong": 90,
+   "unjudged": 6,
+   "judged": 379,
+   "precision": 0.7625,
+   "coverage": 0.9844
+  },
+  "0.95-1.00": {
+   "lines": 7888,
+   "correct": 7744,
+   "wrong": 132,
+   "unjudged": 12,
+   "judged": 7876,
+   "precision": 0.9832,
+   "coverage": 0.9985
+  }
+ },
+ "reference_note": "reference is OCR of the undegraded page, not human annotation"
+}
