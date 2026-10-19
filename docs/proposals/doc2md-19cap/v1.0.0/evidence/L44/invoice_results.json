@@ -1,0 +1,1890 @@
+{
+ "pages": [
+  {
+   "file": "2024/202402邮寄工作站/发票运单明细.pdf",
+   "lines": 39,
+   "hits": 35,
+   "page_similarity": 0.8537,
+   "mean_score": 0.9951,
+   "detail": [
+    {
+     "text": "顺丰电子发票一运单明细",
+     "score": 0.9856,
+     "in_gold": false
+    },
+    {
+     "text": "(SF)",
+     "score": 0.9789,
+     "in_gold": false
+    },
+    {
+     "text": "EXPRESS",
+     "score": 1.0,
+     "in_gold": false
+    },
+    {
+     "text": "顺丰速运",
+     "score": 0.9999,
+     "in_gold": false
+    },
+    {
+     "text": "开票时间",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "发票代码",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "发票号码",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "2024/02/15",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "031002300311",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "31814228",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "发票总金额(元)",
+     "score": 0.9065,
+     "in_gold": true
+    },
+    {
+     "text": "409.05",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "公司名称",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "中电金信软件（上海）有限公司",
+     "score": 0.9966,
+     "in_gold": true
+    },
+    {
+     "text": "#",
+     "score": 0.9959,
+     "in_gold": true
+    },
+    {
+     "text": "运单号码",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "寄件时间",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "寄方",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "寄件地",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "收方",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "收件地",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "运单金额(元)",
+     "score": 0.9897,
+     "in_gold": true
+    },
+    {
+     "text": "1",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "SF1445516617245",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "2024/01/28",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "邵钟飞",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "上海市",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "陈伟旭",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "广州市",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "63.00",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "2",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "SF1459592643455",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "2024/01/13",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "邵钟飞",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "上海市",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "陈伟旭",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "广州市",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "346.05",
+     "score": 0.9561,
+     "in_gold": true
+    },
+    {
+     "text": "1-1",
+     "score": 0.9999,
+     "in_gold": true
+    }
+   ]
+  },
+  {
+   "file": "2024/202402邮寄工作站/顺丰电子发票.pdf",
+   "lines": 56,
+   "hits": 49,
+   "page_similarity": 0.1164,
+   "mean_score": 0.9919,
+   "detail": [
+    {
+     "text": "上海增值税电子普通发票",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "发票代码：031002300311",
+     "score": 0.9991,
+     "in_gold": true
+    },
+    {
+     "text": "发票号码：31814228",
+     "score": 0.9989,
+     "in_gold": true
+    },
+    {
+     "text": "国家税务总局",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "开票日期：2024年02月15日",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "上海市税务局",
+     "score": 0.9999,
+     "in_gold": false
+    },
+    {
+     "text": "机器编号：499098306660",
+     "score": 0.9941,
+     "in_gold": true
+    },
+    {
+     "text": "校验码：1143741589 3510451727",
+     "score": 0.987,
+     "in_gold": true
+    },
+    {
+     "text": "名",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "购买方",
+     "score": 1.0,
+     "in_gold": false
+    },
+    {
+     "text": "称：中电金信软件（上海）有限公司",
+     "score": 0.9968,
+     "in_gold": true
+    },
+    {
+     "text": "密码区",
+     "score": 0.9999,
+     "in_gold": false
+    },
+    {
+     "text": "03/61>0227728>94-0>*+8-<103<",
+     "score": 0.9992,
+     "in_gold": true
+    },
+    {
+     "text": "纳税人识别号：91310104MA1FRDQW2M",
+     "score": 0.9896,
+     "in_gold": true
+    },
+    {
+     "text": "<5>93>>0406408+3/>536+66/24*",
+     "score": 0.9997,
+     "in_gold": true
+    },
+    {
+     "text": "地址、电话：上海市徐汇区龙漕路299号4幢607室021-34611616",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "68/8463070-<2145401>518074>4",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "开户行及账号：招商银行上海周浦支行121930763210902",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "442->2*5+701+/311914/4>/5648",
+     "score": 0.9984,
+     "in_gold": true
+    },
+    {
+     "text": "货物或应税劳务、服务名称",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "规格型号",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "单位",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "数量",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "单价",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "金额",
+     "score": 0.9997,
+     "in_gold": true
+    },
+    {
+     "text": "税率",
+     "score": 0.999,
+     "in_gold": true
+    },
+    {
+     "text": "税额",
+     "score": 0.9993,
+     "in_gold": true
+    },
+    {
+     "text": "*物流辅助服务*收派服务费",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "次",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "1.0",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "385.9",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "385.90",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "6%",
+     "score": 0.9998,
+     "in_gold": true
+    },
+    {
+     "text": "23.15",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "合",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "计",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "¥385.90",
+     "score": 0.935,
+     "in_gold": true
+    },
+    {
+     "text": "¥23.15",
+     "score": 0.9224,
+     "in_gold": true
+    },
+    {
+     "text": "价税合计(大写)",
+     "score": 0.9779,
+     "in_gold": false
+    },
+    {
+     "text": "肆佰零玖元零伍分",
+     "score": 0.9994,
+     "in_gold": true
+    },
+    {
+     "text": "(小写)",
+     "score": 0.9954,
+     "in_gold": false
+    },
+    {
+     "text": "￥ 409.05",
+     "score": 0.8984,
+     "in_gold": false
+    },
+    {
+     "text": "名",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "称：上海顺泰速运有限公司",
+     "score": 0.9998,
+     "in_gold": true
+    },
+    {
+     "text": "销售方",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "纳税人识别号：91310117MA1J4NPR0P",
+     "score": 0.9899,
+     "in_gold": true
+    },
+    {
+     "text": "地址、电话：上海市松江区新浜镇共青路93号10幢106021-69763258",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "注",
+     "score": 0.9995,
+     "in_gold": true
+    },
+    {
+     "text": "公",
+     "score": 0.9082,
+     "in_gold": true
+    },
+    {
+     "text": "开户行及账号：招行闵行支行121939558910118",
+     "score": 0.9992,
+     "in_gold": true
+    },
+    {
+     "text": "91310117MA1J4NPR0P",
+     "score": 0.9893,
+     "in_gold": true
+    },
+    {
+     "text": "海",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "收款人：张静",
+     "score": 0.9961,
+     "in_gold": true
+    },
+    {
+     "text": "复核：葛鑫鑫",
+     "score": 0.9928,
+     "in_gold": true
+    },
+    {
+     "text": "开票人：王丽",
+     "score": 0.9998,
+     "in_gold": true
+    },
+    {
+     "text": "销售发票专用章",
+     "score": 0.9813,
+     "in_gold": false
+    }
+   ]
+  },
+  {
+   "file": "2024/20240516北京农商/dzfp_24112000000039983381_中电金信软件（上海）有限公司_20240519212719.pdf",
+   "lines": 40,
+   "hits": 24,
+   "page_similarity": 0.2077,
+   "mean_score": 0.9746,
+   "detail": [
+    {
+     "text": "电子发票",
+     "score": 1.0,
+     "in_gold": false
+    },
+    {
+     "text": "(增值税专用发票)",
+     "score": 0.9387,
+     "in_gold": false
+    },
+    {
+     "text": "发票号码：24112000000039983381",
+     "score": 0.997,
+     "in_gold": true
+    },
+    {
+     "text": "税",
+     "score": 0.9975,
+     "in_gold": true
+    },
+    {
+     "text": "W",
+     "score": 0.4246,
+     "in_gold": true
+    },
+    {
+     "text": "国家税务总局",
+     "score": 0.9913,
+     "in_gold": true
+    },
+    {
+     "text": "开票日期：2024年05月15日",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "北京市税务局",
+     "score": 0.9999,
+     "in_gold": false
+    },
+    {
+     "text": "下载次数：1",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "购买方信息",
+     "score": 1.0,
+     "in_gold": false
+    },
+    {
+     "text": "销售方信息",
+     "score": 0.9988,
+     "in_gold": false
+    },
+    {
+     "text": "名称：中电金信软件（上海）有限公司",
+     "score": 0.9972,
+     "in_gold": true
+    },
+    {
+     "text": "名称：北京安贞大厦物业管理有限责任公司",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "统一社会信用代码/纳税人识别号：91310104MA1FRDOW2M",
+     "score": 0.9963,
+     "in_gold": false
+    },
+    {
+     "text": "统一社会信用代码/纳税人识别号：911101016337102999",
+     "score": 0.9993,
+     "in_gold": false
+    },
+    {
+     "text": "项目名称",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "规格型号",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "单位",
+     "score": 0.9998,
+     "in_gold": true
+    },
+    {
+     "text": "数量",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "单价",
+     "score": 0.9998,
+     "in_gold": true
+    },
+    {
+     "text": "金额",
+     "score": 0.9998,
+     "in_gold": false
+    },
+    {
+     "text": "税率/征收率",
+     "score": 0.9998,
+     "in_gold": true
+    },
+    {
+     "text": "税额",
+     "score": 0.9996,
+     "in_gold": true
+    },
+    {
+     "text": "*住宿服务*住宿费",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "1 460.377358490566",
+     "score": 0.9879,
+     "in_gold": true
+    },
+    {
+     "text": "460.38",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "6%",
+     "score": 0.9993,
+     "in_gold": true
+    },
+    {
+     "text": "27.62",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "合",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "计",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "￥460.38",
+     "score": 0.9286,
+     "in_gold": false
+    },
+    {
+     "text": "￥27.62",
+     "score": 0.9319,
+     "in_gold": false
+    },
+    {
+     "text": "价税合计（大写）",
+     "score": 0.9664,
+     "in_gold": false
+    },
+    {
+     "text": "肆佰捌拾捌圆整",
+     "score": 0.9996,
+     "in_gold": true
+    },
+    {
+     "text": "（小写）¥488.00",
+     "score": 0.8995,
+     "in_gold": true
+    },
+    {
+     "text": "购方开户银行:招商银行上海周浦支行；银行账号:121930763210902;",
+     "score": 0.9885,
+     "in_gold": false
+    },
+    {
+     "text": "备注",
+     "score": 1.0,
+     "in_gold": false
+    },
+    {
+     "text": "销方开户银行:中国建设银行北京安华支行；银行账号:11001071700056004701;",
+     "score": 0.9936,
+     "in_gold": false
+    },
+    {
+     "text": "收款人:杨广顺；复核人:张鹏霞;",
+     "score": 0.951,
+     "in_gold": false
+    },
+    {
+     "text": "开票人：孙蓉",
+     "score": 0.9999,
+     "in_gold": false
+    }
+   ]
+  },
+  {
+   "file": "2025/中信银行_床品四件套_digital_25317000002557541473.pdf",
+   "lines": 44,
+   "hits": 32,
+   "page_similarity": 0.4299,
+   "mean_score": 0.9959,
+   "detail": [
+    {
+     "text": "电子发票(普通发票)",
+     "score": 0.8734,
+     "in_gold": true
+    },
+    {
+     "text": "发票号码：25317000002557541473",
+     "score": 0.9997,
+     "in_gold": false
+    },
+    {
+     "text": "开票日期：2025年10月17日",
+     "score": 1.0,
+     "in_gold": false
+    },
+    {
+     "text": "税",
+     "score": 0.9978,
+     "in_gold": true
+    },
+    {
+     "text": "国家税务总局",
+     "score": 1.0,
+     "in_gold": false
+    },
+    {
+     "text": "上海市税务局",
+     "score": 1.0,
+     "in_gold": false
+    },
+    {
+     "text": "购买方信息",
+     "score": 1.0,
+     "in_gold": false
+    },
+    {
+     "text": "销售方信息",
+     "score": 0.9999,
+     "in_gold": false
+    },
+    {
+     "text": "名称：中电金信软件有限公司上海分公司",
+     "score": 0.9998,
+     "in_gold": false
+    },
+    {
+     "text": "名称：上海圆迈贸易有限公司",
+     "score": 0.9999,
+     "in_gold": false
+    },
+    {
+     "text": "统一社会信用代码/纳税人识别号：91310104323214863A",
+     "score": 0.9999,
+     "in_gold": false
+    },
+    {
+     "text": "统一社会信用代码/纳税人识别号：91310114666025597Y",
+     "score": 0.9999,
+     "in_gold": false
+    },
+    {
+     "text": "项目名称",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "规格型号",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "单位",
+     "score": 0.9998,
+     "in_gold": true
+    },
+    {
+     "text": "数量",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "单价",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "金额税率/征收率",
+     "score": 0.9998,
+     "in_gold": true
+    },
+    {
+     "text": "税额",
+     "score": 0.9994,
+     "in_gold": true
+    },
+    {
+     "text": "*纺织产品*罗莱家纺超柔床品纯棉床上四件",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "四件套",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "套",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "1",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "530.09",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "530.09",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "13%",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "68.91",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "套床笠100支长绒棉床上用品灰1.2米床",
+     "score": 0.9996,
+     "in_gold": true
+    },
+    {
+     "text": "*纺织产品*罗莱家纺超柔床品纯棉床上四件",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "-44.25",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "13%",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "-5.75",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "套床笠100支长绒棉床上用品灰1.2米床",
+     "score": 0.9994,
+     "in_gold": true
+    },
+    {
+     "text": "合",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "计",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "¥485.84",
+     "score": 0.9997,
+     "in_gold": true
+    },
+    {
+     "text": "¥63.16",
+     "score": 0.9997,
+     "in_gold": true
+    },
+    {
+     "text": "价税合计(大写)",
+     "score": 0.9996,
+     "in_gold": true
+    },
+    {
+     "text": "伍佰肆拾玖圆整",
+     "score": 0.9996,
+     "in_gold": true
+    },
+    {
+     "text": "(小写) ¥549.00",
+     "score": 0.957,
+     "in_gold": true
+    },
+    {
+     "text": "订单号：324399835230",
+     "score": 0.9954,
+     "in_gold": false
+    },
+    {
+     "text": "备",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "注",
+     "score": 0.9996,
+     "in_gold": true
+    },
+    {
+     "text": "开票人：王梅",
+     "score": 0.9995,
+     "in_gold": false
+    }
+   ]
+  },
+  {
+   "file": "2025/中信银行_电热水壶_digital_25927000000168021489.pdf",
+   "lines": 44,
+   "hits": 31,
+   "page_similarity": 0.3845,
+   "mean_score": 0.9951,
+   "detail": [
+    {
+     "text": "电子发票(普通发票)",
+     "score": 0.8599,
+     "in_gold": true
+    },
+    {
+     "text": "发票号码：25927000000168021489",
+     "score": 0.9998,
+     "in_gold": false
+    },
+    {
+     "text": "开票日期：2025年10月18日",
+     "score": 0.9999,
+     "in_gold": false
+    },
+    {
+     "text": "税",
+     "score": 0.9988,
+     "in_gold": true
+    },
+    {
+     "text": "国家税务总局",
+     "score": 0.9999,
+     "in_gold": false
+    },
+    {
+     "text": "青岛市税务局",
+     "score": 0.9998,
+     "in_gold": false
+    },
+    {
+     "text": "购买方信息",
+     "score": 1.0,
+     "in_gold": false
+    },
+    {
+     "text": "销售方信息",
+     "score": 0.9999,
+     "in_gold": false
+    },
+    {
+     "text": "名称：中电金信软件有限公司上海分公司",
+     "score": 0.9998,
+     "in_gold": false
+    },
+    {
+     "text": "名称：青岛京东昌益得贸易有限公司",
+     "score": 0.9998,
+     "in_gold": false
+    },
+    {
+     "text": "统一社会信用代码/纳税人识别号：91310104323214863A",
+     "score": 0.9999,
+     "in_gold": false
+    },
+    {
+     "text": "统一社会信用代码/纳税人识别号：91370281MA3C2BW83D",
+     "score": 0.9999,
+     "in_gold": false
+    },
+    {
+     "text": "项目名称",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "规格型号",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "单位",
+     "score": 0.9998,
+     "in_gold": true
+    },
+    {
+     "text": "数量",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "单价",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "金额税率/征收率",
+     "score": 0.9998,
+     "in_gold": true
+    },
+    {
+     "text": "税额",
+     "score": 0.9994,
+     "in_gold": true
+    },
+    {
+     "text": "*家用厨房电器具*THERMOS【政府补贴】膳魔帅电热水壶 多档智",
+     "score": 0.9802,
+     "in_gold": false
+    },
+    {
+     "text": "EHA-1339E-BR",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "个",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "1",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "231.84",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "231.84",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "13%",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "30.14",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "能恒温家用烧水办公室不锈钢煮水壶便携热水壶 EHA-1339E-BR",
+     "score": 0.9989,
+     "in_gold": true
+    },
+    {
+     "text": "*家用厨房电器具*THERMOS【政府补贴】膳魔师电热水壶 多档智",
+     "score": 0.9918,
+     "in_gold": true
+    },
+    {
+     "text": "-23.19",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "13%",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "-3.01",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "能恒温家用烧水办公室不锈钢煮水壶便携热水壶 EHA-1339E-BR",
+     "score": 0.9877,
+     "in_gold": true
+    },
+    {
+     "text": "合",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "计",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "¥208.65",
+     "score": 0.9996,
+     "in_gold": true
+    },
+    {
+     "text": "¥27.13",
+     "score": 0.9995,
+     "in_gold": true
+    },
+    {
+     "text": "价税合计(大写)",
+     "score": 0.9996,
+     "in_gold": true
+    },
+    {
+     "text": "贰佰叁拾伍圆柒角捌分",
+     "score": 0.9989,
+     "in_gold": true
+    },
+    {
+     "text": "(小写) ¥235.78",
+     "score": 0.9867,
+     "in_gold": true
+    },
+    {
+     "text": "订单号：324419172154",
+     "score": 0.987,
+     "in_gold": false
+    },
+    {
+     "text": "备",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "注",
+     "score": 0.9996,
+     "in_gold": true
+    },
+    {
+     "text": "开票人：王梅",
+     "score": 0.9995,
+     "in_gold": false
+    }
+   ]
+  },
+  {
+   "file": "dzfp_24952000000057216162_深圳市登喜路国际大酒店有限公司_20240427133437.pdf",
+   "lines": 37,
+   "hits": 29,
+   "page_similarity": 0.4545,
+   "mean_score": 0.9632,
+   "detail": [
+    {
+     "text": "电子发票",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "(增值税专用发票)",
+     "score": 0.9302,
+     "in_gold": false
+    },
+    {
+     "text": "发票号码：24952000000057216162",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "税",
+     "score": 0.9994,
+     "in_gold": true
+    },
+    {
+     "text": "区",
+     "score": 0.8181,
+     "in_gold": false
+    },
+    {
+     "text": "",
+     "score": 0.0,
+     "in_gold": false
+    },
+    {
+     "text": "国家税务总局",
+     "score": 0.9938,
+     "in_gold": false
+    },
+    {
+     "text": "开票日期：2024年04月27日",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "深圳市税务局",
+     "score": 0.9999,
+     "in_gold": false
+    },
+    {
+     "text": "下载次数：1",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "购买方信息",
+     "score": 1.0,
+     "in_gold": false
+    },
+    {
+     "text": "销售方信息",
+     "score": 0.9999,
+     "in_gold": false
+    },
+    {
+     "text": "名称：中电金信软件（上海）有限公司",
+     "score": 0.9966,
+     "in_gold": true
+    },
+    {
+     "text": "名称：深圳市登喜路国际大酒店有限公司",
+     "score": 0.9974,
+     "in_gold": true
+    },
+    {
+     "text": "统一社会信用代码/纳税人识别号：91310104MA1FRDQW2M",
+     "score": 0.9937,
+     "in_gold": true
+    },
+    {
+     "text": "统一社会信用代码/纳税人识别号：91440300088640925K",
+     "score": 0.9993,
+     "in_gold": true
+    },
+    {
+     "text": "项目名称",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "规格型号",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "单位",
+     "score": 0.9997,
+     "in_gold": true
+    },
+    {
+     "text": "数量",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "单价",
+     "score": 0.9998,
+     "in_gold": true
+    },
+    {
+     "text": "金额",
+     "score": 0.9997,
+     "in_gold": true
+    },
+    {
+     "text": "税率/征收率",
+     "score": 0.9998,
+     "in_gold": true
+    },
+    {
+     "text": "税额",
+     "score": 0.9995,
+     "in_gold": true
+    },
+    {
+     "text": "*住宿服务*住宿费",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "528.30",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "6%",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "31.70",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "合",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "计",
+     "score": 0.9998,
+     "in_gold": true
+    },
+    {
+     "text": "¥528.30",
+     "score": 0.9962,
+     "in_gold": true
+    },
+    {
+     "text": "¥31.70",
+     "score": 0.995,
+     "in_gold": true
+    },
+    {
+     "text": "价税合计（大写）",
+     "score": 0.9916,
+     "in_gold": true
+    },
+    {
+     "text": "伍佰陆拾圆整",
+     "score": 0.9993,
+     "in_gold": true
+    },
+    {
+     "text": "(小写) ¥560.00",
+     "score": 0.932,
+     "in_gold": false
+    },
+    {
+     "text": "备注",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "开票人：李文杰",
+     "score": 0.9999,
+     "in_gold": true
+    }
+   ]
+  },
+  {
+   "file": "滴滴出行行程报销单.pdf",
+   "lines": 41,
+   "hits": 36,
+   "page_similarity": 0.9193,
+   "mean_score": 0.9947,
+   "detail": [
+    {
+     "text": "滴滴出行",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "滴滴企业版",
+     "score": 0.9999,
+     "in_gold": false
+    },
+    {
+     "text": "免开票免报销公务出行更轻松",
+     "score": 0.9999,
+     "in_gold": false
+    },
+    {
+     "text": "一站式企业出行与商旅平台",
+     "score": 1.0,
+     "in_gold": false
+    },
+    {
+     "text": "扫码加入我们",
+     "score": 1.0,
+     "in_gold": false
+    },
+    {
+     "text": "-8---",
+     "score": 0.8999,
+     "in_gold": false
+    },
+    {
+     "text": "滴滴出行-行程单",
+     "score": 0.9988,
+     "in_gold": true
+    },
+    {
+     "text": "DIDI TRAVEL - TRIP TABLE",
+     "score": 0.9961,
+     "in_gold": true
+    },
+    {
+     "text": "姓名：",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "工号：",
+     "score": 0.9997,
+     "in_gold": true
+    },
+    {
+     "text": "部门：",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "·申请日期：2023-12-25",
+     "score": 0.9693,
+     "in_gold": true
+    },
+    {
+     "text": "行程起止日期：2023-11-28至2023-11-28",
+     "score": 0.9997,
+     "in_gold": true
+    },
+    {
+     "text": "·行程人手机号：15921839180",
+     "score": 0.9786,
+     "in_gold": true
+    },
+    {
+     "text": "·共2笔行程，合计50.91元",
+     "score": 0.9908,
+     "in_gold": true
+    },
+    {
+     "text": "序号",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "车型",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "上车时间",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "城市",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "起点",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "终点",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "里程[公里]",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "金额[元]",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "备注",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "1",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "专车",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "11-28 07:40 周二",
+     "score": 0.9923,
+     "in_gold": true
+    },
+    {
+     "text": "北京市",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "白云观街|全季酒店(北京复兴门白云路店)",
+     "score": 0.9961,
+     "in_gold": true
+    },
+    {
+     "text": "宣武门|华滨国际大酒店",
+     "score": 0.9863,
+     "in_gold": true
+    },
+    {
+     "text": "4.0",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "36.75",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "2",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "滴滴快车",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "11-28 13:14 周二",
+     "score": 0.9814,
+     "in_gold": true
+    },
+    {
+     "text": "北京市",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "西单|华滨国际大酒店",
+     "score": 0.9998,
+     "in_gold": true
+    },
+    {
+     "text": "西城区|全季酒店(北京复兴门白云路店)",
+     "score": 0.9963,
+     "in_gold": true
+    },
+    {
+     "text": "3.8",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "14.16",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "页码：1/1",
+     "score": 1.0,
+     "in_gold": true
+    }
+   ]
+  },
+  {
+   "file": "滴滴电子发票.pdf",
+   "lines": 56,
+   "hits": 26,
+   "page_similarity": 0.5169,
+   "mean_score": 0.9838,
+   "detail": [
+    {
+     "text": "北京增值税电普通发票",
+     "score": 0.9772,
+     "in_gold": false
+    },
+    {
+     "text": "发票代码：011002301211",
+     "score": 0.9962,
+     "in_gold": false
+    },
+    {
+     "text": "发票号码：19888364",
+     "score": 0.9987,
+     "in_gold": false
+    },
+    {
+     "text": "国家税务总局",
+     "score": 0.9998,
+     "in_gold": false
+    },
+    {
+     "text": "开票日期：2023年12月25日",
+     "score": 0.9991,
+     "in_gold": false
+    },
+    {
+     "text": "北京市税务局",
+     "score": 0.9999,
+     "in_gold": false
+    },
+    {
+     "text": "校验码：15578 30641 7187048707",
+     "score": 0.9719,
+     "in_gold": false
+    },
+    {
+     "text": "机器编号：499098498411",
+     "score": 0.9997,
+     "in_gold": false
+    },
+    {
+     "text": "名",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "称：中电金信软件(上海)有限公司",
+     "score": 0.9929,
+     "in_gold": false
+    },
+    {
+     "text": "购买方",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "0 3 7 2 - 6 1 > 8 1 9 > 2 - + < + 8 4 > + 0 > 3 1 - / 9",
+     "score": 0.9037,
+     "in_gold": true
+    },
+    {
+     "text": "密码区",
+     "score": 0.9997,
+     "in_gold": false
+    },
+    {
+     "text": "纳税人识别号：91310104MA1FRDQW2M",
+     "score": 0.9994,
+     "in_gold": false
+    },
+    {
+     "text": "+ / 9 9 2 8 0 3 < > 3 6 4 4 < 5 - + < > 7 / / 0 0 / 0 >",
+     "score": 0.9206,
+     "in_gold": true
+    },
+    {
+     "text": "地址、电话：",
+     "score": 0.9989,
+     "in_gold": false
+    },
+    {
+     "text": "1 5 < 7 7 < 2 > - 4 * < > 1 - 5 * - 1 5 6 / 5 5 + + 5 >",
+     "score": 0.9336,
+     "in_gold": true
+    },
+    {
+     "text": "开户行及账号：",
+     "score": 0.9996,
+     "in_gold": false
+    },
+    {
+     "text": "1 7 4 3 0 4 - 7 < - 0 1 2 7 < 4 1 9 4 8 < 0 3 4 6 < 9 /",
+     "score": 0.8573,
+     "in_gold": true
+    },
+    {
+     "text": "货物或应税劳务、服务名称",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "规格型号",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "单位",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "数量",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "单价",
+     "score": 0.9998,
+     "in_gold": false
+    },
+    {
+     "text": "金额",
+     "score": 0.9994,
+     "in_gold": true
+    },
+    {
+     "text": "税率",
+     "score": 0.9994,
+     "in_gold": true
+    },
+    {
+     "text": "税额",
+     "score": 0.9996,
+     "in_gold": false
+    },
+    {
+     "text": "*运输服务*客运服务费",
+     "score": 0.9999,
+     "in_gold": true
+    },
+    {
+     "text": "无",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "次",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "1",
+     "score": 0.9991,
+     "in_gold": true
+    },
+    {
+     "text": "49.43",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "49.43",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "3%",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "1.48",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "合计",
+     "score": 0.9998,
+     "in_gold": true
+    },
+    {
+     "text": "¥49.43",
+     "score": 0.9818,
+     "in_gold": false
+    },
+    {
+     "text": "¥1.48",
+     "score": 0.989,
+     "in_gold": false
+    },
+    {
+     "text": "价税合计（大写）",
+     "score": 0.9388,
+     "in_gold": true
+    },
+    {
+     "text": "伍拾圆玖角壹分",
+     "score": 0.9996,
+     "in_gold": true
+    },
+    {
+     "text": "(小写)¥50.91",
+     "score": 0.8885,
+     "in_gold": false
+    },
+    {
+     "text": "名",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "称：北京滴滴出行科技有限公司",
+     "score": 0.9925,
+     "in_gold": false
+    },
+    {
+     "text": "销售方",
+     "score": 1.0,
+     "in_gold": true
+    },
+    {
+     "text": "备注",
+     "score": 1.0,
+     "in_gold": false
+    },
+    {
+     "text": "浦出行科技有限司司",
+     "score": 0.8055,
+     "in_gold": false
+    },
+    {
+     "text": "纳税人识别号：91110108MA01G0FB09",
+     "score": 0.9973,
+     "in_gold": false
+    },
+    {
+     "text": "地址、电话：北京市海淀区唐家岭北环路6号院1号楼C座四层408010-83456275",
+     "score": 0.9998,
+     "in_gold": false
+    },
+    {
+     "text": "开户行及账号：招商银行股份有限公司北京东三环支行110936504210806",
+     "score": 0.9997,
+     "in_gold": false
+    },
+    {
+     "text": "91110108MA01G0FB09",
+     "score": 0.9939,
+     "in_gold": true
+    },
+    {
+     "text": "收款人：杜洪亮",
+     "score": 0.999,
+     "in_gold": false
+    },
+    {
+     "text": "复核：赵笑林",
+     "score": 0.999,
+     "in_gold": false
+    },
+    {
+     "text": "开票人：于秋红",
+     "score": 0.999,
+     "in_gold": false
+    },
+    {
+     "text": "销售方章",
+     "score": 0.9624,
+     "in_gold": false
+    },
+    {
+     "text": "发票专用章",
+     "score": 0.9999,
+     "in_gold": false
+    },
+    {
+     "text": "1101081637599",
+     "score": 0.9999,
+     "in_gold": false
+    }
+   ]
+  }
+ ],
+ "total_lines": 357,
+ "total_hits": 262,
+ "buckets": {
+  "0.0-0.6": {
+   "lines": 2,
+   "correct": 1,
+   "precision": 0.5
+  },
+  "0.6-0.8": {
+   "lines": 0,
+   "correct": 0,
+   "precision": null
+  },
+  "0.8-0.9": {
+   "lines": 9,
+   "correct": 4,
+   "precision": 0.4444
+  },
+  "0.9-0.95": {
+   "lines": 13,
+   "correct": 8,
+   "precision": 0.6154
+  },
+  "0.95-1.0": {
+   "lines": 333,
+   "correct": 249,
+   "precision": 0.7477
+  }
+ }
+}
