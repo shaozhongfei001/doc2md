@@ -1,8 +1,8 @@
 # DOC2MD-19CAP 交付说明（本地可交付范围）
 
-- 交付树：`main` = `4c863b8`
-- 环境基线：**1449 passed / 131 skipped**
-- 交付 tag：`delivery/19cap-l09` … `delivery/19cap-l41`、`delivery/19cap-local-ready`、`delivery/19cap-local-ready-2`
+- 交付树：`main` = `fb436ce`
+- 环境基线：**1453 passed / 131 skipped**
+- 交付 tag：`delivery/19cap-l09` … `delivery/19cap-l44`、`delivery/19cap-local-ready`、`delivery/19cap-local-ready-2`
 - 本文档只陈述**已验证**的事实；未验证项在第 3、4 节逐条列出，不作推定。
 
 ## 1. 交付了什么
@@ -30,7 +30,7 @@ Word（`.docx`）**原生表格**路径的扩展层，端到端可跑：
 | 低置信度门槛 + 人工覆盖（带审计） | `vision/classify.route_regions` | 已验（阈值 **未校准**） |
 | 畸形输入拒绝（空白 ref / 缺 id / 缺 locator） | 同上 / `apply_correction` | 已验 |
 | Paddle box ↔ HTML 逐格几何校验 | `adapters/paddle_structure.normalise_response(GEOMETRY)` | 合成夹具已验；**真实页 0 样本** |
-| reviewer 身份策略（白名单/正则） | `review/authority.ReviewerPolicy` | 机制已验；**策略=全部放行** |
+| reviewer 身份策略 | `review/authority.ReviewerPolicy` | 已收紧为 RESTRICTED（形式校验，**未接认证**） |
 | 证据作废执行器（人工触发） | `evidence/revocation.revoke_candidates` | 已验；**未接线** |
 
 ## 2. 验证状态矩阵（这是本文档最重要的表）
@@ -61,6 +61,8 @@ Word（`.docx`）**原生表格**路径的扩展层，端到端可跑：
 | L39 | reviewer 身份策略 | ✅ 3 变异全捕获（M4 打红 3 条路径） | qa-l41 |
 | L40 | 证据作废执行器 | ✅ 3 变异全捕获（M9 语义级） | qa-l41 |
 | L42 | 整批拒绝/去空格盲区 | ✅ 2 变异重放（仅测试改动） | qa-l41 |
+| L43 | reviewer 合法形式（关闭放行） | ⚠️ 仅作者变异（1 个） | — |
+| L44 | 发票语料校准 | ❌ 结论为“数据不足”，非抽检 | — |
 | L41 | 真实语料版面测量 | ⚠️ 测量非抽检：20 页表格 0 个 | — |
 | **L29** | 英文续页词缀 | ⚠️ 仅作者变异验证 | — |
 
@@ -94,7 +96,7 @@ L06/L07/L08 已完成抽检，但其依赖的外部输入（VLM/GPU、真实 con
 6. 不声称"Word 脚注抽取无遗漏"——fail-closed 的前提是抽取不漏检（`L15-LIM-02`）；
 7. **不声称"证据已被作废"**——L35 只产出"应作废清单"，仓内没有 writer（见第 4 节补注）；
 8. **不声称"低置信阈值可用"**——`0.6` 未校准，只是显式声明，不是校准结论；
-9. **不声称"reviewer 身份可信"**——策略为 `ALLOW_ALL`，`reviewer="---"` 仍被接受（`L31-FIND-02`）；
+9. **不声称"reviewer 身份可信"**——已做**形式**校验（占位串被拒），但**未接认证上下文**，无法证明提交者是谁；
 10. **不声称"表格解析在真实语料可用"**——20 页真实页面检出表格 **0 个**，几何绑定仍只有合成夹具；
 11. **不声称"纠错后证据自动作废"**——执行器需人工触发，且尚未接入流水线（`L40-LIM-01`）。
 
@@ -163,7 +165,7 @@ cd backend && PYTHONPATH=. /tmp/doc2md-l00-venv/bin/python -m pytest -q -p no:ca
 | `L20-LIM-01/02` | 英文续页词缀未覆盖；表名降级依赖复核环节真实存在 |
 | `L26-LIM-02` | 交叉校验用 `omitted_slots` 作 oracle——**仅测试**，生产不得引用 |
 | `L11-LIM-01/02/03` | 重算未接入 pipeline 默认路径、producer 需显式注册、不做全量重解析 |
-| `L31-FIND-02` | `reviewer="---"` 被接受并写入 `audit.reviewer`（授权模型，待 Owner） |
+| `L31-FIND-02` | **已关闭**（L43）：默认 RESTRICTED，占位串被拒；形式合法≠身份可信（`L39-LIM-01`） |
 | `L32-LIM-01` | 置信度阈值 `0.6` 未校准（需真实 VLM 分布） |
 | `L35-BOUND-01` | 应作废证据清单**无消费方**，"作废"未真正发生（见第 4 节补注） |
 | `L36-OBS-01` | `ref=' RV-9 '` 未 `strip()` 后落库，精确匹配会 miss |
@@ -171,7 +173,8 @@ cd backend && PYTHONPATH=. /tmp/doc2md-l00-venv/bin/python -m pytest -q -p no:ca
 | `L38-ZERO-01` | 几何绑定在真实页面零样本（20 页 0 表），只证明"不一致会拒绝" |
 | `L39-LIM-01` | reviewer 仍为自报字符串，未接认证上下文；策略 `ALLOW_ALL` |
 | `L40-LIM-01/02` | 作废执行器未接入流水线；跨进程并发语义未定义 |
-| `L41-LIM-01` | 语料为 DK 英文图书、无文本层，不能用于阈值校准；`0.6` 仍 `CANDIDATE` |
+| `L41-LIM-01` | 语料为 DK 英文图书、无文本层，不能用于阈值校准 |
+| `L44-FIND-01` | 发票文本层不完整，伪 Gold 不成立（0.734 是方法伪影）；低分行仅 2/357，`0.6` 仍 `CANDIDATE` |
 
 ## 8. 验收判据本身（这轮长程最可复用的产出）
 
