@@ -130,3 +130,126 @@ def test_a_mapping_without_an_id_is_rejected_whole():
     assert excinfo.value.code == "E_INPUT_INVALID"
     assert "candidate_evidence_id" in str(excinfo.value)
     assert broken[0]["review_state"] == "UNREVIEWED", "nothing may change on a rejected batch"
+
+
+# --------------------- L46: the list from a correction drives the writer
+class _Outcome:
+    def __init__(self, stale, unattributable=()):
+        self.stale_candidate_evidence = tuple(stale)
+        self.unattributable_evidence = tuple(unattributable)
+
+
+def revoke_from(outcome, candidates=None, **overrides):
+    from app.extensions.evidence.revocation import revoke_for_correction
+
+    kwargs = {
+        "review_decision_ref": "RV-1",
+        "reviewer": "E12345",
+        "reason": "订正后证据作废",
+        "at": "2026-10-19T10:00:00+08:00",
+    }
+    kwargs.update(overrides)
+    return revoke_for_correction(outcome, candidates if candidates is not None else registry(),
+                                 **kwargs)
+
+
+def test_the_correction_list_drives_the_writer():
+    updated, report = revoke_from(_Outcome(["EV-1", "EV-2"]))
+
+    assert report.revoked == ("EV-1", "EV-2")
+    assert report.audit["source"] == "correction"
+    assert updated[0]["review_state"] == "STALE"
+    assert updated[1]["review_state"] == "STALE"
+
+
+def test_an_empty_correction_list_is_refused():
+    with pytest.raises(ExtensionError) as excinfo:
+        revoke_from(_Outcome([]))
+    assert excinfo.value.code == "E_INPUT_INVALID"
+
+
+def test_unattributable_evidence_blocks_revocation_by_default():
+    """Revoking "the rest" while some were not attributable is a partial success claim."""
+    with pytest.raises(ExtensionError) as excinfo:
+        revoke_from(_Outcome(["EV-1"], unattributable=["EV-ORPHAN"]))
+    assert excinfo.value.code == "E_REVIEW_REQUIRED"
+    assert "EV-ORPHAN" in str(excinfo.value)
+
+
+def test_unattributable_can_be_accepted_explicitly_and_is_recorded():
+    updated, report = revoke_from(
+        _Outcome(["EV-1"], unattributable=["EV-ORPHAN"]), require_attributable=False
+    )
+    assert report.revoked == ("EV-1",)
+    assert report.audit["unattributable_not_revoked"] == ["EV-ORPHAN"]
+    assert updated[0]["review_state"] == "STALE"
+
+
+def test_restore_returns_to_the_recorded_state_not_to_unreviewed():
+    revoked, _ = revoke(registry(), ids=("EV-2",))  # EV-2 was ACCEPTED with RV-OLD
+    assert revoked[1]["review_state"] == "STALE"
+
+    from app.extensions.evidence.revocation import restore_candidates
+
+    restored, report = restore_candidates(
+        revoked,
+        candidate_ids=["EV-2"],
+        review_decision_ref="RV-2",
+        reviewer="E12345",
+        reason="误作废，恢复",
+        at="2026-10-19T11:00:00+08:00",
+    )
+    assert report.restored == ("EV-2",)
+    assert restored[1]["review_state"] == "ACCEPTED"
+    assert restored[1]["review_decision_ref"] == "RV-OLD"
+    assert "revoked_at" not in restored[1] and "previous_review_state" not in restored[1]
+
+
+def test_restore_refuses_when_no_prior_state_was_recorded():
+    from app.extensions.evidence.revocation import restore_candidates
+
+    legacy = [
+        {"candidate_evidence_id": "EV-X", "review_state": "STALE", "review_decision_ref": "R"}
+    ]
+    with pytest.raises(ExtensionError) as excinfo:
+        restore_candidates(
+            legacy,
+            candidate_ids=["EV-X"],
+            review_decision_ref="RV-3",
+            reviewer="E12345",
+            reason="r",
+            at="2026-10-19T11:00:00+08:00",
+        )
+    assert excinfo.value.code == "E_INPUT_INVALID"
+    assert "no recorded prior state" in str(excinfo.value)
+
+
+def test_restore_refuses_a_candidate_that_was_never_revoked():
+    from app.extensions.evidence.revocation import restore_candidates
+
+    with pytest.raises(ExtensionError) as excinfo:
+        restore_candidates(
+            registry(),
+            candidate_ids=["EV-1"],
+            review_decision_ref="RV-4",
+            reviewer="E12345",
+            reason="r",
+            at="2026-10-19T11:30:00+08:00",
+        )
+    assert excinfo.value.code == "E_INPUT_INVALID"
+    assert "not STALE" in str(excinfo.value)
+
+
+def test_revoke_restore_revoke_round_trip_is_stable():
+    from app.extensions.evidence.revocation import restore_candidates
+
+    first, _ = revoke(registry(), ids=("EV-2",))
+    restored, _ = restore_candidates(
+        first, candidate_ids=["EV-2"], review_decision_ref="RV-5", reviewer="E12345",
+        reason="撤销", at="2026-10-19T12:00:00+08:00",
+    )
+    second, report = revoke(restored, ids=("EV-2",))
+
+    assert report.revoked == ("EV-2",)
+    assert second[1]["review_state"] == "STALE"
+    assert second[1]["previous_review_state"] == "ACCEPTED"
