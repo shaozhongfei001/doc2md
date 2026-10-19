@@ -169,3 +169,15 @@ def test_a_blank_reviewer_is_refused_under_every_policy():
     with pytest.raises(ExtensionError) as excinfo:
         ReviewerPolicy(mode=ALLOW_ALL).check("   ")
     assert excinfo.value.code == "E_INPUT_INVALID"
+
+
+def test_allow_all_still_strips_the_reviewer():
+    """qa-l41: stripping was only asserted on the RESTRICTED path.
+
+    The live policy is ALLOW_ALL, so this is the branch that actually stores the audit
+    value today; leaving it unasserted means the stored value could start carrying
+    whitespace without any test noticing.
+    """
+    from app.extensions.review.authority import ALLOW_ALL, ReviewerPolicy
+
+    assert ReviewerPolicy(mode=ALLOW_ALL).check("  E12345  ") == "E12345"

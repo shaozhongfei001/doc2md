@@ -110,3 +110,23 @@ def test_revocation_obeys_the_reviewer_policy():
             policy=ReviewerPolicy(mode=RESTRICTED, allowed=("E99999",)),
             reviewer="---",
         )
+
+
+def test_a_mapping_without_an_id_is_rejected_whole():
+    """qa-l41 M9: the batch guard was being protected by an accident.
+
+    ``test_a_malformed_batch_is_rejected_whole`` appends a *string*, which crashes at
+    ``dict(item)`` — so the mutation "validate after copying, continue on bad entry"
+    turned red through a ``ValueError``, not through the assertion. A malformed entry
+    that is still a mapping (``{"no_id": 1}``) has to be refused on purpose: with the
+    mutation in place it half-revokes and reports success.
+    """
+    broken = registry()
+    broken.append({"no_id": 1})
+
+    with pytest.raises(ExtensionError) as excinfo:
+        revoke(broken, ids=("EV-1",))
+
+    assert excinfo.value.code == "E_INPUT_INVALID"
+    assert "candidate_evidence_id" in str(excinfo.value)
+    assert broken[0]["review_state"] == "UNREVIEWED", "nothing may change on a rejected batch"
