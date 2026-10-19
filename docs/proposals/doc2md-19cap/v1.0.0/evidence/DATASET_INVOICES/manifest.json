@@ -1,0 +1,255 @@
+{
+ "root": "/media/szf/share/Home/Work/报销发票",
+ "note": "raw invoices are NOT committed; this manifest pins identity via sha256",
+ "counts": {
+  "text_layer_pdf": 8,
+  "photo": 4,
+  "scan_only_pdf": 4
+ },
+ "items": [
+  {
+   "path": "2024/202402邮寄工作站/发票运单明细.pdf",
+   "sha256": "85a089e8d0c513b8970ae63597bd8afc2cd05aba44e6f00bd37f04a0a1be8819",
+   "bytes": 32012,
+   "kind": "pdf",
+   "pages": 1,
+   "page_size": "595.28 x 841.88 pts (A4)",
+   "text_chars_p1": 201,
+   "has_text_layer": true,
+   "category": "text_layer_pdf",
+   "usable_for": [
+    "weak_gold_ocr_alignment",
+    "table_structure"
+   ]
+  },
+  {
+   "path": "2024/202402邮寄工作站/电子存根-SF1445516617245.png",
+   "sha256": "58bb3c47175e2c6031beb7ee60e58a4b0126ead4e4eea7afe6f85c48734fb8c0",
+   "bytes": 216931,
+   "kind": "image",
+   "image_size": [
+    1170,
+    2532
+   ],
+   "mode": "RGB",
+   "has_text_layer": false,
+   "category": "photo",
+   "usable_for": [
+    "robustness"
+   ]
+  },
+  {
+   "path": "2024/202402邮寄工作站/电子存根-SF1459592643455.png",
+   "sha256": "b2eebef17a05431d6dfb9ed5885daa715bf1d07af062d14ef8f4e374b1e8e20b",
+   "bytes": 235555,
+   "kind": "image",
+   "image_size": [
+    1170,
+    2532
+   ],
+   "mode": "RGB",
+   "has_text_layer": false,
+   "category": "photo",
+   "usable_for": [
+    "robustness"
+   ]
+  },
+  {
+   "path": "2024/202402邮寄工作站/顺丰电子发票.pdf",
+   "sha256": "7020d5fb4e5b55390e502537dc1a0917fec93ae1e23c8e6c6439a1b63ca97834",
+   "bytes": 161148,
+   "kind": "pdf",
+   "pages": 1,
+   "page_size": "623.583 x 396 pts",
+   "text_chars_p1": 588,
+   "has_text_layer": true,
+   "category": "text_layer_pdf",
+   "usable_for": [
+    "weak_gold_ocr_alignment",
+    "table_structure"
+   ]
+  },
+  {
+   "path": "2024/20240516北京农商/dzfp_24112000000039983381_中电金信软件（上海）有限公司_20240519212719.pdf",
+   "sha256": "6318ce551e8eef164dcc4583a78153246265144abaaa5c4c4c31e61ea7182c70",
+   "bytes": 49673,
+   "kind": "pdf",
+   "pages": 1,
+   "page_size": "600 x 400 pts",
+   "text_chars_p1": 408,
+   "has_text_layer": true,
+   "category": "text_layer_pdf",
+   "usable_for": [
+    "weak_gold_ocr_alignment",
+    "table_structure"
+   ]
+  },
+  {
+   "path": "2025/中信银行_床品四件套_digital_25317000002557541473.pdf",
+   "sha256": "c0f69c3c24a63abf9f1a99bc527baa2cb220af3d27bb7b2bd61fd424a1305f63",
+   "bytes": 96218,
+   "kind": "pdf",
+   "pages": 1,
+   "page_size": "609.44 x 394.01 pts",
+   "text_chars_p1": 368,
+   "has_text_layer": true,
+   "category": "text_layer_pdf",
+   "usable_for": [
+    "weak_gold_ocr_alignment",
+    "table_structure"
+   ]
+  },
+  {
+   "path": "2025/中信银行_电热水壶_digital_25927000000168021489.pdf",
+   "sha256": "df0e52e21ee09b28692f6433a3f6d4773d9e3b8041c2f0ac1cf150b9193171cf",
+   "bytes": 103148,
+   "kind": "pdf",
+   "pages": 1,
+   "page_size": "609.44 x 394.01 pts",
+   "text_chars_p1": 433,
+   "has_text_layer": true,
+   "category": "text_layer_pdf",
+   "usable_for": [
+    "weak_gold_ocr_alignment",
+    "table_structure"
+   ]
+  },
+  {
+   "path": "2026/202607-广州华兴/20260719124631_184_78.jpg",
+   "sha256": "116730d8a013573375f14e4f1289dd048834c1a7d5715cabf5d2ba5b2eb5f04a",
+   "bytes": 1548309,
+   "kind": "image",
+   "image_size": [
+    1244,
+    3230
+   ],
+   "mode": "RGB",
+   "has_text_layer": false,
+   "category": "photo",
+   "usable_for": [
+    "robustness"
+   ]
+  },
+  {
+   "path": "2026/202607-广州华兴/20260719124641_185_78.jpg",
+   "sha256": "2be645eab0ea797ec2d86363ed3508b4c59cb0ef91c838bda0aff1b2d7aeedb3",
+   "bytes": 1714620,
+   "kind": "image",
+   "image_size": [
+    1267,
+    3566
+   ],
+   "mode": "RGB",
+   "has_text_layer": false,
+   "category": "photo",
+   "usable_for": [
+    "robustness"
+   ]
+  },
+  {
+   "path": "BUSS_5_R&D_1788268633341.pdf",
+   "sha256": "3c03b929bf359fb0b4a26e9b03e00c9e60cd117aa5bee645a68640d4922e2362",
+   "bytes": 662702,
+   "kind": "pdf",
+   "pages": 3,
+   "page_size": "594.99 x 841.89 pts (A4)",
+   "text_chars_p1": 0,
+   "has_text_layer": false,
+   "category": "scan_only_pdf",
+   "usable_for": [
+    "robustness",
+    "table_structure_no_gold"
+   ]
+  },
+  {
+   "path": "BUSS_7_PRE_1788268931453.pdf",
+   "sha256": "2eae5fef303fd2c211c4f6d988568b6c977d6c456a15aad9186829539620968b",
+   "bytes": 660108,
+   "kind": "pdf",
+   "pages": 3,
+   "page_size": "594.99 x 841.89 pts (A4)",
+   "text_chars_p1": 0,
+   "has_text_layer": false,
+   "category": "scan_only_pdf",
+   "usable_for": [
+    "robustness",
+    "table_structure_no_gold"
+   ]
+  },
+  {
+   "path": "BUSS_8_R&D_1788269110162.pdf",
+   "sha256": "9e98d9eef9484dcfbc12106a2f000cdd59e8affac36c084ea5509e4fc397d2cb",
+   "bytes": 713338,
+   "kind": "pdf",
+   "pages": 4,
+   "page_size": "594.99 x 841.89 pts (A4)",
+   "text_chars_p1": 0,
+   "has_text_layer": false,
+   "category": "scan_only_pdf",
+   "usable_for": [
+    "robustness",
+    "table_structure_no_gold"
+   ]
+  },
+  {
+   "path": "download-1788268633341.pdf",
+   "sha256": "3c03b929bf359fb0b4a26e9b03e00c9e60cd117aa5bee645a68640d4922e2362",
+   "bytes": 662702,
+   "kind": "pdf",
+   "pages": 3,
+   "page_size": "594.99 x 841.89 pts (A4)",
+   "text_chars_p1": 0,
+   "has_text_layer": false,
+   "category": "scan_only_pdf",
+   "usable_for": [
+    "robustness",
+    "table_structure_no_gold"
+   ]
+  },
+  {
+   "path": "dzfp_24952000000057216162_深圳市登喜路国际大酒店有限公司_20240427133437.pdf",
+   "sha256": "f29dbe13213fcdd7d7c22bdda35074c93d2ea58b6b4e18ae109cec98ea36c950",
+   "bytes": 130603,
+   "kind": "pdf",
+   "pages": 1,
+   "page_size": "595.276 x 396.85 pts",
+   "text_chars_p1": 268,
+   "has_text_layer": true,
+   "category": "text_layer_pdf",
+   "usable_for": [
+    "weak_gold_ocr_alignment",
+    "table_structure"
+   ]
+  },
+  {
+   "path": "滴滴出行行程报销单.pdf",
+   "sha256": "c0c01164e5526c71dd7fd5be31a47082f77dcdd582e48e2d3c74092e21ebda47",
+   "bytes": 69476,
+   "kind": "pdf",
+   "pages": 1,
+   "page_size": "595.275 x 841.875 pts (A4)",
+   "text_chars_p1": 263,
+   "has_text_layer": true,
+   "category": "text_layer_pdf",
+   "usable_for": [
+    "weak_gold_ocr_alignment",
+    "table_structure"
+   ]
+  },
+  {
+   "path": "滴滴电子发票.pdf",
+   "sha256": "a306a90d4c9196b1043cb0cf78314f4cad197ae3971ec9d8c432105ab4ebb455",
+   "bytes": 38848,
+   "kind": "pdf",
+   "pages": 1,
+   "page_size": "610 x 394 pts",
+   "text_chars_p1": 521,
+   "has_text_layer": true,
+   "category": "text_layer_pdf",
+   "usable_for": [
+    "weak_gold_ocr_alignment",
+    "table_structure"
+   ]
+  }
+ ]
+}
