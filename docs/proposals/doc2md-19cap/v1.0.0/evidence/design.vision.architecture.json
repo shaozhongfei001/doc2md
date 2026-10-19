@@ -1,0 +1,296 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "图像理解路径（vision/）",
+    "quality_profile": "showcase",
+    "locale": "zh-CN",
+    "views": [
+      {
+        "id": "route",
+        "label": "先分区，再分支",
+        "focus": [
+          "img",
+          "classify",
+          "flow",
+          "chart"
+        ],
+        "note": "框架标签只对 table/chart 是直接证据，FLOW 必须另有依据。"
+      },
+      {
+        "id": "checks",
+        "label": "两道检查",
+        "focus": [
+          "flow",
+          "chart",
+          "consistency",
+          "pkt"
+        ],
+        "note": "图结构错误阻断确认；文图不一致只产生复核项。"
+      },
+      {
+        "id": "human",
+        "label": "人裁决与重识别",
+        "focus": [
+          "classify",
+          "override",
+          "roi",
+          "pkt"
+        ],
+        "note": "低置信与 UNKNOWN 交给人；重识别必须有已验证区域与预算。"
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "img",
+      "type": "external",
+      "label": "版面区域",
+      "sublabel": "image / chart 框",
+      "pos": [
+        40,
+        300
+      ],
+      "size": [
+        130,
+        64
+      ]
+    },
+    {
+      "id": "classify",
+      "type": "backend",
+      "label": "classify",
+      "sublabel": "TABLE/FLOW/CHART/…",
+      "pos": [
+        230,
+        300
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "tag": "置信度门槛"
+    },
+    {
+      "id": "flow",
+      "type": "backend",
+      "label": "flow",
+      "sublabel": "节点 + 箭头候选",
+      "pos": [
+        450,
+        190
+      ],
+      "size": [
+        140,
+        64
+      ]
+    },
+    {
+      "id": "chart",
+      "type": "backend",
+      "label": "chart",
+      "sublabel": "数值 + 值类型",
+      "pos": [
+        450,
+        400
+      ],
+      "size": [
+        140,
+        64
+      ]
+    },
+    {
+      "id": "consistency",
+      "type": "backend",
+      "label": "consistency",
+      "sublabel": "结构 / 控制流 / 文图",
+      "pos": [
+        680,
+        300
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "override",
+      "type": "security",
+      "label": "人工覆盖",
+      "sublabel": "CONFIDENCE_OVERRIDDEN",
+      "pos": [
+        230,
+        480
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "roi",
+      "type": "backend",
+      "label": "roi",
+      "sublabel": "受控重识别 + 预算",
+      "pos": [
+        40,
+        120
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "pkt",
+      "type": "backend",
+      "label": "复核包",
+      "sublabel": "issues + 证据",
+      "pos": [
+        900,
+        300
+      ],
+      "size": [
+        140,
+        64
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "机器可判（有明确依据）",
+      "wraps": [
+        "classify",
+        "flow",
+        "chart",
+        "consistency",
+        "roi"
+      ]
+    },
+    {
+      "kind": "security-group",
+      "label": "必须人裁决",
+      "wraps": [
+        "override"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "in",
+      "from": "img",
+      "to": "classify",
+      "label": "分区",
+      "variant": "emphasis"
+    },
+    {
+      "id": "to-flow",
+      "from": "classify",
+      "to": "flow",
+      "label": "仅 FLOW 类",
+      "fromSide": "right",
+      "toSide": "left",
+      "labelDy": -18
+    },
+    {
+      "id": "to-chart",
+      "from": "classify",
+      "to": "chart",
+      "label": "仅 CHART 类",
+      "fromSide": "right",
+      "toSide": "left",
+      "labelDy": 18
+    },
+    {
+      "id": "flow-check",
+      "from": "flow",
+      "to": "consistency",
+      "label": "图结构"
+    },
+    {
+      "id": "chart-check",
+      "from": "chart",
+      "to": "consistency",
+      "label": "数值口径"
+    },
+    {
+      "id": "out",
+      "from": "consistency",
+      "to": "pkt",
+      "label": "通过 / 问题清单",
+      "labelDy": -24
+    },
+    {
+      "id": "low",
+      "from": "classify",
+      "to": "override",
+      "label": "低置信 / UNKNOWN",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 24
+    },
+    {
+      "id": "signed",
+      "from": "override",
+      "to": "pkt",
+      "label": "人工确认（带 ref）",
+      "variant": "security",
+      "fromSide": "right",
+      "toSide": "bottom",
+      "via": [
+        [
+          700,
+          512
+        ],
+        [
+          970,
+          512
+        ],
+        [
+          970,
+          364
+        ]
+      ]
+    },
+    {
+      "id": "rerun",
+      "from": "roi",
+      "to": "classify",
+      "label": "重识别（预算内）",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDx": 50
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "三条铁律",
+      "items": [
+        "框架 image/chart 标签不能证明 FLOW",
+        "不按阅读顺序/距离补边",
+        "数字未经标签或原表核对，不得标 PRINTED_LABEL"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "验证状态",
+      "items": [
+        "L06/L07/L08 经独立抽检 9 变异（M4/M5 缺口已补）",
+        "真实 VLM 与真实图片语料仍未接入"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "与表格路径的关系",
+      "items": [
+        "共享复核包与证据层",
+        "但入口与判定不同：分区→图/表/一致性",
+        "外部 VLM 尚未接入，flow 只吃 OCR 与人工给的边"
+      ]
+    }
+  ]
+}
