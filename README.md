@@ -60,39 +60,99 @@ python3.11 -m venv /tmp/paddle-gpu-venv
 
 ## 3. 架构
 
+系统有**两条并行的处理路径**，共享复核包与证据层，但入口与判定方式不同。
+每条路径都有一张可交互的设计图（自包含 HTML，离线可开）。
+
+### 3.1 文档与表格路径
+
+> 图：[`design.architecture.html`](docs/proposals/doc2md-19cap/v1.0.0/evidence/design.architecture.html)
+> （源：[`design.architecture.json`](docs/proposals/doc2md-19cap/v1.0.0/evidence/design.architecture.json)）
+
 ```text
-输入               解析                     结构化                   人工/审计
-────               ────                     ──────                   ────────
-.docx ──┐
-.pdf  ──┼─> word/package ──> word/native_tables ──┐
-图片  ──┼─> adapters/paddle_structure ───────────┤
-        │      (几何校验 box ↔ HTML 网格)         ├─> tables/semantics  表头路径
-        │                                          ├─> tables/notes      脚注绑定
-        │                                          └─> render/review_packet  复核包
-        │                                                    │
-        │                                                    ▼
-        └─> pipeline.assemble_package ────────────────> generation（原子提交）
-                                                             │
-                                     review/correction 订正 ──┤ 只重建受影响表
-                                     review/patches 补丁 ─────┤ RFC6902 + CAS
-                                     review/recompute 重算 ───┘
-                                                             │
-                                              应作废清单 ────> evidence/revocation
-                                                             └─> 标记流水（append-only）
+.docx ──> word/package ──> tables/ ──> review_packet ──> pipeline ──> artifact_store
+  │                          (网格/表头/脚注)    复核包      装配        generation + CAS
+  │                                                                      │
+  │                                        correction（只重建受影响表） ──┤
+  │                                        patches（RFC6902 回放）   ─────┤
+  │                                        revocation（应作废清单）  ─────┤
+  │                                                                      ▼
+  └─> PDF/图片 ──> paddle_structure ──> ocr_tables ──> ocr_assembly ──> 【未接通】
+                     (几何校验)        (人工声明表头)   (空值+显式 issue)
 ```
 
-### 分层
+关键点：
+
+| 节点 | 作用 | 状态 |
+|---|---|---|
+| `word/package` → `tables/` | 原生表网格、表头路径、脚注绑定 | 已验 |
+| `review_packet` | 复核包，`omission ⊆ evidence` 可校验 | 已验（含负向探针） |
+| `pipeline` → `artifact_store` | 装配 + 原子提交（CAS） | **第三方 E2E 8/8** |
+| `correction` / `patches` | 只重建受影响表；补丁可回放 | 已验 |
+| `ocr_tables` / `ocr_assembly` | OCR 表：人工声明表头、缺项显式 issue | 已验 |
+| **OCR → `pipeline`** | 还缺 `packets` 与订正链路 | **未接通（图上虚线）** |
+
+### 3.2 图像理解路径
+
+> 图：[`design.vision.architecture.html`](docs/proposals/doc2md-19cap/v1.0.0/evidence/design.vision.architecture.html)
+> （源：[`design.vision.architecture.json`](docs/proposals/doc2md-19cap/v1.0.0/evidence/design.vision.architecture.json)）
+
+```text
+版面区域 ──> classify ──┬─ 仅 FLOW 类 ──> flow ─────────┐
+   ▲          │         └─ 仅 CHART 类 ─> chart ────────┤
+   │          │                                          ▼
+   │          └─ 低置信/UNKNOWN ─> 人工覆盖 ────────> consistency ──> 复核包
+   │                                  (带 ref)        结构/控制流/文图
+   └── roi（受控重识别，有预算）<── 需已验证区域
+```
+
+五个模块各有一条硬规则：
+
+| 模块 | 职责 | 硬规则 |
+|---|---|---|
+| `classify` | 区域路由 TABLE/FLOW/CHART/DECORATIVE/UNKNOWN | **框架的 image/chart 标签不能证明 FLOW**；`table`/`chart` 才算直接证据 |
+| `flow` | 节点 + 箭头候选 | **不按阅读顺序/距离补边**；边由输入给出，不由坐标发明 |
+| `chart` | 图表数值 + 值类型 | 数字未经可见标签或原表核对，**不得标 `PRINTED_LABEL`** |
+| `consistency` | 结构 / 控制流 / 文图一致 | 结构错误**阻断确认**；缺 START/END、决策无标注分支；文图不一致只产生复核项 |
+| `roi` | 受控重识别 | 无已验证区域则**整页回退**，不凭猜测裁图；有预算上限 |
+
+状态：逻辑经独立抽检（9 变异，M4/M5 缺口已补）；**真实 VLM 未接入、真实图片语料未接入**。
+
+### 3.3 两条路径的关系
+
+| | 文档/表格路径 | 图像理解路径 |
+|---|---|---|
+| 入口 | `.docx` 包 / Paddle 表格响应 | 版面区域（框） |
+| 判定核心 | 网格、表头路径、脚注 | 分区证据、图结构、数值口径 |
+| 共同点 | 都产出复核包，都进证据层，都遵守"不猜/不静默/单一事实源" | 同左 |
+
+### 3.4 分层
 
 | 层 | 模块 | 职责 |
 |---|---|---|
 | 输入 | `word/` | docx 包解析、原生表格、脚注、表头标记 |
 | 识别 | `adapters/` | Paddle 响应归一、几何绑定、OCR 表装配 |
 | 结构 | `tables/` | 网格、合并、表头路径、续表候选、脚注绑定 |
+| 图像 | `vision/` | 分区路由、流程图节点、图表数值、一致性、重识别 |
 | 呈现 | `render/` | 复核包（Markdown + 证据） |
 | 编排 | `pipeline.py` | 端到端装配、原子写盘 |
 | 变更 | `review/` | 影响清单、重算、订正、补丁、决策与 reviewer 策略 |
 | 证据 | `evidence/` | 候选证据、作废执行器、标记流水 |
 | 交付 | `release/` | 对账、切换、回滚、消费者 ACK |
+
+### 3.5 打开设计图
+
+图是自包含 HTML，双击即可在浏览器打开；也可以起一个临时服务：
+
+```bash
+cd docs/proposals/doc2md-19cap/v1.0.0/evidence
+python -m http.server 8099
+# 然后访问
+#   http://127.0.0.1:8099/design.architecture.html
+#   http://127.0.0.1:8099/design.vision.architecture.html
+```
+
+图由 `archify` 生成（`showcase` 校验通过、四个桌面视口无溢出）。
+**图是设计说明，不是验收证据**——验收证据在 `evidence/L*/TL_ACCEPTANCE.md` 与 `evidence/QA/`。
 
 ---
 
