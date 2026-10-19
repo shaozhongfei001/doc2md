@@ -1,0 +1,238 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "订正 → 补丁 → 作废 → 恢复（一条真实链路）",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1000,
+      620
+    ],
+    "column_fit": "spread",
+    "views": [
+      {
+        "id": "correct",
+        "label": "订正与重建",
+        "focus": [
+          "human",
+          "corr",
+          "recompute",
+          "store"
+        ],
+        "note": "只重建受影响表，其余表字节不变。"
+      },
+      {
+        "id": "patch",
+        "label": "补丁回放",
+        "focus": [
+          "corr",
+          "patch"
+        ],
+        "note": "旧文档 + 补丁 必须重建出新文档。"
+      },
+      {
+        "id": "revoke",
+        "label": "证据作废与恢复",
+        "focus": [
+          "corr",
+          "revoke",
+          "log",
+          "human"
+        ],
+        "note": "作废与恢复都是标记；状态由 fold 推导。"
+      }
+    ]
+  },
+  "participants": [
+    {
+      "id": "human",
+      "type": "external",
+      "label": "复核人",
+      "sublabel": "决策 ref"
+    },
+    {
+      "id": "corr",
+      "type": "backend",
+      "label": "correction",
+      "sublabel": "apply"
+    },
+    {
+      "id": "recompute",
+      "type": "backend",
+      "label": "recompute",
+      "sublabel": "重建"
+    },
+    {
+      "id": "store",
+      "type": "database",
+      "label": "artifact_store",
+      "sublabel": "CAS"
+    },
+    {
+      "id": "patch",
+      "type": "backend",
+      "label": "patches",
+      "sublabel": "RFC6902"
+    },
+    {
+      "id": "revoke",
+      "type": "backend",
+      "label": "revocation",
+      "sublabel": "作废/恢复"
+    },
+    {
+      "id": "log",
+      "type": "database",
+      "label": "标记流水",
+      "sublabel": "append-only"
+    }
+  ],
+  "segments": [
+    {
+      "from": 150,
+      "to": 268,
+      "label": "订正与重建"
+    },
+    {
+      "from": 276,
+      "to": 360,
+      "label": "补丁"
+    },
+    {
+      "from": 368,
+      "to": 540,
+      "label": "作废与恢复"
+    }
+  ],
+  "messages": [
+    {
+      "id": "submit",
+      "from": "human",
+      "to": "corr",
+      "y": 165,
+      "label": "订正一格 + 决策 ref",
+      "variant": "emphasis"
+    },
+    {
+      "id": "impact",
+      "from": "corr",
+      "to": "recompute",
+      "y": 195,
+      "label": "影响清单",
+      "variant": "default"
+    },
+    {
+      "id": "rebuild",
+      "from": "recompute",
+      "to": "corr",
+      "y": 225,
+      "label": "仅重建受影响表，其余不变",
+      "variant": "return"
+    },
+    {
+      "id": "commit",
+      "from": "corr",
+      "to": "store",
+      "y": 255,
+      "label": "提交新 generation（旧代不变）",
+      "variant": "emphasis"
+    },
+    {
+      "id": "make-patch",
+      "from": "corr",
+      "to": "patch",
+      "y": 292,
+      "label": "逐叶子 diff；白名单外记 unpatchable",
+      "variant": "default"
+    },
+    {
+      "id": "residual",
+      "from": "patch",
+      "to": "corr",
+      "y": 322,
+      "label": "残留差异 → 拒绝半张补丁",
+      "variant": "security"
+    },
+    {
+      "id": "stale-list",
+      "from": "corr",
+      "to": "revoke",
+      "y": 390,
+      "label": "应作废清单；unattributable 非空则拒",
+      "variant": "default"
+    },
+    {
+      "id": "append",
+      "from": "revoke",
+      "to": "log",
+      "y": 420,
+      "label": "append REVOKE（at + recorded_at）",
+      "variant": "emphasis"
+    },
+    {
+      "id": "fold",
+      "from": "log",
+      "to": "revoke",
+      "y": 448,
+      "label": "fold → STALE（最后标记胜出）",
+      "variant": "return"
+    },
+    {
+      "id": "restore-ask",
+      "from": "human",
+      "to": "revoke",
+      "y": 480,
+      "label": "撤错了，请求恢复",
+      "variant": "dashed"
+    },
+    {
+      "id": "append-restore",
+      "from": "revoke",
+      "to": "log",
+      "y": 508,
+      "label": "append RESTORE（按记录原状态）",
+      "variant": "dashed"
+    },
+    {
+      "id": "no-guess",
+      "from": "revoke",
+      "to": "human",
+      "y": 536,
+      "label": "无 previous → 拒绝，不猜",
+      "variant": "security"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "corr",
+      "from": 165,
+      "to": 330,
+      "type": "backend"
+    },
+    {
+      "participant": "recompute",
+      "from": 195,
+      "to": 235,
+      "type": "backend"
+    },
+    {
+      "participant": "patch",
+      "from": 292,
+      "to": 330,
+      "type": "backend"
+    },
+    {
+      "participant": "revoke",
+      "from": 390,
+      "to": 545,
+      "type": "backend"
+    },
+    {
+      "participant": "log",
+      "from": 420,
+      "to": 520,
+      "type": "database"
+    }
+  ]
+}

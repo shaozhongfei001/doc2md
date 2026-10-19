@@ -1,0 +1,379 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "doc2md 扩展层设计（可复核转换）",
+    "quality_profile": "showcase",
+    "locale": "zh-CN",
+    "views": [
+      {
+        "id": "docx-path",
+        "label": "原生 Word 路径（已验）",
+        "focus": [
+          "src",
+          "pkg",
+          "struct",
+          "packet",
+          "asm",
+          "store"
+        ],
+        "note": "从 .docx 到 generation 的主链路，第三方 E2E 8/8。"
+      },
+      {
+        "id": "ocr-path",
+        "label": "OCR 路径（断在装配）",
+        "focus": [
+          "src",
+          "ocr",
+          "decl",
+          "ocemit"
+        ],
+        "note": "识别结果能到契约形状的表，但进不了复核包。"
+      },
+      {
+        "id": "change",
+        "label": "订正与证据作废",
+        "focus": [
+          "asm",
+          "store",
+          "corr",
+          "patch",
+          "log",
+          "human"
+        ],
+        "note": "订正只重建受影响表；作废落 append-only 流水。"
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "src",
+      "type": "external",
+      "label": "输入文档",
+      "sublabel": ".docx / PDF / 图片",
+      "pos": [
+        40,
+        300
+      ],
+      "size": [
+        130,
+        64
+      ]
+    },
+    {
+      "id": "pkg",
+      "type": "backend",
+      "label": "word/package",
+      "sublabel": "打开 docx 包",
+      "pos": [
+        240,
+        220
+      ],
+      "size": [
+        140,
+        64
+      ]
+    },
+    {
+      "id": "ocr",
+      "type": "backend",
+      "label": "paddle_structure",
+      "sublabel": "OCR 归一 + 几何校验",
+      "pos": [
+        240,
+        400
+      ],
+      "size": [
+        140,
+        64
+      ]
+    },
+    {
+      "id": "struct",
+      "type": "backend",
+      "label": "tables/",
+      "sublabel": "网格 · 表头路径 · 脚注",
+      "pos": [
+        460,
+        220
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "decl",
+      "type": "security",
+      "label": "ocr_tables",
+      "sublabel": "人工声明表头",
+      "pos": [
+        460,
+        400
+      ],
+      "size": [
+        140,
+        64
+      ],
+      "tag": "人裁决"
+    },
+    {
+      "id": "packet",
+      "type": "backend",
+      "label": "review_packet",
+      "sublabel": "omission ⊆ evidence",
+      "pos": [
+        690,
+        220
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "ocemit",
+      "type": "backend",
+      "label": "ocr_assembly",
+      "sublabel": "空值 + 显式 issue",
+      "pos": [
+        690,
+        400
+      ],
+      "size": [
+        140,
+        64
+      ]
+    },
+    {
+      "id": "asm",
+      "type": "backend",
+      "label": "pipeline",
+      "sublabel": "assemble_package",
+      "pos": [
+        920,
+        220
+      ],
+      "size": [
+        140,
+        64
+      ]
+    },
+    {
+      "id": "store",
+      "type": "database",
+      "label": "artifact_store",
+      "sublabel": "generation · CAS",
+      "pos": [
+        1130,
+        220
+      ],
+      "size": [
+        140,
+        64
+      ]
+    },
+    {
+      "id": "corr",
+      "type": "backend",
+      "label": "correction",
+      "sublabel": "只重建受影响表",
+      "pos": [
+        920,
+        420
+      ],
+      "size": [
+        140,
+        64
+      ]
+    },
+    {
+      "id": "patch",
+      "type": "backend",
+      "label": "patches",
+      "sublabel": "RFC6902 + 回放",
+      "pos": [
+        1130,
+        420
+      ],
+      "size": [
+        140,
+        64
+      ]
+    },
+    {
+      "id": "log",
+      "type": "database",
+      "label": "revocation_log",
+      "sublabel": "append-only marks",
+      "pos": [
+        1130,
+        560
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "human",
+      "type": "external",
+      "label": "复核人",
+      "sublabel": "review_decision_ref",
+      "pos": [
+        690,
+        560
+      ],
+      "size": [
+        140,
+        64
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "原生 Word 路径（已独立验证）",
+      "wraps": [
+        "pkg",
+        "struct",
+        "packet",
+        "asm"
+      ]
+    },
+    {
+      "kind": "security-group",
+      "label": "必须人工签署（无原生标记）",
+      "wraps": [
+        "decl",
+        "human"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "docx-in",
+      "from": "src",
+      "to": "pkg",
+      "label": "解析",
+      "variant": "emphasis"
+    },
+    {
+      "id": "pdf-in",
+      "from": "src",
+      "to": "ocr",
+      "label": "识别",
+      "variant": "emphasis"
+    },
+    {
+      "id": "pkg-struct",
+      "from": "pkg",
+      "to": "struct",
+      "label": "cells + slots"
+    },
+    {
+      "id": "struct-packet",
+      "from": "struct",
+      "to": "packet",
+      "label": "表头路径"
+    },
+    {
+      "id": "packet-asm",
+      "from": "packet",
+      "to": "asm",
+      "label": "复核包"
+    },
+    {
+      "id": "asm-store",
+      "from": "asm",
+      "to": "store",
+      "label": "原子提交"
+    },
+    {
+      "id": "ocr-decl",
+      "from": "ocr",
+      "to": "decl",
+      "label": "建议 th 行",
+      "variant": "dashed"
+    },
+    {
+      "id": "decl-ocemit",
+      "from": "decl",
+      "to": "ocemit",
+      "label": "声明后成表"
+    },
+    {
+      "id": "ocemit-broken",
+      "from": "ocemit",
+      "to": "asm",
+      "label": "未接通：无 packets/订正",
+      "variant": "dashed"
+    },
+    {
+      "id": "human-decl",
+      "from": "human",
+      "to": "decl",
+      "label": "签署表头",
+      "variant": "security"
+    },
+    {
+      "id": "asm-corr",
+      "from": "asm",
+      "to": "corr",
+      "label": "订正一格",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 24
+    },
+    {
+      "id": "corr-patch",
+      "from": "corr",
+      "to": "patch",
+      "label": "产出补丁"
+    },
+    {
+      "id": "corr-log",
+      "from": "corr",
+      "to": "log",
+      "label": "应作废清单",
+      "fromSide": "bottom",
+      "toSide": "left"
+    },
+    {
+      "id": "human-log",
+      "from": "human",
+      "to": "log",
+      "label": "人工触发",
+      "variant": "security",
+      "fromSide": "right",
+      "toSide": "bottom"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "已验（第三方 E2E 8/8）",
+      "items": [
+        "装配 → 复核包 → 订正 → 补丁回放",
+        "作废 → 流水 → 恢复，候选 dict 完全还原"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "未接通（诚实标注）",
+      "items": [
+        "OCR 表无 packets、无订正链路",
+        "assemble_package 只接受 DocxPackage"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "三条原则",
+      "items": [
+        "不猜：表头必须人签署",
+        "不静默：缺什么就记 issue",
+        "单一事实源：状态由 fold 推导"
+      ]
+    }
+  ]
+}
