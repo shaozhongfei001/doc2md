@@ -1,8 +1,8 @@
 # DOC2MD-19CAP 交付说明（本地可交付范围）
 
-- 交付树：`main` = `e9f1013`
-- 环境基线：**1453 passed / 131 skipped**
-- 交付 tag：`delivery/19cap-l09` … `delivery/19cap-l45`、`delivery/19cap-local-ready`、`delivery/19cap-local-ready-2`
+- 交付树：`main` = `6b60683`
+- 环境基线：**1461 passed / 131 skipped**
+- 交付 tag：`delivery/19cap-l09` … `delivery/19cap-l46`、`delivery/19cap-local-ready`、`delivery/19cap-local-ready-2`
 - 本文档只陈述**已验证**的事实；未验证项在第 3、4 节逐条列出，不作推定。
 
 ## 1. 交付了什么
@@ -31,7 +31,7 @@ Word（`.docx`）**原生表格**路径的扩展层，端到端可跑：
 | 畸形输入拒绝（空白 ref / 缺 id / 缺 locator） | 同上 / `apply_correction` | 已验 |
 | Paddle box ↔ HTML 逐格几何校验 | `adapters/paddle_structure.normalise_response(GEOMETRY)` | 合成夹具已验；**真实页 0 样本** |
 | reviewer 身份策略 | `review/authority.ReviewerPolicy` | 已收紧为 RESTRICTED（形式校验，**未接认证**） |
-| 证据作废执行器（人工触发） | `evidence/revocation.revoke_candidates` | 已验；**未接线** |
+| 证据作废执行器（人工触发） | `evidence/revocation.revoke_candidates` | 已验；**已接线且可恢复**，未落盘 |
 
 ## 2. 验证状态矩阵（这是本文档最重要的表）
 
@@ -99,7 +99,7 @@ L06/L07/L08 已完成抽检，但其依赖的外部输入（VLM/GPU、真实 con
 8. **不声称"低置信阈值可用"**——`0.6` 未校准，只是显式声明，不是校准结论；
 9. **不声称"reviewer 身份可信"**——已做**形式**校验（占位串被拒），但**未接认证上下文**，无法证明提交者是谁；
 10. **不声称"表格解析在真实语料可用"**——20 页真实页面检出表格 **0 个**，几何绑定仍只有合成夹具；
-11. **不声称"纠错后证据自动作废"**——执行器需人工触发，且尚未接入流水线（`L40-LIM-01`）。
+11. **不声称"纠错后证据自动作废"**——执行器需人工触发；清单已可直接驱动它（L46），但作废结果**未持久化**。
 
 ### 补注：一条最容易说错的话——L35 的"作废"没有发生
 
@@ -173,7 +173,8 @@ cd backend && PYTHONPATH=. /tmp/doc2md-l00-venv/bin/python -m pytest -q -p no:ca
 | `L37-OBS-01/02` | 重复 id 不去重（调用方需幂等）；`[]` 与 `None` 语义仅靠契约文字承载 |
 | `L38-ZERO-01` | 几何绑定在真实页面零样本（20 页 0 表），只证明"不一致会拒绝" |
 | `L39-LIM-01` | reviewer 仍为自报字符串，未接认证上下文；策略 `ALLOW_ALL` |
-| `L40-LIM-01/02` | 作废执行器未接入流水线；跨进程并发语义未定义 |
+| `L40-LIM-01/02` | 已接线（L46）；跨进程并发语义仍未定义 |
+| `L46-LIM-01/02/03` | 未落盘；撤销授权规则未定；作废后并发修改的竞态未处理 |
 | `L41-LIM-01` | 语料为 DK 英文图书、无文本层，不能用于阈值校准 |
 | `L44-FIND-01` | 发票文本层不完整，伪 Gold 不成立（0.734 是方法伪影）；低分行仅 2/357 |
 | `L45-FIND-01` | 退化扫描显示 **0.6 偏低**：<0.9 各桶精度 0.29–0.76，≥0.95 为 0.983；候选 0.9（机器参照，未改常数） |
