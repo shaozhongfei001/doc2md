@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0.0",
+  "contract_id": "DOC2MD-19CAP-V1.0.1-ADDENDUM-L44",
+  "state": "PLANNED",
+  "generated_on": "2026-10-19",
+  "parent_contract": {"version": "DOC2MD-19CAP-V1.0", "path": "../../v1.0.0/loop_contract.json", "note": "纯追加。"},
+  "authorization": {
+    "basis": "Owner 提供 /media/szf/share/Home/Work/报销发票 作为中文金融扫描件目录；9 个 PDF 有中文文本层（200-590 字/页），可作伪 Gold",
+    "evidence": "本轮指令",
+    "decided_by": "Owner",
+    "decided_on": "2026-10-19"
+  },
+  "scope_note": "用文本层做伪 Gold 校准 rec_score 与正确率的关系；伪 Gold 是机器文本，不是人工标注，绝对准确率仍不可声称。",
+  "gates": {
+    "A1": {
+      "official_tool_available": false,
+      "reason": "L44 不在 PACK 的 loop 列表中",
+      "equivalent_check": ["git diff --name-only loop-entry/L44..HEAD ⊆ allowed_new_or_scoped_paths", "git ls-files --others --exclude-standard 为空"],
+      "honesty_rule": "不得改 PACK 或扩原白名单"
+    },
+    "B": "pytest 全量不得低于 1453 passed / 131 skipped",
+    "C": "check_baseline.py --allow-index-append 必须 passed=true",
+    "GAP": "三条判据：①每页记录 行数/逐行正确性/分数；②给出按分数分桶的正确率与建议阈值；③明确伪 Gold 的局限，不得声称绝对准确率"
+  },
+  "loops": [
+    {
+      "loop_id": "L44",
+      "name": "发票语料上的分数-正确率校准",
+      "status": "PLANNED",
+      "depends_on": ["L32", "L41"],
+      "conditional_dependencies": [],
+      "requirement_ids": ["PI-F05-01"],
+      "allowed_new_or_scoped_paths": ["docs/proposals/doc2md-19cap/v1.0.0/evidence/L44/"],
+      "scoped_existing_edits": [],
+      "forbidden": ["把伪 Gold 结果说成人工验收", "改产品代码里的阈值"],
+      "tasks": [
+        {"task_id": "T4401", "description": "渲染 9 个有文本层的发票页并抽 GT", "output": "sample.py", "responsible_role": "DEV", "status": "TODO"},
+        {"task_id": "T4402", "description": "跑 OCR，逐行判定是否命中 GT，按分数分桶", "output": "calibrate.py + results.json", "responsible_role": "DEV", "status": "TODO"},
+        {"task_id": "T4403", "description": "给建议阈值与局限声明", "output": "TL_ACCEPTANCE.md", "responsible_role": "DEV", "status": "TODO"}
+      ],
+      "role_route": ["TL_PLAN", "DEV_SELF_TEST", "INDEPENDENT_QA", "TL_FINAL"],
+      "required_evidence": ["input_commit_and_hashes", "actual_commands_and_exit_codes", "test_case_id_results"],
+      "next_loop_permission": "三条判据成立才允许关闭。"
+    }
+  ]
+}
