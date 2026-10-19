@@ -25,6 +25,7 @@ import fcntl
 import json
 import os
 import pathlib
+from datetime import datetime, timezone
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping
 
@@ -58,6 +59,7 @@ class Mark:
     review_decision_ref: str
     reason: str
     at: str
+    recorded_at: str
     previous_state: str | None = None
     previous_decision_ref: str | None = None
 
@@ -71,6 +73,7 @@ class Mark:
                 "review_decision_ref": self.review_decision_ref,
                 "reason": self.reason,
                 "at": self.at,
+                "recorded_at": self.recorded_at,
                 "previous_state": self.previous_state,
                 "previous_decision_ref": self.previous_decision_ref,
             },
@@ -104,6 +107,18 @@ def _last_action(marks: Iterable[Mapping[str, Any]], candidate_id: str) -> str |
     return action
 
 
+def _timestamp(value: Any, *, name: str) -> str:
+    """ISO-8601 or refuse. A free-form string cannot be sorted, compared or audited."""
+    if not isinstance(value, str) or not value.strip():
+        raise _input_error(f"{name} must be an ISO-8601 timestamp")
+    text = value.strip()
+    try:
+        datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise _input_error(f"{name} {text!r} is not ISO-8601: {exc}") from exc
+    return text
+
+
 def append_mark(
     path: pathlib.Path | str,
     *,
@@ -122,6 +137,7 @@ def append_mark(
     identical line would make the log look like two decisions. The check happens under the
     same lock as the append, so two concurrent reducers cannot both decide it is new.
     """
+    at = _timestamp(at, name="at")
     if action not in ACTIONS:
         raise _input_error(f"action must be one of {list(ACTIONS)}, got {action!r}")
     for name, value in (
@@ -151,7 +167,11 @@ def append_mark(
                 reviewer=reviewer.strip(),
                 review_decision_ref=review_decision_ref.strip(),
                 reason=reason.strip(),
-                at=at.strip(),
+                at=at,
+                # ``at`` is what the caller claims; this is when the mark actually
+                # landed. Keeping both means a wrong clock at the call site cannot
+                # rewrite the history of when the write happened.
+                recorded_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
                 previous_state=previous_state,
                 previous_decision_ref=previous_decision_ref,
             )
@@ -179,6 +199,7 @@ def fold_marks(marks: Iterable[Mapping[str, Any]]) -> dict[str, dict[str, Any]]:
                 "review_decision_ref": mark.get("review_decision_ref"),
                 "reviewer": mark.get("reviewer"),
                 "at": mark.get("at"),
+                "recorded_at": mark.get("recorded_at"),
                 "previous_state": mark.get("previous_state"),
                 "seq": mark.get("seq"),
             }
@@ -188,6 +209,7 @@ def fold_marks(marks: Iterable[Mapping[str, Any]]) -> dict[str, dict[str, Any]]:
                 "review_decision_ref": mark.get("previous_decision_ref"),
                 "reviewer": mark.get("reviewer"),
                 "at": mark.get("at"),
+                "recorded_at": mark.get("recorded_at"),
                 "previous_state": None,
                 "seq": mark.get("seq"),
             }

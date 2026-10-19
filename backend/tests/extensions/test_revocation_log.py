@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import multiprocessing as mp
+from datetime import datetime
 import pathlib
 
 import pytest
@@ -121,3 +122,30 @@ def test_the_fold_is_the_only_source_of_current_state(tmp_path):
     state = fold_marks(read_marks(log))["EV-1"]
     assert state["state"] == "STALE"
     assert state["seq"] == 3
+
+
+# ---------------------------- L48: two timestamps per mark
+def test_every_mark_carries_a_system_write_time(tmp_path):
+    log = tmp_path / "revocations.jsonl"
+    mark(log)
+    stamps = json.loads(log.read_text(encoding="utf-8").splitlines()[0])
+    assert stamps["at"] == "2026-10-19T12:00:00+08:00", "caller time is kept verbatim"
+    recorded = datetime.fromisoformat(stamps["recorded_at"])
+    assert recorded.tzinfo is not None, "write time must be timezone aware"
+
+
+def test_a_non_iso_decision_time_is_refused(tmp_path):
+    log = tmp_path / "revocations.jsonl"
+    with pytest.raises(ExtensionError) as excinfo:
+        mark(log, at="昨天下午")
+    assert "not ISO-8601" in str(excinfo.value)
+    assert read_marks(log) == [], "nothing may be written when the timestamp is refused"
+
+
+def test_the_fold_exposes_both_times(tmp_path):
+    log = tmp_path / "revocations.jsonl"
+    mark(log)
+    state = fold_marks(read_marks(log))["EV-1"]
+    assert state["at"] == "2026-10-19T12:00:00+08:00"
+    assert state["recorded_at"]
+    assert state["at"] != state["recorded_at"], "the two clocks are different facts"
