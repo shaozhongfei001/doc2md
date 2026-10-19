@@ -1,8 +1,8 @@
 # DOC2MD-19CAP 交付说明（本地可交付范围）
 
-- 交付树：`main` = `6b60683`
-- 环境基线：**1461 passed / 131 skipped**
-- 交付 tag：`delivery/19cap-l09` … `delivery/19cap-l46`、`delivery/19cap-local-ready`、`delivery/19cap-local-ready-2`
+- 交付树：`main` = `02831b2`
+- 环境基线：**1469 passed / 131 skipped**
+- 交付 tag：`delivery/19cap-l09` … `delivery/19cap-l47`、`delivery/19cap-local-ready`、`delivery/19cap-local-ready-2`
 - 本文档只陈述**已验证**的事实；未验证项在第 3、4 节逐条列出，不作推定。
 
 ## 1. 交付了什么
@@ -31,7 +31,7 @@ Word（`.docx`）**原生表格**路径的扩展层，端到端可跑：
 | 畸形输入拒绝（空白 ref / 缺 id / 缺 locator） | 同上 / `apply_correction` | 已验 |
 | Paddle box ↔ HTML 逐格几何校验 | `adapters/paddle_structure.normalise_response(GEOMETRY)` | 合成夹具已验；**真实页 0 样本** |
 | reviewer 身份策略 | `review/authority.ReviewerPolicy` | 已收紧为 RESTRICTED（形式校验，**未接认证**） |
-| 证据作废执行器（人工触发） | `evidence/revocation.revoke_candidates` | 已验；**已接线且可恢复**，未落盘 |
+| 证据作废执行器（人工触发） | `evidence/revocation.revoke_candidates` | 已验；已接线、可恢复、**标记落盘为 append-only 流水** |
 
 ## 2. 验证状态矩阵（这是本文档最重要的表）
 
@@ -174,7 +174,8 @@ cd backend && PYTHONPATH=. /tmp/doc2md-l00-venv/bin/python -m pytest -q -p no:ca
 | `L38-ZERO-01` | 几何绑定在真实页面零样本（20 页 0 表），只证明"不一致会拒绝" |
 | `L39-LIM-01` | reviewer 仍为自报字符串，未接认证上下文；策略 `ALLOW_ALL` |
 | `L40-LIM-01/02` | 已接线（L46）；跨进程并发语义仍未定义 |
-| `L46-LIM-01/02/03` | 未落盘；撤销授权规则未定；作废后并发修改的竞态未处理 |
+| `L46-LIM-01/02/03` | 已落盘（L47）；撤销授权规则未定；作废后并发修改的竞态未处理 |
+| `L47-LIM-01/02/03/04` | 日志无压缩；文件权限未做；未并入 artifact_store 锁体系；折叠 O(n) |
 | `L41-LIM-01` | 语料为 DK 英文图书、无文本层，不能用于阈值校准 |
 | `L44-FIND-01` | 发票文本层不完整，伪 Gold 不成立（0.734 是方法伪影）；低分行仅 2/357 |
 | `L45-FIND-01` | 退化扫描显示 **0.6 偏低**：<0.9 各桶精度 0.29–0.76，≥0.95 为 0.983；候选 0.9（机器参照，未改常数） |
