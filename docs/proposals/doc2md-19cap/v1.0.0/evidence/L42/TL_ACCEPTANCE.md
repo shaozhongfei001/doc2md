@@ -29,22 +29,37 @@
 第二条对应 `L42-FIND-02`：去空格此前**只在 `RESTRICTED` 路径**被断言，而当前生产策略正是 `ALLOW_ALL`——
 最常走的那条分支反而没测。
 
-## 3. 变异重放（据实记录，不美化）
+## 3. 变异重放（按变异体形状分别记录）
 
-把"缺 id"校验改成 `continue` 后，新用例**变红**，但失败点是：
+我先只把"缺 id"校验的 `raise` 换成 `continue`，看到的是：
 
 ```text
 revocation.py:125: KeyError: 'candidate_evidence_id'
 ```
 
-即：变异体在构造 id 映射时崩溃，**仍不是**断言 `DID NOT RAISE` 命中。
-如实说明两点：
+一度据此写成"断言仍被崩溃遮蔽"。**这个结论是错的**——QA 指出那是 M9N（更弱、也更不真实的变异体），
+它保留了 `by_id = {str(item["candidate_evidence_id"]): ...}` 的直接取值，所以先崩。
 
-1. **基线语义已钉住**：未变异时该输入必须抛 `E_INPUT_INVALID`，这正是原实现的行为；
-2. **变异态下"输入零改动"这条断言仍被崩溃遮蔽**——要让它也命中，需要变异体不崩，
-   而"让变异体不崩"不属于测试该做的事。
+按 QA 原来的 M9 形状（校验整段后移到复制之后、非法条目 `continue`、id 映射在带 `continue` 的循环里构建）重放：
 
-这属于**测试锋芒的边界**，不是产品缺陷：任何违反"整批拒绝"的改动都会红，只是红的位置不同。
+```text
+>       with pytest.raises(ExtensionError) as excinfo:
+E       Failed: DID NOT RAISE <class 'app.extensions.ExtensionError'>
+tests/extensions/test_revocation.py:127
+```
+
+**新用例红在 `DID NOT RAISE`，即"整批拒绝整个消失了"——语义级捕获，不是崩溃兜住。**
+
+| 变异体 | 红点 | 性质 |
+|---|---|---|
+| M9（校验后移且不崩） | `test_revocation.py:127` `DID NOT RAISE` | **语义级**：保证本身被观测到破坏 |
+| M9N（仅删校验、保留直接 `[]`） | `revocation.py:125` `KeyError` | 崩溃级：实现先崩，断言未执行 |
+
+两者都判红，但只有 M9 证明"这条断言有牙"。**"输入零改动"（`:130`）守护的是另一类变异体**
+（先写坏输入再抛错），不承担本变异的红点。
+
+> 这是我第二次在同一个 Loop 里"把较弱变异体的现象当成结论"。
+> 规则：**报告红点前先确认变异体形状与对方一致**，否则描述的是另一个实验。
 
 ## 4. 门禁
 
@@ -72,5 +87,12 @@ revocation.py:125: KeyError: 'candidate_evidence_id'
 
 | 编号 | 内容 |
 |---|---|
-| `L42-OBS-01` | 若变异体本身不崩，"输入零改动"断言才会被真正执行；当前只能靠"非 ExtensionError 即失败"兜住 |
+| `L42-OBS-01` | 整批拒绝的**红点落点取决于变异体形状**：M9 → 语义级（`:127` `DID NOT RAISE`）；M9N → 崩溃级（`revocation.py:125` `KeyError`）。两种形状均判红，用例有效；"输入零改动"（`:130`）只对"先写坏再抛错"类变异体生效 |
 | `L42-OBS-02` | 跨进程并发作废语义仍未定义（`L40-LIM-02`） |
+
+## 7. 补充：新用例不是空转（QA 复验）
+
+| 新用例 | 重放变异 | 结果 |
+|---|---|---|
+| `test_allow_all_still_strips_the_reviewer` | M6（去掉 `strip()`） | 红在 `test_review_decisions.py:183`，`'  E12345  ' != 'E12345'`；M6 的杀伤从 1 红变 **2 红** |
+| `test_a_mapping_without_an_id_is_rejected_whole` | M9 | 未变异绿，M9 下 `:127` `DID NOT RAISE` 红 |
