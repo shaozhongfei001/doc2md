@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0.0",
+  "contract_id": "DOC2MD-19CAP-V1.0.1-ADDENDUM-L49",
+  "state": "PLANNED",
+  "generated_on": "2026-10-19",
+  "parent_contract": {"version": "DOC2MD-19CAP-V1.0", "path": "../../v1.0.0/loop_contract.json", "note": "纯追加。"},
+  "authorization": {
+    "basis": "Owner 选择 A：表头由人工声明；视觉推断只准备证据，人类最终裁决",
+    "evidence": "本轮指令 + evidence/QA/E2E_20261019.md E2E-FIND-01",
+    "decided_by": "Owner",
+    "decided_on": "2026-10-19"
+  },
+  "scope_note": "本轮只做 OCR 表的'表头声明 + slots 推导'：建议来自引擎自身的 th 标记（不是加粗/首行猜测），声明必须由人签署；无声明不得产出可用表。",
+  "gates": {
+    "A1": {"official_tool_available": false, "reason": "L49 不在 PACK 的 loop 列表中",
+      "equivalent_check": ["git diff --name-only loop-entry/L49..HEAD ⊆ allowed_new_or_scoped_paths", "git ls-files --others --exclude-standard 为空"],
+      "honesty_rule": "不得改 PACK 或扩原白名单"},
+    "B": "pytest 全量不得低于 1480 passed / 131 skipped",
+    "C": "check_baseline.py --allow-index-append 必须 passed=true",
+    "GAP": "四条判据：①th 行给出建议；②无 th 时建议为空而非猜首行；③无人工声明必须拒绝；④声明必须是从第 0 行起的连续前缀，且建议与人声明不同时以人为准并留痕"
+  },
+  "loops": [
+    {
+      "loop_id": "L49",
+      "name": "OCR 表头声明 + slots 推导",
+      "status": "PLANNED",
+      "depends_on": ["L38", "L42"],
+      "conditional_dependencies": [],
+      "requirement_ids": ["PI-F04-02"],
+      "allowed_new_or_scoped_paths": [
+        "backend/app/extensions/adapters/ocr_tables.py",
+        "backend/app/extensions/adapters/paddle_structure.py",
+        "backend/tests/extensions/test_ocr_tables.py"
+      ],
+      "scoped_existing_edits": [
+        "backend/app/extensions/adapters/paddle_structure.py"
+      ],
+      "forbidden": ["用加粗/首行/字号推断表头", "无声明时返回 CONFIRMED 或可用表", "让建议覆盖人的声明"],
+      "tasks": [
+        {"task_id": "T4901", "description": "adapter 记录 html_tag（th/td）", "output": "paddle_structure.py", "responsible_role": "DEV", "status": "TODO"},
+        {"task_id": "T4902", "description": "suggest_header_rows / declare_header_rows / build_ocr_table", "output": "ocr_tables.py", "responsible_role": "DEV", "status": "TODO"},
+        {"task_id": "T4903", "description": "八条用例（含真实 fixture 与人为覆盖）", "output": "test_ocr_tables.py", "responsible_role": "DEV", "status": "TODO"}
+      ],
+      "role_route": ["TL_PLAN", "DEV_SELF_TEST", "INDEPENDENT_QA", "TL_FINAL"],
+      "required_evidence": ["input_commit_and_hashes", "actual_commands_and_exit_codes", "test_case_id_results"],
+      "next_loop_permission": "四条判据成立才允许关闭。"
+    }
+  ]
+}
