@@ -40,3 +40,6 @@ sniff_cache/
 # Tool / agent artifacts (非交付物)
 .ua/
 .codebuddy/
+
+# archify visual-check artifacts (regenerable)
+docs/proposals/doc2md-19cap/v1.0.0/evidence/*.visual-check.*
