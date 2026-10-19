@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0.0",
+  "contract_id": "DOC2MD-19CAP-V1.0.1-ADDENDUM-L43",
+  "state": "PLANNED",
+  "generated_on": "2026-10-19",
+  "parent_contract": {"version": "DOC2MD-19CAP-V1.0", "path": "../../v1.0.0/loop_contract.json", "note": "纯追加。"},
+  "authorization": {
+    "basis": "Owner 2026-10-19：reviewer 采用合法形式，关闭“全部放行”。具体形式由本轮提出可配置默认，Owner 可随时收紧",
+    "evidence": "OWNER_DECISIONS_20261018.md D1 + 本轮指令",
+    "decided_by": "Owner",
+    "decided_on": "2026-10-19"
+  },
+  "scope_note": "默认策略从 ALLOW_ALL 改为 RESTRICTED，并给出默认合法形式：以字母/数字/下划线/汉字开头，2-64 位，允许 . @ -。占位串 '---' 自然不匹配，无需专门黑名单。",
+  "gates": {
+    "A1": {
+      "official_tool_available": false,
+      "reason": "L43 不在 PACK 的 loop 列表中",
+      "equivalent_check": ["git diff --name-only loop-entry/L43..HEAD ⊆ allowed_new_or_scoped_paths", "git ls-files --others --exclude-standard 为空"],
+      "honesty_rule": "不得改 PACK 或扩原白名单"
+    },
+    "B": "pytest 全量不得低于 1451 passed / 131 skipped",
+    "C": "check_baseline.py --allow-index-append 必须 passed=true",
+    "GAP": "四条判据：①默认策略下 '---' 被拒；②默认策略下合法主体（E12345/张三/reviewer.1）通过；③显式 ALLOW_ALL 仍可作为逃生口；④旧用例中'占位串被接受'的两条必须翻转为拒绝"
+  },
+  "loops": [
+    {
+      "loop_id": "L43",
+      "name": "reviewer 合法形式（关闭全部放行）",
+      "status": "PLANNED",
+      "depends_on": ["L39"],
+      "conditional_dependencies": [],
+      "requirement_ids": ["PI-F03-01"],
+      "allowed_new_or_scoped_paths": [
+        "backend/app/extensions/review/authority.py",
+        "backend/tests/extensions/test_review_decisions.py",
+        "backend/tests/extensions/test_patches.py",
+        "backend/tests/extensions/test_revocation.py"
+      ],
+      "scoped_existing_edits": [
+        "backend/app/extensions/review/authority.py",
+        "backend/tests/extensions/test_review_decisions.py",
+        "backend/tests/extensions/test_patches.py",
+        "backend/tests/extensions/test_revocation.py"
+      ],
+      "forbidden": ["把占位串黑名单硬编码成特例（应由形式规则自然排除）", "把默认改回 ALLOW_ALL"],
+      "tasks": [
+        {"task_id": "T4301", "description": "authority 默认 mode=RESTRICTED + DEFAULT_REVIEWER_PATTERN", "output": "authority.py", "responsible_role": "DEV", "status": "TODO"},
+        {"task_id": "T4302", "description": "翻转两条'占位串被接受'用例，补合法/非法主体用例，显式 ALLOW_ALL 逃生口", "output": "三个测试文件", "responsible_role": "DEV", "status": "TODO"},
+        {"task_id": "T4303", "description": "变异：默认改回 ALLOW_ALL，必须让翻转用例变红", "output": "证据记录", "responsible_role": "DEV", "status": "TODO"}
+      ],
+      "role_route": ["TL_PLAN", "DEV_SELF_TEST", "INDEPENDENT_QA", "TL_FINAL"],
+      "required_evidence": ["input_commit_and_hashes", "actual_commands_and_exit_codes", "test_case_id_results"],
+      "next_loop_permission": "四条判据成立才允许关闭。"
+    }
+  ]
+}
