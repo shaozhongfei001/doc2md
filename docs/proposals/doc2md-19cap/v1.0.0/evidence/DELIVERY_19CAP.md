@@ -29,7 +29,7 @@ Word（`.docx`）**原生表格**路径的扩展层，端到端可跑：
 | 候选证据作废归因 | `same` + `evidence/revocation*.py` | 已验（归因 + 执行 + 恢复 + 标记流水） |
 | 低置信度门槛 + 人工覆盖（带审计） | `vision/classify.route_regions` | 已验（阈值 **未校准**） |
 | 畸形输入拒绝（空白 ref / 缺 id / 缺 locator） | 同上 / `apply_correction` | 已验 |
-| Paddle box ↔ HTML 逐格几何校验 | `adapters/paddle_structure.normalise_response(GEOMETRY)` | 合成夹具已验；**真实页 0 样本** |
+| Paddle box ↔ HTML 逐格几何校验 | `adapters/paddle_structure.normalise_response(GEOMETRY)` | 真实票据 **2/17 通过**；不一致时拒绝而非贴错 |
 | reviewer 身份策略 | `review/authority.ReviewerPolicy` | 已收紧为 RESTRICTED（形式校验，**未接认证**） |
 | 证据作废执行器（人工触发） | `evidence/revocation*.py` | 已验；已接线、可恢复、标记落盘为 append-only 流水，**带双重时间戳** |
 
@@ -64,6 +64,7 @@ Word（`.docx`）**原生表格**路径的扩展层，端到端可跑：
 | L43 | reviewer 合法形式（关闭放行） | ⚠️ 仅作者变异（1 个） | — |
 | L44 | 发票语料校准 | ❌ 结论为“数据不足”，非抽检 | — |
 | L45 | 退化样本 score→正确率曲线 | ❌ 测量非抽检（160 页变体/8827 行） | — |
+| **E2E** | docx 全链路 8 步 | ✅ **8/8 PASS**（第三方自写脚本） | qa-e2e |
 | L41 | 真实语料版面测量 | ⚠️ 测量非抽检：20 页表格 0 个 | — |
 | **L29** | 英文续页词缀 | ⚠️ 仅作者变异验证 | — |
 
@@ -98,6 +99,7 @@ L06/L07/L08 已完成抽检，但其依赖的外部输入（VLM/GPU、真实 con
 7. **不声称"证据作废是全自动的"**——可人工触发、可恢复、有流水与双时间戳，但不会自行发生（`L46`/`L47`/`L48`）；
 8. **不声称"低置信阈值可用"**——`0.6` 未校准，只是显式声明，不是校准结论；
 9. **不声称"reviewer 身份可信"**——已做**形式**校验（占位串被拒），但**未接认证上下文**，无法证明提交者是谁；
+9b. **不声称"发票/PDF 能进复核包"**——`assemble_package` 只接 `DocxPackage`；`normalise_response` 无生产消费者，**链路不存在**；
 10. **不声称"表格解析在真实语料可用"**——20 页真实页面检出表格 **0 个**，几何绑定仍只有合成夹具；
 11. **不声称"作废已跨进程并发安全"**——单机 append + `flock` 已验证；未并入 `artifact_store` 锁体系（`L47-LIM-03`）。
 
@@ -181,6 +183,8 @@ cd backend && PYTHONPATH=. /tmp/doc2md-l00-venv/bin/python -m pytest -q -p no:ca
 | `L46-LIM-01/02/03` | 已落盘（L47）；撤销授权规则未定；作废后并发修改的竞态未处理 |
 | `L47-LIM-01/02/03/04` | 日志无压缩；文件权限未做；未并入 artifact_store 锁体系；折叠 O(n) |
 | `L41-LIM-01` | 语料为 DK 英文图书、无文本层，不能用于阈值校准 |
+| `E2E-FIND-01` | 发票→复核包链路不存在：断点在 `paddle_structure.py:286` 与 `pipeline.py:225` 之间，且 `header_rows` 只能来自 docx |
+| `E2E-FIND-02` | 真实票据几何校验通过率 **2/17**；15 张表无法进入 token 对齐 |
 | `L44-FIND-01` | 发票文本层不完整，伪 Gold 不成立（0.734 是方法伪影）；低分行仅 2/357 |
 | `L45-FIND-01` | 退化扫描显示 **0.6 偏低**：<0.9 各桶精度 0.29–0.76，≥0.95 为 0.983；候选 0.9（机器参照，未改常数） |
 
