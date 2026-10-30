@@ -71,6 +71,8 @@ IR_SOURCES: frozenset[str] = frozenset(
         "docling",
         "vlm_fallback",
         "markitdown_text_only",
+        # 017：原生 Office（DOCX OOXML / XLSX 工作簿）结构映射，表格矩阵来自文件本身
+        "native_office_tables",
     }
 )
 

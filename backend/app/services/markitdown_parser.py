@@ -411,6 +411,56 @@ class MarkItDownParserService:
             and payload.get("parser_adapter_version") == PARSER_ADAPTER_VERSION
         )
 
+    def _build_document_ir(
+        self,
+        *,
+        content: KbFileContent,
+        text: str,
+        source_vault_path: str,
+        original_bin: Path,
+        warnings: list[str],
+    ) -> dict[str, Any]:
+        """按格式选 IR 出口：原生 Office 结构优先，失败降级并留痕。"""
+        from app.services.document_ir_builder import build_from_markitdown_text
+
+        ext = (content.file_ext or "").lower()
+        native = None
+        try:
+            if ext == ".docx":
+                from app.services.native_office_ir import build_from_native_docx
+
+                native = build_from_native_docx
+            elif ext in {".xlsx", ".xlsm"}:
+                from app.services.native_office_ir import build_from_native_xlsx
+
+                native = build_from_native_xlsx
+        except Exception as exc:  # noqa: BLE001 - 导入失败也走降级并留痕
+            warnings.append(f"native_ir_import_failed: {type(exc).__name__}: {str(exc)[:160]}")
+
+        if native is not None:
+            try:
+                kwargs = dict(
+                    path=original_bin,
+                    text=text,
+                    sha256=content.sha256,
+                    content_uid=content.content_uid,
+                    source_vault_path=source_vault_path,
+                    adapter_version=PARSER_ADAPTER_VERSION,
+                )
+                if ext in {".xlsx", ".xlsm"}:
+                    kwargs["suffix"] = ext  # vault 里原件是 original.bin，需按真实扩展名读
+                return native(**kwargs).to_dict()
+            except Exception as exc:  # noqa: BLE001 - 原生结构失败不得静默
+                warnings.append(f"native_ir_failed: {type(exc).__name__}: {str(exc)[:200]}")
+
+        return build_from_markitdown_text(
+            text=text,
+            sha256=content.sha256,
+            content_uid=content.content_uid,
+            source_vault_path=source_vault_path,
+            adapter_version=PARSER_ADAPTER_VERSION,
+        ).to_dict()
+
     def _write_success_artifacts(
         self,
         *,
@@ -440,6 +490,20 @@ class MarkItDownParserService:
         output_hash = compute_sha256(artifacts["parsed_text"])
 
         library_version = adapter_result.metadata.get("library_version", "unknown")
+
+        # 017 接线：产出 Document IR 第 4 件。DOCX/XLSX 优先用**原生结构**（OOXML 表格矩阵、
+        # xlsx 合并区域），不是文本降级；原生读取失败才退回文本 IR，并把原因写进 warnings，
+        # 绝不静默把"没有表格结构"当成"表格已解析"。
+        ir_warnings = list(adapter_result.warnings)
+        ir_payload = self._build_document_ir(
+            content=content,
+            text=text,
+            source_vault_path=source_vault_path,
+            original_bin=original_bin,
+            warnings=ir_warnings,
+        )
+        validate_document_ir(ir_payload, parsed_text=text)
+
         metadata_payload = {
             "parser_name": PARSER_NAME,
             "parser_adapter_version": PARSER_ADAPTER_VERSION,
@@ -449,7 +513,9 @@ class MarkItDownParserService:
             "source_vault_path": source_vault_path,
             "converted_at": converted_at,
             "library_version": library_version,
-            "warnings": adapter_result.warnings,
+            "warnings": ir_warnings,
+            "ir_source": (ir_payload.get("provenance") or {}).get("ir_source"),
+            "tables": len(ir_payload.get("tables") or []),
             "extra": {
                 key: value
                 for key, value in adapter_result.metadata.items()
@@ -460,20 +526,6 @@ class MarkItDownParserService:
             json.dumps(metadata_payload, ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",
         )
-
-        # 017 接线：产出 Document IR 第 4 件（此前 builder 存在但从未被调用，
-        # 下游只能拿到 parsed_text-only，表格结构与坐标全部丢失）。
-        # 这里先自校验再落盘：IR 不自洽就不写，避免下游把它当结构化证据。
-        from app.services.document_ir_builder import build_from_markitdown_text
-
-        ir_payload = build_from_markitdown_text(
-            text=text,
-            sha256=content.sha256,
-            content_uid=content.content_uid,
-            source_vault_path=source_vault_path,
-            adapter_version=PARSER_ADAPTER_VERSION,
-        ).to_dict()
-        validate_document_ir(ir_payload, parsed_text=text)
         artifacts["document_ir"].write_text(
             json.dumps(ir_payload, ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",
