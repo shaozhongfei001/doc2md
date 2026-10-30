@@ -28,6 +28,7 @@ from app.core.parser_routing import (
     normalize_file_ext,
 )
 from app.core.vault_paths import VAULT_COPIED, build_vault_artifact_paths, build_vault_dir
+from app.services.document_ir_schema import validate_document_ir
 from app.models.file import KbFileContent, KbFileInstance
 from app.models.vault import KbRawVaultObject
 
@@ -443,6 +444,8 @@ class MarkItDownParserService:
             "parser_name": PARSER_NAME,
             "parser_adapter_version": PARSER_ADAPTER_VERSION,
             "route_type": route_type.value,
+            # 017 接线：下游合同要求 content_uid 与 manifest/IR 三方一致（此前只有 manifest 有）
+            "content_uid": content.content_uid,
             "source_vault_path": source_vault_path,
             "converted_at": converted_at,
             "library_version": library_version,
@@ -458,6 +461,24 @@ class MarkItDownParserService:
             encoding="utf-8",
         )
 
+        # 017 接线：产出 Document IR 第 4 件（此前 builder 存在但从未被调用，
+        # 下游只能拿到 parsed_text-only，表格结构与坐标全部丢失）。
+        # 这里先自校验再落盘：IR 不自洽就不写，避免下游把它当结构化证据。
+        from app.services.document_ir_builder import build_from_markitdown_text
+
+        ir_payload = build_from_markitdown_text(
+            text=text,
+            sha256=content.sha256,
+            content_uid=content.content_uid,
+            source_vault_path=source_vault_path,
+            adapter_version=PARSER_ADAPTER_VERSION,
+        ).to_dict()
+        validate_document_ir(ir_payload, parsed_text=text)
+        artifacts["document_ir"].write_text(
+            json.dumps(ir_payload, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+
         manifest_payload = {
             "content_uid": content.content_uid,
             "sha256": content.sha256,
@@ -467,6 +488,8 @@ class MarkItDownParserService:
             "source_vault_path": source_vault_path,
             "parsed_text_path": artifacts["parsed_text"].as_posix(),
             "parsed_metadata_path": artifacts["parsed_metadata"].as_posix(),
+            "document_ir_path": artifacts["document_ir"].as_posix(),
+            "ir_schema_version": ir_payload["schema_version"],
             "generated_at": generated_at,
             "status": status,
             "content_size_bytes": content_size_bytes,

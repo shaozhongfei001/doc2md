@@ -28,6 +28,7 @@ from app.core.parser_routing import RouteType, match_route_type
 from app.core.vault_paths import VAULT_NOT_COPIED, build_vault_artifact_paths, build_vault_dir
 from app.models.file import KbFileContent, KbFileInstance
 from app.models.vault import KbRawVaultObject
+from app.services.document_ir_schema import validate_document_ir
 from app.services.file_content_vault import FileContentVaultService
 from app.services.inventory_scanner import InventoryScanner
 from app.services.markitdown_parser import (
@@ -262,6 +263,18 @@ def test_parse_in_scope_success(
     manifest = json.loads(artifacts["parse_manifest"].read_text(encoding="utf-8"))
     assert manifest["status"] == STATUS_SUCCESS
     assert manifest["parser_adapter_version"] == PARSER_ADAPTER_VERSION
+
+    # 017 接线：第 4 件 Document IR 必须真实落盘，且 metadata 要带 content_uid。
+    # 此前 builder 存在但从未被调用，下游只能拿到 parsed_text-only。
+    assert artifacts["document_ir"].is_file()
+    ir = json.loads(artifacts["document_ir"].read_text(encoding="utf-8"))
+    assert ir["schema_version"] == "document-ir/1.0"
+    assert ir["content_uid"] == expected_sha
+    assert validate_document_ir(
+        ir, parsed_text=artifacts["parsed_text"].read_text(encoding="utf-8")) is None
+    metadata = json.loads(artifacts["parsed_metadata"].read_text(encoding="utf-8"))
+    assert metadata["content_uid"] == expected_sha
+    assert manifest.get("document_ir_path") == artifacts["document_ir"].as_posix()
 
     _cleanup_parser_data([prefix], [expected_sha], vault_root, parsed_root)
 
