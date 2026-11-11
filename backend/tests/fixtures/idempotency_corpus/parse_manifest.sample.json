@@ -1,0 +1,18 @@
+{
+  "content_uid": "c4679e05e6a78f0378c69d0e525fe2e1740a952d9af67832367d681e3c8aa869",
+  "sha256": "c4679e05e6a78f0378c69d0e525fe2e1740a952d9af67832367d681e3c8aa869",
+  "route_type": "TEXT_OR_MARKDOWN",
+  "parser_name": "markitdown",
+  "parser_adapter_version": "005_mvp_v1",
+  "source_vault_path": "raw_vault/by_hash/c4/67/c4679e05e6a78f0378c69d0e525fe2e1740a952d9af67832367d681e3c8aa869/original.bin",
+  "parsed_text_path": "parsed/by_hash/c4/67/c4679e05e6a78f0378c69d0e525fe2e1740a952d9af67832367d681e3c8aa869/parsed_text.md",
+  "parsed_metadata_path": "parsed/by_hash/c4/67/c4679e05e6a78f0378c69d0e525fe2e1740a952d9af67832367d681e3c8aa869/parsed_metadata.json",
+  "document_ir_path": "parsed/by_hash/c4/67/c4679e05e6a78f0378c69d0e525fe2e1740a952d9af67832367d681e3c8aa869/document_ir.json",
+  "ir_schema_version": "1.0",
+  "generated_at": "2026-11-08T00:00:00Z",
+  "status": "SUCCESS",
+  "content_size_bytes": 29,
+  "input_metadata": {"file_ext": ".txt", "mime_type": "text/plain", "rule_name": "ext_text", "vault_uid": null},
+  "output_size_bytes": 29,
+  "output_hash": "<computed-by-test>"
+}

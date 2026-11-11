@@ -16,9 +16,15 @@ from sqlalchemy import select
 from app.core.config import AppConfig, ensure_readonly
 from app.core.database import create_db_engine, create_session_factory
 from app.core.ids import compute_sha256
-from app.core.parsed_paths import build_parsed_artifact_paths, build_parsed_content_dir
+from app.core.parsed_paths import (
+    build_manifest_additive_fields,
+    build_parsed_artifact_paths,
+    build_parsed_content_dir,
+    deterministic_generated_at,
+)
 from app.core.parser_routing import (
     DECISION_ROUTE,
+    ROUTING_RULES_VERSION,
     RouteType,
     ext_from_path,
     match_route_type,
@@ -210,6 +216,69 @@ def check_magic_pdf_available() -> None:
 
 def _utc_iso() -> str:
     return datetime.now(UTC).replace(tzinfo=UTC).isoformat().replace("+00:00", "Z")
+
+
+# ---------------------------------------------------------------------------
+# P1-L4 additive：doc2md 原生产出第 4 件 document_ir.json
+# ---------------------------------------------------------------------------
+def _build_mineru_document_ir(
+    *,
+    artifacts: dict[str, Path],
+    manifest_payload: dict[str, Any],
+    text: str,
+    ir_source_files: list[dict[str, str]],
+    asset_files: list[dict[str, str]] | None = None,
+) -> dict[str, Any]:
+    """复用既有 builder / 校验器写出 ``document_ir.json``（不重新实现 IR 构建）。
+
+    - 复用 ``document_ir_builder.build_from_mineru_content_list`` 与
+      ``document_ir_schema.validate_document_ir``；**不**调用平台
+      ``v2_fill_mineru_ir.py``，产物 provenance 不带 ``ir_filled_by``。
+    - 只写 ``document_ir.json``；不触碰 ``parsed_text.md`` /
+      ``parsed_metadata.json`` / ``parse_manifest.json`` 的写入逻辑。
+    - ``provenance.generated_at`` 取 manifest 的确定性时间（L3），避免 IR 字节
+      随 ``datetime.now()`` 变化而破坏 ``read_set_digest`` 四件套内容摘要。
+    - MinerU 未提供 ``content_list.json``（旧 v1 产物）时 fail-closed 抛明确错误，
+      不静默降级、不伪造 IR。
+    """
+    from app.services.document_ir_builder import build_from_mineru_content_list
+    from app.services.document_ir_schema import validate_document_ir
+
+    registered = {entry.get("name") for entry in ir_source_files}
+    if "content_list.json" not in registered:
+        raise RuntimeError(
+            "parse_manifest.ir_source_files 未登记 content_list.json，"
+            "无法产出 document_ir.json"
+        )
+    content_list_path = artifacts["ir_source"] / "content_list.json"
+    if not content_list_path.is_file():
+        raise RuntimeError(f"MinerU content_list 缺失：{content_list_path}")
+    content_list = json.loads(content_list_path.read_text(encoding="utf-8"))
+    if not isinstance(content_list, list) or not content_list:
+        raise RuntimeError("content_list.json 为空或非数组，无法构造 IR")
+
+    manifest_assets = (
+        asset_files if asset_files is not None
+        else manifest_payload.get("asset_files")
+    )
+    ir = build_from_mineru_content_list(
+        content_list=content_list,
+        parsed_text=text,
+        sha256=manifest_payload["sha256"],
+        content_uid=manifest_payload["content_uid"],
+        source_vault_path=manifest_payload.get("source_vault_path"),
+        manifest_assets=manifest_assets,
+    )
+    payload = ir.to_dict()
+    provenance = payload.get("provenance")
+    if isinstance(provenance, dict):
+        provenance["generated_at"] = manifest_payload["generated_at"]
+    validate_document_ir(payload, parsed_text=text, manifest_assets=manifest_assets)
+    artifacts["document_ir"].write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return payload
 
 
 def _process_output_tail(run_result: MagicPdfRunResult, *, limit: int = 800) -> str:
@@ -623,7 +692,7 @@ class MineruPdfParserService:
         # 旧 v1 产物无上述文件 → 返回空列表，manifest 增记空数组，既有行为零变化。
         ir_source_files = self._preserve_ir_source(staging_dir, artifacts["ir_source"])
 
-        generated_at = _utc_iso()
+        generated_at = deterministic_generated_at(content.sha256)
         content_size_bytes = original_bin.stat().st_size if original_bin.is_file() else 0
 
         parsed_dir = artifacts["parsed_dir"]
@@ -679,6 +748,25 @@ class MineruPdfParserService:
             "output_size_bytes": output_size,
             "output_hash": output_hash,
         }
+        # P1-L4：doc2md 原生产出第 4 件 document_ir.json。放在 L3 additive 摘要计算
+        # 之前写出，使 read_set_digest 覆盖完整四件套；不触碰前三件套写入逻辑。
+        _build_mineru_document_ir(
+            artifacts=artifacts,
+            manifest_payload=manifest_payload,
+            text=text,
+            ir_source_files=ir_source_files,
+            asset_files=asset_entries,
+        )
+        # P1-L3 additive：稳定幂等键四字段（既有键一字未改；kb/source_root 由库级
+        # kb-manifest.json 承载，单文件解析层无该上下文，故登记 None）。
+        manifest_payload.update(
+            build_manifest_additive_fields(
+                kb=None, source_root=None, parsed_dir=parsed_dir,
+                parser_name=PARSER_NAME,
+                adapter_version=PARSER_ADAPTER_VERSION,
+                routing_version=ROUTING_RULES_VERSION,
+            )
+        )
         if asset_entries or assets_dir.is_dir():
             manifest_payload["assets_dir"] = assets_dir.as_posix()
             manifest_payload["asset_files"] = asset_entries

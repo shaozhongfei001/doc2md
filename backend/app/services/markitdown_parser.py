@@ -19,9 +19,15 @@ from app.adapters.markitdown_adapter import (
 from app.core.config import AppConfig, ensure_readonly
 from app.core.database import create_db_engine, create_session_factory
 from app.core.ids import compute_sha256
-from app.core.parsed_paths import build_parsed_artifact_paths, build_parsed_content_dir
+from app.core.parsed_paths import (
+    build_manifest_additive_fields,
+    build_parsed_artifact_paths,
+    build_parsed_content_dir,
+    deterministic_generated_at,
+)
 from app.core.parser_routing import (
     DECISION_ROUTE,
+    ROUTING_RULES_VERSION,
     RouteType,
     ext_from_path,
     match_route_type,
@@ -478,7 +484,7 @@ class MarkItDownParserService:
         from app.adapters.markitdown_adapter import AdapterResult
 
         assert isinstance(adapter_result, AdapterResult)
-        generated_at = datetime.now(UTC).replace(tzinfo=UTC).isoformat().replace("+00:00", "Z")
+        generated_at = deterministic_generated_at(content.sha256)
         converted_at = generated_at
 
         parsed_dir = artifacts["parsed_dir"]
@@ -554,6 +560,16 @@ class MarkItDownParserService:
             "output_size_bytes": output_size,
             "output_hash": output_hash,
         }
+        # P1-L3 additive：稳定幂等键四字段（既有键一字未改；kb/source_root 由库级
+        # kb-manifest.json 承载，单文件解析层无该上下文，故登记 None）。
+        manifest_payload.update(
+            build_manifest_additive_fields(
+                kb=None, source_root=None, parsed_dir=parsed_dir,
+                parser_name=PARSER_NAME,
+                adapter_version=PARSER_ADAPTER_VERSION,
+                routing_version=ROUTING_RULES_VERSION,
+            )
+        )
         artifacts["parse_manifest"].write_text(
             json.dumps(manifest_payload, ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",
@@ -579,7 +595,7 @@ class MarkItDownParserService:
         error: ParseMarkitdownError,
         content_size_bytes: int | None = None,
     ) -> None:
-        generated_at = datetime.now(UTC).replace(tzinfo=UTC).isoformat().replace("+00:00", "Z")
+        generated_at = deterministic_generated_at(content.sha256)
         if content_size_bytes is None and original_bin.is_file():
             content_size_bytes = original_bin.stat().st_size
         elif content_size_bytes is None:

@@ -1,0 +1,14 @@
+{
+  "schema": "llmke.doc2md.kb-manifest/1",
+  "kb": "kb_9",
+  "cursor": "cursor-0000000000000000000000000000000000000000000000000000000000000000",
+  "set_digest": "0000000000000000000000000000000000000000000000000000000000000000",
+  "generated_at": "2026-11-08T00:00:00+08:00",
+  "parser_fingerprint": "fp-v1",
+  "entries": [
+    {"file_id": "F1", "sha256": "c4679e05e6a78f0378c69d0e525fe2e1740a952d9af67832367d681e3c8aa869", "source_path": "F1", "read_set_digest": "0000000000000000000000000000000000000000000000000000000000000000", "status": "ACTIVE", "route_type": "UNKNOWN", "parser_adapter_version": "kb_diff_v1"},
+    {"file_id": "F2", "sha256": "df633c4a81502926020a5565e46dd6f87a56b313bddb9b38970ca9de80f23b34", "source_path": "F2", "read_set_digest": "0000000000000000000000000000000000000000000000000000000000000000", "status": "ACTIVE", "route_type": "UNKNOWN", "parser_adapter_version": "kb_diff_v1"},
+    {"file_id": "F3", "sha256": "afac18384d9e5659a7635802bda75980f58aaeff149f47e18ee9e5bc491fbce7", "source_path": "F3", "read_set_digest": "0000000000000000000000000000000000000000000000000000000000000000", "status": "ACTIVE", "route_type": "UNKNOWN", "parser_adapter_version": "kb_diff_v1"},
+    {"file_id": "F4", "sha256": "c4679e05e6a78f0378c69d0e525fe2e1740a952d9af67832367d681e3c8aa869", "source_path": "F4", "read_set_digest": "0000000000000000000000000000000000000000000000000000000000000000", "status": "ACTIVE", "route_type": "UNKNOWN", "parser_adapter_version": "kb_diff_v1"}
+  ]
+}

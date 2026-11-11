@@ -173,7 +173,11 @@ def _text_content_ref(text: str, parsed_text: str | None, *, cursor: int) -> tup
 
     if parsed_text:
         span = _locate_span(text, parsed_text, cursor=cursor)
-        if span is not None:
+        # 单调性：span 必须落在 cursor 之后。_locate_span 在 cursor 之后找不到时会退回
+        # 文首（查重），一旦命中就会与已产出的块区间交叠，projection 以
+        # ARTIFACT_SPAN_OVERLAP 拒绝整份产物（实测 48MB 扫描书重复短语极多）。
+        # 此处宁可退化为 inline_text（仍带 block_id/page_no 可回指），也不产乱序 span。
+        if span is not None and span[0] >= cursor:
             start, end = span
             return (
                 ContentRef(
@@ -384,13 +388,24 @@ def build_from_mineru_content_list(
                 block_type = "paragraph"
                 attrs = {}
 
+        # 空文本条目（纯图片页 / 空段落 / 空公式）不装配 block：
+        # 否则会生成 inline_text 空串，被 schema 校验以 CONTENT_REF_INVALID 拒绝，
+        # 整本书直接无法入库（实测 48MB 扫描书首页为封面图，content_list 首项 text 为空）。
+        if (
+            getattr(content_ref, "kind", None) == "inline_text"
+            and not (getattr(content_ref, "text", "") or "").strip()
+        ):
+            continue
+
         blocks.append(
             Block(
                 block_id=block_id,
                 type=block_type,
                 page_no=page_no,
                 bbox=bbox,
-                reading_order=index,
+                # reading_order 必须是**连续块序号**：用原始 content_list 索引会在
+                # 跳过空块后出现空洞并越界（schema 要求 0..block_count-1）。
+                reading_order=len(blocks),
                 confidence=None,
                 content_ref=content_ref,
                 attrs=attrs,

@@ -1073,14 +1073,110 @@ def search_kb(
             )
 
 
+# ======================================================================================
+# P1-L2 · build-parse-queue / parse 真实现（VL-DOC2MD-INC / T-D2MD-02）
+# 替换原 1076-1083 两个 placeholder；其余命令签名与行为未改。
+# ======================================================================================
+from app.services.parse_queue import (  # noqa: E402 - L2 追加区导入
+    DEFAULT_KB_CORPUS_ROOT,
+    QUEUE_FILENAME,
+    DefaultIdempotencyChecker,
+    DefaultParseRunner,
+    DefaultRouteResolver,
+    build_parse_queue as build_queue,
+    consume_queue,
+    load_parse_queue,
+    load_route_map,
+    write_parse_queue,
+)
+
+
 @app.command("build-parse-queue")
-def build_parse_queue() -> None:
-    typer.echo("build-parse-queue placeholder")
+def build_parse_queue(
+    kb: str = typer.Option(..., "--kb", help="Knowledge base id, e.g. kb_9."),
+    config: Path = typer.Option(..., "--config", help="Path to app.yaml."),
+    path: Path | None = typer.Option(
+        None, "--path", help="KB source corpus directory (defaults to the L1 corpus fixture)."
+    ),
+    cursor: Path | None = typer.Option(
+        None, "--cursor", help="Previous kb-manifest.json path."
+    ),
+    routes: Path | None = typer.Option(
+        None, "--routes", help="Optional parser-route result JSON (test injection)."
+    ),
+    queue: Path | None = typer.Option(
+        None, "--queue", help="Parse queue JSON path (defaults to <path>/parse_queue.json)."
+    ),
+    dry_run: bool = typer.Option(
+        False, "--dry-run", help="Plan only; print the queue JSON and write nothing."
+    ),
+) -> None:
+    """P1-L2：由 L1 的 DiffResult 构建待解析队列；复用既有路由规则，不重新实现解析。"""
+    load_config(config)  # 只读校验，与既有命令一致
+    corpus = path or DEFAULT_KB_CORPUS_ROOT
+    manifest_path = cursor or (corpus / KB_MANIFEST_FILENAME)
+    try:
+        previous = load_kb_manifest(manifest_path)
+    except KBManifestCorruptError as exc:
+        typer.echo(f"ERROR: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
+    fp = (previous or {}).get("parser_fingerprint") or DEFAULT_PARSER_FINGERPRINT
+    diff = compute_kb_diff(
+        kb=kb,
+        scan_path=corpus,
+        previous_manifest=previous,
+        parser_fingerprint=fp,
+    )
+    if routes is not None:
+        route_map = load_route_map(routes)
+    else:
+        route_map = DefaultRouteResolver().resolve_all(diff=diff)
+
+    result = build_queue(
+        kb=kb,
+        diff=diff,
+        previous_manifest=previous,
+        routes=route_map,
+        dry_run=dry_run,
+    )
+    typer.echo(json.dumps(result.to_dict(), ensure_ascii=False, sort_keys=True))
+    if not dry_run:
+        write_parse_queue(queue or (corpus / QUEUE_FILENAME), result)
 
 
 @app.command("parse")
-def parse(limit: int = 10) -> None:
-    typer.echo(f"parse placeholder limit={limit}")
+def parse(
+    kb: str = typer.Option(..., "--kb", help="Knowledge base id, e.g. kb_9."),
+    config: Path = typer.Option(..., "--config", help="Path to app.yaml."),
+    path: Path | None = typer.Option(
+        None, "--path", help="KB source corpus directory (defaults to the L1 corpus fixture)."
+    ),
+    queue: Path | None = typer.Option(
+        None, "--queue", help="Parse queue JSON path (defaults to <path>/parse_queue.json)."
+    ),
+    limit: int | None = typer.Option(
+        None, "--limit", help="Maximum number of parse actions in this run."
+    ),
+    dry_run: bool = typer.Option(
+        False, "--dry-run", help="Plan only; call no parser and write nothing."
+    ),
+) -> None:
+    """P1-L2：消费解析队列（调度既有 parse-* 服务层），失败项保留带 fail_reason。"""
+    app_config = load_config(config)
+    corpus = path or DEFAULT_KB_CORPUS_ROOT
+    queue_path = queue or (corpus / QUEUE_FILENAME)
+    built = load_parse_queue(queue_path)
+    result = consume_queue(
+        queue=built,
+        parse_runner=DefaultParseRunner(app_config),
+        skip_checker=DefaultIdempotencyChecker(app_config),
+        limit=limit,
+        dry_run=dry_run,
+    )
+    typer.echo(json.dumps(result.to_dict(), ensure_ascii=False, sort_keys=True))
+    if not dry_run:
+        write_parse_queue(queue_path, result.queue)
 
 
 # ======================================================================================
@@ -1210,6 +1306,83 @@ def parse_images(
         console.print("Dry run: no parsed artifacts or batch report written")
     if result.report_path is not None:
         console.print(f"Parse image report: {result.report_path}")
+
+
+# ======================================================================================
+# P1-L1 · scan-diff（VL-DOC2MD-INC / T-D2MD-01）—— additive 追加区
+# 既有 20 个命令的签名与行为一字未改、一行未删；以下仅为纯新增。
+# ======================================================================================
+from app.core.parsed_paths import KB_MANIFEST_FILENAME  # noqa: E402 - 追加区导入
+from app.services.kb_diff import (  # noqa: E402 - 追加区导入
+    DEFAULT_PARSER_FINGERPRINT,
+    KBManifestCorruptError,
+    build_next_manifest,
+    compute_kb_diff,
+    load_kb_manifest,
+    write_kb_manifest,
+)
+
+
+@app.command("scan-diff")
+def scan_diff(
+    kb: str = typer.Option(..., "--kb", help="Knowledge base id, e.g. kb_9."),
+    path: str = typer.Option(
+        ..., "--path", help="Directory holding the KB source files."
+    ),
+    config: Path = typer.Option(
+        ...,
+        "--config",
+        help="Path to app.yaml; validated read-only, consistent with other commands.",
+    ),
+    cursor: Path | None = typer.Option(
+        None,
+        "--cursor",
+        help="Previous kb-manifest.json path (also the write-back target). "
+        f"Defaults to <path>/{KB_MANIFEST_FILENAME}.",
+    ),
+    dry_run: bool = typer.Option(
+        False,
+        "--dry-run",
+        help="Compute only: print DiffResult JSON to stdout and write nothing.",
+    ),
+    parser_fingerprint: str | None = typer.Option(
+        None,
+        "--parser-fingerprint",
+        help="Current parser fingerprint. Defaults to the one in the previous manifest.",
+    ),
+) -> None:
+    """P1-L1：按库扫描源文件输出 DiffResult；非 dry-run 写回 kb-manifest.json。"""
+    load_config(config)  # 只读校验：与既有命令一致，不连接任何服务
+    scan_root = Path(path)
+    manifest_path = cursor or (scan_root / KB_MANIFEST_FILENAME)
+
+    try:
+        previous = load_kb_manifest(manifest_path)
+    except KBManifestCorruptError as exc:
+        typer.echo(f"ERROR: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
+    if parser_fingerprint is None:
+        parser_fingerprint = (
+            (previous or {}).get("parser_fingerprint") or DEFAULT_PARSER_FINGERPRINT
+        )
+
+    result = compute_kb_diff(
+        kb=kb,
+        scan_path=scan_root,
+        previous_manifest=previous,
+        parser_fingerprint=parser_fingerprint,
+    )
+    typer.echo(json.dumps(result.to_dict(), ensure_ascii=False, sort_keys=True))
+
+    if not dry_run:
+        next_manifest = build_next_manifest(
+            result,
+            previous,
+            parser_fingerprint=parser_fingerprint,
+            generated_at=datetime.now(UTC).isoformat(),
+        )
+        write_kb_manifest(manifest_path, next_manifest)
 
 
 if __name__ == "__main__":
