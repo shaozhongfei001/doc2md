@@ -75,6 +75,20 @@ vs 当前四件套 + ES/Milvus/图）；009~012 是模板占位稿而非设计�
 3. 不归档 20 个模板 spec 正文（无信息量），只保留本核查结论。
 4. 本地配置相关的后续处置由 Owner 决定，本次不处理。
 
-## 五、清理执行
+## 五、清理执行结果（2026-11-12）
 
-见文末「执行结果」段（删除后追加）。
+顺序：**先归档并推送，再删分支**。本文件随 `6a97e27` 先落地，避免删掉分支后
+结论无处留存。
+
+| 项 | 结果 |
+|---|---|
+| 归档提交 | `6a97e27`，已 push 到 `origin/main` |
+| 删除回显 | `git push origin --delete` 返回 4 条 `- [deleted]`：`feature/001-file-inventory`、`feature/002-file-content-vault`、`feature/003-duplicate-governance`、`feature/004-parser-router` |
+| 删除前 tips | `39ccb47` / `2f7eb46` / `ba38c84` / `cccb982` |
+| 本地引用 | `git fetch --prune origin '+refs/heads/*:refs/remotes/origin/*'` 清掉 4 个 `origin/feature/*`，只剩 `origin/main` 与 `origin/HEAD` |
+| 远端剩余 | `refs/heads/main` 唯一；PR 0 / issues 0 / tags 0 / releases 0，无其它 ref 挂住旧提交 |
+| `main` | 删除前后均为 `6a97e27`，工作区干净；`llmke` 主仓保持 `543350f1`、未受影响 |
+| 仓库体积 | 删除后即时查询 `size` 仍为 175065 KB，属服务端 GC 延迟，不代表对象仍被引用 |
+
+**未做**：未合并任何代码到 `main`；未归档 20 个模板 spec 正文；未重写 git 历史
+（PUBLIC 仓库的历史对象撤回不了，且无此必要）。
